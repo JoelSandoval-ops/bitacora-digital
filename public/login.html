@@ -130,7 +130,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body py-4">
-          <p class="text-muted small mb-3">Ingresa tu correo institucional. Te enviaremos un enlace seguro para restablecer tu contraseña.</p>
+          <p class="text-muted small mb-3">Ingresa tu correo institucional para enviarte las instrucciones.</p>
           <div class="mb-3">
             <label class="form-label fw-semibold small text-secondary">CORREO INSTITUCIONAL</label>
             <input type="email" id="emailRecuperar" class="form-control py-2" placeholder="ejemplo@buenavista.com" required>
@@ -138,7 +138,7 @@
         </div>
         <div class="modal-footer border-0 pt-0">
           <button type="button" class="btn btn-light btn-sm fw-semibold" data-bs-dismiss="modal">Cancelar</button>
-          <button type="button" onclick="enviarRecuperacion()" id="btnReset" class="btn btn-primary btn-sm fw-semibold">
+          <button type="button" id="btnReset" class="btn btn-primary btn-sm fw-semibold">
             Enviar Instrucciones
           </button>
         </div>
@@ -147,10 +147,33 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    // 1. VERIFICAR SESIÓN ACTIVA AL CARGAR
+
+  <!-- LÓGICA CONECTADA A SUPABASE CLIENTE -->
+  <script type="module">
+    import { supabase } from './js/supabase.js';
+
+    // 1. REDIRECCIÓN CENTRALIZADA POR ROL
+    function redireccionarSegunRol(rol) {
+      const rolNormalizado = (rol || '').toString().toUpperCase().trim();
+      
+      switch (rolNormalizado) {
+        case 'ADMIN':
+        case 'ADMINISTRADOR':
+          window.location.href = 'administrador.html';
+          break;
+        case 'SUPERVISOR':
+          window.location.href = 'supervisor.html';
+          break;
+        case 'GUARDIA':
+        default:
+          window.location.href = 'guardia.html';
+          break;
+      }
+    }
+
+    // 2. VERIFICAR SESIÓN ACTIVA AL CARGAR
     document.addEventListener('DOMContentLoaded', () => {
-      const sesionGuardada = localStorage.getItem('user_bv');
+      const sesionGuardada = localStorage.getItem('usuarioSesion');
       if (sesionGuardada) {
         try {
           const usuario = JSON.parse(sesionGuardada);
@@ -158,29 +181,10 @@
             redireccionarSegunRol(usuario.rol);
           }
         } catch (e) {
-          localStorage.removeItem('user_bv');
+          localStorage.removeItem('usuarioSesion');
         }
       }
     });
-
-    // 2. REDIRECCIÓN CENTRALIZADA Y SEGURA DE RUTAS
-    function redireccionarSegunRol(rol) {
-      const rolNormalizado = (rol || '').toString().toUpperCase().trim();
-      
-      switch (rolNormalizado) {
-        case 'ADMIN':
-        case 'ADMINISTRADOR':
-          window.location.href = '/administrador.html';
-          break;
-        case 'SUPERVISOR':
-          window.location.href = '/supervisor.html';
-          break;
-        case 'GUARDIA':
-        default:
-          window.location.href = '/guardia.html';
-          break;
-      }
-    }
 
     // 3. PROCESAMIENTO DEL LOGIN
     document.getElementById('formLogin').addEventListener('submit', async (e) => {
@@ -200,36 +204,42 @@
       const password = document.getElementById('loginPass').value.trim();
 
       try {
-        const res = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ usuario: correo, password })
-        });
+        const { data: usuario, error } = await supabase
+          .from('usuarios')
+          .select('*')
+          .eq('correo', correo)
+          .eq('password', password)
+          .maybeSingle();
 
-        const data = await res.json();
-        
-        if (res.ok && (data.exito || data.usuario || data.rol)) {
-          const usuario = data.usuario || data;
-          
-          // Guardar sesión estandarizada
-          localStorage.setItem('user_bv', JSON.stringify(usuario));
+        if (error) {
+          console.error('Error de Supabase:', error);
+          alertBox.innerText = 'Error de conexión con la base de datos';
+          alertBox.classList.remove('d-none');
+          btnSubmit.disabled = false;
+          btnText.innerText = 'INGRESAR AL SISTEMA';
+          return;
+        }
+
+        if (usuario) {
+          localStorage.setItem('usuarioSesion', JSON.stringify(usuario));
           redireccionarSegunRol(usuario.rol);
         } else {
-          alertBox.innerText = data.error || data.mensaje || 'Credenciales incorrectas';
+          alertBox.innerText = 'Credenciales incorrectas. Verifique correo y contraseña.';
           alertBox.classList.remove('d-none');
           btnSubmit.disabled = false;
           btnText.innerText = 'INGRESAR AL SISTEMA';
         }
       } catch (err) {
-        alertBox.innerText = 'Error de conexión con el servidor backend';
+        console.error('Error inesperado:', err);
+        alertBox.innerText = 'Error inesperado al conectar.';
         alertBox.classList.remove('d-none');
         btnSubmit.disabled = false;
         btnText.innerText = 'INGRESAR AL SISTEMA';
       }
     });
 
-    // 4. RECUPERACIÓN DE CONTRASEÑA
-    async function enviarRecuperacion() {
+    // 4. RECUPERACIÓN DE CONTRASEÑA VÍA SUPABASE
+    document.getElementById('btnReset').addEventListener('click', async () => {
       const emailInput = document.getElementById('emailRecuperar');
       const email = emailInput.value.trim();
       const btnReset = document.getElementById('btnReset');
@@ -245,33 +255,27 @@
       btnReset.innerText = 'Enviando...';
 
       try {
-        const res = await fetch('/api/recuperar-password', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ correo: email })
-        });
-
-        const data = await res.json();
+        const { error } = await supabase.auth.resetPasswordForEmail(email);
+        
         const modalElement = document.getElementById('modalRecuperar');
         const modal = bootstrap.Modal.getInstance(modalElement);
-        
         if (modal) modal.hide();
 
-        if (res.ok) {
+        if (error) {
+          alertBox.innerText = 'No se pudo enviar el correo de recuperación.';
+          alertBox.classList.remove('d-none');
+        } else {
           successBox.innerText = 'Se han enviado las instrucciones a tu correo electrónico.';
           successBox.classList.remove('d-none');
           emailInput.value = '';
-        } else {
-          alertBox.innerText = data.error || 'No se pudo enviar el correo de recuperación.';
-          alertBox.classList.remove('d-none');
         }
       } catch (err) {
-        alert('Error al conectar con el servidor.');
+        alert('Error al conectar con el servicio.');
       } finally {
         btnReset.disabled = false;
         btnReset.innerText = 'Enviar Instrucciones';
       }
-    }
+    });
   </script>
 </body>
 </html>
