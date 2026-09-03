@@ -9,6 +9,9 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
+  <!-- Supabase JS Client (Versión Global CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     :root {
       --navy-primary: #0f1e36;
@@ -148,9 +151,11 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- LÓGICA CONECTADA A SUPABASE CLIENTE -->
-  <script type="module">
-    import { supabase } from './js/supabase.js';
+  <script>
+    // CONFIGURACIÓN REAL DE SUPABASE
+    const SUPABASE_URL = 'https://irdgnyqomuwajsezswal.supabase.co'; 
+    const SUPABASE_ANON_KEY = 'sb_publishable_dHiFIWqRS9XAedJLYMdeew_XVQUYDvp'; 
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // 1. REDIRECCIÓN CENTRALIZADA POR ROL
     function redireccionarSegunRol(rol) {
@@ -173,7 +178,7 @@
 
     // 2. VERIFICAR SESIÓN ACTIVA AL CARGAR
     document.addEventListener('DOMContentLoaded', () => {
-      const sesionGuardada = localStorage.getItem('usuarioSesion');
+      const sesionGuardada = sessionStorage.getItem('sesion_bitacora');
       if (sesionGuardada) {
         try {
           const usuario = JSON.parse(sesionGuardada);
@@ -181,7 +186,7 @@
             redireccionarSegunRol(usuario.rol);
           }
         } catch (e) {
-          localStorage.removeItem('usuarioSesion');
+          sessionStorage.removeItem('sesion_bitacora');
         }
       }
     });
@@ -204,7 +209,7 @@
       const password = document.getElementById('loginPass').value.trim();
 
       try {
-        const { data: usuario, error } = await supabase
+        const { data: usuario, error } = await _supabase
           .from('usuarios')
           .select('*')
           .eq('correo', correo)
@@ -221,7 +226,16 @@
         }
 
         if (usuario) {
-          localStorage.setItem('usuarioSesion', JSON.stringify(usuario));
+          // Guardar objeto de sesión compatible con las vistas
+          const sesion = {
+            id: usuario.id,
+            nombre: usuario.nombre,
+            correo: usuario.correo,
+            rol: usuario.rol,
+            sede: usuario.sede || 'GENERAL'
+          };
+
+          sessionStorage.setItem('sesion_bitacora', JSON.stringify(sesion));
           redireccionarSegunRol(usuario.rol);
         } else {
           alertBox.innerText = 'Credenciales incorrectas. Verifique correo y contraseña.';
@@ -255,7 +269,7 @@
       btnReset.innerText = 'Enviando...';
 
       try {
-        const { error } = await supabase.auth.resetPasswordForEmail(email);
+        const { error } = await _supabase.auth.resetPasswordForEmail(email);
         
         const modalElement = document.getElementById('modalRecuperar');
         const modal = bootstrap.Modal.getInstance(modalElement);
