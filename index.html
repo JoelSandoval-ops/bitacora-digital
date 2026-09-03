@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitácora Digital de Seguridad</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f6f9; color: #333; }
+        
+        /* Encabezado */
+        header { background-color: #1a252f; color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-weight: bold; font-size: 1.2rem; display: flex; align-items: center; gap: 8px; }
+        .badge { background-color: #27ae60; font-size: 0.8rem; padding: 2px 8px; border-radius: 12px; }
+
+        /* Contenedor Principal */
+        .container { padding: 1rem; max-width: 1200px; margin: 0 auto; }
+
+        /* Vista Guardia (Optimizada para Celular) */
+        .guard-panel { display: grid; gap: 12px; }
+        .btn-action { width: 100%; padding: 1.2rem; font-size: 1.1rem; font-weight: bold; border: none; border-radius: 10px; color: white; cursor: pointer; text-align: left; display: flex; align-items: center; justify-content: space-between; }
+        .btn-ingreso { background-color: #2e7d32; }
+        .btn-salida { background-color: #c62828; }
+        .btn-novedad { background-color: #f57c00; }
+        .btn-registros { background-color: #0288d1; }
+
+        /* Tarjeta Informativa */
+        .card { background: white; border-radius: 10px; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .card h3 { font-size: 1rem; color: #666; margin-bottom: 0.5rem; }
+        .card .stat { font-size: 2rem; font-weight: bold; color: #1a252f; }
+
+        /* Diseño para PC / Pantallas Anchas */
+        @media (min-width: 768px) {
+            .dashboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+            .guard-panel { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            🛡️ BITÁCORA DIGITAL
+        </div>
+        <div class="badge">Club Buena Vista</div>
+    </header>
+
+    <div class="container">
+        <!-- Indicadores Rápidos -->
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3>Personas Dentro</h3>
+                <div class="stat">24</div>
+            </div>
+            <div class="card">
+                <h3>Ingresos Hoy</h3>
+                <div class="stat">18</div>
+            </div>
+            <div class="card">
+                <h3>Novedades Activas</h3>
+                <div class="stat">3</div>
+            </div>
+        </div>
+
+        <!-- Botones de Acción del Guardia -->
+        <h2 style="margin-bottom: 1rem; font-size: 1.2rem; color: #444;">Panel de Control Rápido</h2>
+        <div class="guard-panel">
+            <button class="btn-action btn-ingreso" onclick="alert('Formulario de Ingreso')">
+                🚪 REGISTRAR INGRESO <span>→</span>
+            </button>
+            <button class="btn-action btn-salida" onclick="alert('Formulario de Salida')">
+                🚪 REGISTRAR SALIDA <span>→</span>
+            </button>
+            <button class="btn-action btn-novedad" onclick="alert('Formulario de Novedades')">
+                ⚠️ NUEVA NOVEDAD <span>→</span>
+            </button>
+            <button class="btn-action btn-registros" onclick="alert('Ver Registros')">
+                📋 MIS REGISTROS <span>→</span>
+            </button>
+        </div>
+    </div>
+
+</body>
+</html>
