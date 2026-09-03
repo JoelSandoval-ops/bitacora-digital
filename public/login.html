@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acceso Corporativo - Club Buena Vista</title>
+  
+  <!-- CSS Bootstrap 5 & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+  <style>
+    :root {
+      --navy-primary: #0f1e36;
+      --navy-secondary: #1a2a47;
+      --accent-blue: #3b82f6;
+    }
+    body {
+      background: linear-gradient(135deg, var(--navy-primary) 0%, var(--navy-secondary) 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .card-login {
+      border: none;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      background: #ffffff;
+      overflow: hidden;
+      width: 100%;
+      max-width: 440px;
+    }
+    .header-logo {
+      background: var(--navy-primary);
+      padding: 35px 20px 25px;
+      text-align: center;
+      border-bottom: 4px solid var(--accent-blue);
+    }
+    .club-title {
+      color: #ffffff;
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      margin-top: 10px;
+      text-transform: uppercase;
+    }
+    .club-subtitle {
+      color: #94a3b8;
+      font-size: 0.8rem;
+      letter-spacing: 2px;
+      font-weight: 600;
+    }
+    .form-control:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.2);
+    }
+    .btn-club {
+      background: var(--navy-primary);
+      color: #ffffff;
+      font-weight: 700;
+      padding: 12px;
+      border-radius: 8px;
+      letter-spacing: 0.5px;
+      transition: all 0.3s ease;
+    }
+    .btn-club:hover {
+      background: var(--navy-secondary);
+      color: var(--accent-blue);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card-login mx-3">
+    <div class="header-logo">
+      <i class="bi bi-shield-lock-fill text-primary display-4"></i>
+      <div class="club-title">BUENA VISTA</div>
+      <div class="club-subtitle">SISTEMA CONTROL DE ACCESOS</div>
+    </div>
+    
+    <div class="card-body p-4 p-md-5">
+      <!-- Alertas dinámicas -->
+      <div id="alertBox" class="alert alert-danger d-none py-2 small" role="alert"></div>
+      <div id="successBox" class="alert alert-success d-none py-2 small" role="alert"></div>
+
+      <!-- FORMULARIO DE LOGIN -->
+      <form id="formLogin">
+        <div class="mb-3">
+          <label class="form-label fw-semibold small text-secondary">CORREO INSTITUCIONAL</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light text-secondary"><i class="bi bi-person-badge"></i></span>
+            <input type="email" id="loginUser" class="form-control py-2" placeholder="ejemplo@buenavista.com" required autocomplete="email">
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold small text-secondary">CONTRASEÑA DE ACCESO</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light text-secondary"><i class="bi bi-key-fill"></i></span>
+            <input type="password" id="loginPass" class="form-control py-2" placeholder="••••••••" required autocomplete="current-password">
+          </div>
+        </div>
+
+        <div class="text-end mb-4">
+          <a href="#" class="text-decoration-none small text-primary fw-semibold" data-bs-toggle="modal" data-bs-target="#modalRecuperar">
+            ¿Olvidaste tu contraseña?
+          </a>
+        </div>
+
+        <button type="submit" id="btnSubmit" class="btn btn-club w-100">
+          <span id="btnText">INGRESAR AL SISTEMA</span>
+          <i class="bi bi-arrow-right-short ms-1 fs-5 align-middle"></i>
+        </button>
+      </form>
+    </div>
+
+    <div class="card-footer bg-light text-center py-3 border-0">
+      <small class="text-muted fw-semibold">Club Buena Vista &copy; 2026</small>
+    </div>
+  </div>
+
+  <!-- MODAL RECUPERACIÓN DE CONTRASEÑA -->
+  <div class="modal fade" id="modalRecuperar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold text-dark"><i class="bi bi-envelope-at text-primary me-2"></i>Recuperar Contraseña</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body py-4">
+          <p class="text-muted small mb-3">Ingresa tu correo institucional. Te enviaremos un enlace seguro para restablecer tu contraseña.</p>
+          <div class="mb-3">
+            <label class="form-label fw-semibold small text-secondary">CORREO INSTITUCIONAL</label>
+            <input type="email" id="emailRecuperar" class="form-control py-2" placeholder="ejemplo@buenavista.com" required>
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-light btn-sm fw-semibold" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" onclick="enviarRecuperacion()" id="btnReset" class="btn btn-primary btn-sm fw-semibold">
+            Enviar Instrucciones
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // 1. VERIFICAR SESIÓN ACTIVA AL CARGAR
+    document.addEventListener('DOMContentLoaded', () => {
+      const sesionGuardada = localStorage.getItem('user_bv');
+      if (sesionGuardada) {
+        try {
+          const usuario = JSON.parse(sesionGuardada);
+          if (usuario && usuario.rol) {
+            redireccionarSegunRol(usuario.rol);
+          }
+        } catch (e) {
+          localStorage.removeItem('user_bv');
+        }
+      }
+    });
+
+    // 2. REDIRECCIÓN CENTRALIZADA Y SEGURA DE RUTAS
+    function redireccionarSegunRol(rol) {
+      const rolNormalizado = (rol || '').toString().toUpperCase().trim();
+      
+      switch (rolNormalizado) {
+        case 'ADMIN':
+        case 'ADMINISTRADOR':
+          window.location.href = '/administrador.html';
+          break;
+        case 'SUPERVISOR':
+          window.location.href = '/supervisor.html';
+          break;
+        case 'GUARDIA':
+        default:
+          window.location.href = '/guardia.html';
+          break;
+      }
+    }
+
+    // 3. PROCESAMIENTO DEL LOGIN
+    document.getElementById('formLogin').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const alertBox = document.getElementById('alertBox');
+      const successBox = document.getElementById('successBox');
+      const btnSubmit = document.getElementById('btnSubmit');
+      const btnText = document.getElementById('btnText');
+      
+      alertBox.classList.add('d-none');
+      successBox.classList.add('d-none');
+      btnSubmit.disabled = true;
+      btnText.innerText = 'VERIFICANDO...';
+
+      const correo = document.getElementById('loginUser').value.trim();
+      const password = document.getElementById('loginPass').value.trim();
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ usuario: correo, password })
+        });
+
+        const data = await res.json();
+        
+        if (res.ok && (data.exito || data.usuario || data.rol)) {
+          const usuario = data.usuario || data;
+          
+          // Guardar sesión estandarizada
+          localStorage.setItem('user_bv', JSON.stringify(usuario));
+          redireccionarSegunRol(usuario.rol);
+        } else {
+          alertBox.innerText = data.error || data.mensaje || 'Credenciales incorrectas';
+          alertBox.classList.remove('d-none');
+          btnSubmit.disabled = false;
+          btnText.innerText = 'INGRESAR AL SISTEMA';
+        }
+      } catch (err) {
+        alertBox.innerText = 'Error de conexión con el servidor backend';
+        alertBox.classList.remove('d-none');
+        btnSubmit.disabled = false;
+        btnText.innerText = 'INGRESAR AL SISTEMA';
+      }
+    });
+
+    // 4. RECUPERACIÓN DE CONTRASEÑA
+    async function enviarRecuperacion() {
+      const emailInput = document.getElementById('emailRecuperar');
+      const email = emailInput.value.trim();
+      const btnReset = document.getElementById('btnReset');
+      const alertBox = document.getElementById('alertBox');
+      const successBox = document.getElementById('successBox');
+
+      if (!email) {
+        alert('Por favor, ingresa tu correo electrónico.');
+        return;
+      }
+
+      btnReset.disabled = true;
+      btnReset.innerText = 'Enviando...';
+
+      try {
+        const res = await fetch('/api/recuperar-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ correo: email })
+        });
+
+        const data = await res.json();
+        const modalElement = document.getElementById('modalRecuperar');
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        
+        if (modal) modal.hide();
+
+        if (res.ok) {
+          successBox.innerText = 'Se han enviado las instrucciones a tu correo electrónico.';
+          successBox.classList.remove('d-none');
+          emailInput.value = '';
+        } else {
+          alertBox.innerText = data.error || 'No se pudo enviar el correo de recuperación.';
+          alertBox.classList.remove('d-none');
+        }
+      } catch (err) {
+        alert('Error al conectar con el servidor.');
+      } finally {
+        btnReset.disabled = false;
+        btnReset.innerText = 'Enviar Instrucciones';
+      }
+    }
+  </script>
+</body>
+</html>
