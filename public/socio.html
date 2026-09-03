@@ -6,71 +6,116 @@
   <title>Portal Socio - Club Buena Vista</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <style>
+    :root { 
+      --club-navy: #0f1e36; 
+      --club-blue: #3b82f6; 
+    }
+    body { 
+      background-color: #f4f6f9; 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    }
+    .navbar-club { 
+      background-color: var(--club-navy); 
+      border-bottom: 3px solid var(--club-blue); 
+    }
+    .card-custom { 
+      border: none; 
+      border-radius: 12px; 
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); 
+      background-color: #ffffff;
+    }
+    .header-custom { 
+      background-color: var(--club-navy); 
+      color: #ffffff; 
+      border-radius: 12px 12px 0 0 !important; 
+    }
+    .btn-club-primary { 
+      background-color: var(--club-navy); 
+      color: #ffffff; 
+      font-weight: 600; 
+      border-radius: 8px;
+      transition: background-color 0.2s ease;
+    }
+    .btn-club-primary:hover { 
+      background-color: #1a2a47; 
+      color: #ffffff; 
+    }
+  </style>
 </head>
-<body class="bg-light">
+<body>
 
-  <nav class="navbar navbar-expand-lg navbar-dark bg-success shadow-sm px-3">
+  <!-- Navegación Ejecutiva del Socio -->
+  <nav class="navbar navbar-dark navbar-club px-3 py-2 mb-4">
     <div class="container-fluid">
-      <a class="navbar-brand fw-bold" href="#">
-        <i class="bi bi-house-heart"></i> Club Buena Vista - Portal Socio
-      </a>
+      <span class="navbar-brand fw-bold d-flex align-items-center gap-2">
+        <i class="bi bi-activity text-primary fs-4"></i>
+        <span>CLUB BUENA VISTA <small class="fw-normal text-muted fs-6 d-none d-sm-inline">| Portal de Socio</small></span>
+      </span>
       <div class="d-flex align-items-center gap-3">
-        <span class="text-white small d-none d-md-inline" id="nombreSocio">Socio</span>
-        <a href="/login.html" onclick="localStorage.clear()" class="btn btn-outline-light btn-sm">
+        <span class="text-white small fw-semibold" id="nombreSocio">Socio</span>
+        <a href="/login.html" onclick="localStorage.clear()" class="btn btn-outline-light btn-sm rounded-pill px-3">
           <i class="bi bi-box-arrow-right"></i> Salir
         </a>
       </div>
     </div>
   </nav>
 
-  <div class="container py-4">
-    <!-- Pre-autorización de Invitados -->
-    <div class="card border-0 shadow-sm mb-4">
-      <div class="card-header bg-white py-3">
-        <h5 class="fw-bold mb-0 text-success"><i class="bi bi-person-plus-fill"></i> Pre-autorizar Visitante o Evento</h5>
+  <div class="container py-2">
+    <!-- Formulario de Pre-autorización -->
+    <div class="card card-custom mb-4">
+      <div class="card-header header-custom py-3">
+        <h6 class="fw-bold mb-0">
+          <i class="bi bi-person-plus-fill me-2 text-primary"></i> Pre-autorizar Visitante o Evento
+        </h6>
       </div>
-      <div class="card-body">
+      <div class="card-body p-4">
         <form id="formPreAutorizar">
           <div class="row g-3">
             <div class="col-12 col-md-4">
-              <label class="form-label fw-semibold">Nombre del Invitado</label>
+              <label class="form-label fw-semibold small text-secondary">NOMBRE DEL INVITADO</label>
               <input type="text" id="preNombre" class="form-control" required placeholder="Ej. Carlos Mendoza">
             </div>
             <div class="col-12 col-md-4">
-              <label class="form-label fw-semibold">Cédula / Identificación</label>
+              <label class="form-label fw-semibold small text-secondary">CÉDULA / IDENTIFICACIÓN</label>
               <input type="text" id="preCedula" class="form-control" required placeholder="Ej. 1712345678">
             </div>
             <div class="col-12 col-md-4">
-              <label class="form-label fw-semibold">Placa Vehículo (Opcional)</label>
-              <input type="text" id="prePlaca" class="form-control" placeholder="Ej. ABC-1234">
+              <label class="form-label fw-semibold small text-secondary">PLACA VEHÍCULO (OPCIONAL)</label>
+              <input type="text" id="prePlaca" class="form-control text-uppercase" placeholder="Ej. ABC-1234">
             </div>
             <div class="col-12">
-              <label class="form-label fw-semibold">Observaciones / Área de Destino</label>
+              <label class="form-label fw-semibold small text-secondary">ÁREA DE DESTINO / OBSERVACIONES</label>
               <input type="text" id="preDestino" class="form-control" required placeholder="Ej. Casa Villa 12 / Canchas de Tenis">
             </div>
           </div>
-          <button type="submit" class="btn btn-success w-100 fw-bold mt-3 py-2">
-            <i class="bi bi-check-circle"></i> Enviar Pre-Autorización a Garita
+          <button type="submit" class="btn btn-club-primary w-100 py-2 mt-4">
+            <i class="bi bi-send-check me-1"></i> ENVIAR PRE-AUTORIZACIÓN A GARITA
           </button>
         </form>
       </div>
     </div>
 
-    <!-- Historial de Visitas Recibidas -->
-    <div class="card border-0 shadow-sm">
-      <div class="card-header bg-white py-3">
-        <h5 class="fw-bold mb-0"><i class="bi bi-clock-history"></i> Historial de Visitas a mi Domicilio / Áreas</h5>
+    <!-- Historial de Visitas -->
+    <div class="card card-custom">
+      <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold mb-0 text-dark">
+          <i class="bi bi-clock-history text-primary me-2"></i> Historial de Visitas
+        </h6>
+        <button onclick="cargarVisitasSocio()" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+          <i class="bi bi-arrow-clockwise"></i> Actualizar
+        </button>
       </div>
       <div class="card-body p-0">
         <div class="table-responsive">
           <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
+            <thead class="table-light small">
               <tr>
-                <th>Fecha/Hora</th>
-                <th>Invitado</th>
-                <th>Cédula</th>
-                <th>Placa</th>
-                <th>Estado</th>
+                <th>FECHA / HORA</th>
+                <th>INVITADO</th>
+                <th>CÉDULA</th>
+                <th>PLACA</th>
+                <th>ESTADO</th>
               </tr>
             </thead>
             <tbody id="tablaSocio">
@@ -96,16 +141,16 @@
         const data = await res.json();
         const tbody = document.getElementById('tablaSocio');
         
-        if (data.length === 0) {
+        if (!data || data.length === 0) {
           tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">No se registran visitas aún</td></tr>';
           return;
         }
 
         tbody.innerHTML = data.map(r => `
           <tr>
-            <td><small class="fw-bold">${new Date(r.hora_ingreso).toLocaleString('es-EC')}</small></td>
+            <td><small class="fw-bold text-dark">${new Date(r.hora_ingreso).toLocaleString('es-EC')}</small></td>
             <td class="fw-semibold">${r.nombre}</td>
-            <td>${r.cedula}</td>
+            <td class="text-muted">${r.cedula}</td>
             <td><span class="badge bg-secondary">${r.placa || 'Peatonal'}</span></td>
             <td><span class="badge bg-success">${r.estado || 'Ingresado'}</span></td>
           </tr>
@@ -118,6 +163,7 @@
     document.getElementById('formPreAutorizar').addEventListener('submit', async (e) => {
       e.preventDefault();
       const nuevoRegistro = {
+        club_id: userLocal.club_id || 1,
         tipo_visita: 'Invitado',
         nombre: document.getElementById('preNombre').value,
         cedula: document.getElementById('preCedula').value,
