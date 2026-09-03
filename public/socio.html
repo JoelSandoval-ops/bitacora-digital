@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Socio - Club Buena Vista</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+
+  <nav class="navbar navbar-expand-lg navbar-dark bg-success shadow-sm px-3">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="#">
+        <i class="bi bi-house-heart"></i> Club Buena Vista - Portal Socio
+      </a>
+      <div class="d-flex align-items-center gap-3">
+        <span class="text-white small d-none d-md-inline" id="nombreSocio">Socio</span>
+        <a href="/login.html" onclick="localStorage.clear()" class="btn btn-outline-light btn-sm">
+          <i class="bi bi-box-arrow-right"></i> Salir
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-4">
+    <!-- Pre-autorización de Invitados -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white py-3">
+        <h5 class="fw-bold mb-0 text-success"><i class="bi bi-person-plus-fill"></i> Pre-autorizar Visitante o Evento</h5>
+      </div>
+      <div class="card-body">
+        <form id="formPreAutorizar">
+          <div class="row g-3">
+            <div class="col-12 col-md-4">
+              <label class="form-label fw-semibold">Nombre del Invitado</label>
+              <input type="text" id="preNombre" class="form-control" required placeholder="Ej. Carlos Mendoza">
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label fw-semibold">Cédula / Identificación</label>
+              <input type="text" id="preCedula" class="form-control" required placeholder="Ej. 1712345678">
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label fw-semibold">Placa Vehículo (Opcional)</label>
+              <input type="text" id="prePlaca" class="form-control" placeholder="Ej. ABC-1234">
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">Observaciones / Área de Destino</label>
+              <input type="text" id="preDestino" class="form-control" required placeholder="Ej. Casa Villa 12 / Canchas de Tenis">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-success w-100 fw-bold mt-3 py-2">
+            <i class="bi bi-check-circle"></i> Enviar Pre-Autorización a Garita
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Historial de Visitas Recibidas -->
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white py-3">
+        <h5 class="fw-bold mb-0"><i class="bi bi-clock-history"></i> Historial de Visitas a mi Domicilio / Áreas</h5>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Fecha/Hora</th>
+                <th>Invitado</th>
+                <th>Cédula</th>
+                <th>Placa</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="tablaSocio">
+              <tr>
+                <td colspan="5" class="text-center py-4 text-muted">Cargando registros...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const userLocal = JSON.parse(localStorage.getItem('user_bv') || '{}');
+    if (userLocal.nombre) {
+      document.getElementById('nombreSocio').innerText = userLocal.nombre;
+    }
+
+    async function cargarVisitasSocio() {
+      try {
+        const res = await fetch('/api/bitacora');
+        const data = await res.json();
+        const tbody = document.getElementById('tablaSocio');
+        
+        if (data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">No se registran visitas aún</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.map(r => `
+          <tr>
+            <td><small class="fw-bold">${new Date(r.hora_ingreso).toLocaleString('es-EC')}</small></td>
+            <td class="fw-semibold">${r.nombre}</td>
+            <td>${r.cedula}</td>
+            <td><span class="badge bg-secondary">${r.placa || 'Peatonal'}</span></td>
+            <td><span class="badge bg-success">${r.estado || 'Ingresado'}</span></td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    document.getElementById('formPreAutorizar').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const nuevoRegistro = {
+        tipo_visita: 'Invitado',
+        nombre: document.getElementById('preNombre').value,
+        cedula: document.getElementById('preCedula').value,
+        placa: document.getElementById('prePlaca').value,
+        destino: document.getElementById('preDestino').value,
+        registrado_por: 'Socio: ' + (userLocal.nombre || 'Residente')
+      };
+
+      const res = await fetch('/api/bitacora', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nuevoRegistro)
+      });
+
+      if (res.ok) {
+        alert('Pre-autorización enviada con éxito a Garita.');
+        document.getElementById('formPreAutorizar').reset();
+        cargarVisitasSocio();
+      } else {
+        alert('Error al registrar pre-autorización.');
+      }
+    });
+
+    cargarVisitasSocio();
+  </script>
+</body>
+</html>

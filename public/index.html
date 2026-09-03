@@ -3,96 +3,145 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bitácora - Club Buena Vista</title>
+  <title>Garita de Control - Club Buena Vista</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <style>
+    .btn-touch { padding: 12px; font-weight: bold; font-size: 1.1rem; }
+  </style>
 </head>
 <body class="bg-light">
-  <div class="container py-4">
-    <h2 class="mb-4 text-center">Bitácora Digital - Club Buena Vista</h2>
 
-    <!-- Formulario de Registro (Guardia) -->
-    <div class="card shadow-sm mb-4">
-      <div class="card-header bg-primary text-white">Registrar Nuevo Ingreso</div>
-      <div class="card-body">
-        <form id="formIngreso">
-          <div class="row g-3">
-            <div class="col-md-4">
-              <label class="form-label">Tipo de Visita</label>
-              <select class="form-select" id="tipo_visita" required>
-                <option value="Socio">Socio</option>
-                <option value="Invitado">Invitado</option>
-                <option value="Proveedor">Proveedor</option>
-              </select>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Nombre Completo</label>
-              <input type="text" class="form-control" id="nombre" required>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Cédula</label>
-              <input type="text" class="form-control" id="cedula" required>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Placa / Vehículo</label>
-              <input type="text" class="form-control" id="placa">
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Destino / Áreas</label>
-              <input type="text" class="form-control" id="destino" required>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Fotografía</label>
-              <input type="file" class="form-control" id="foto" accept="image/*" capture="environment">
-            </div>
-          </div>
-          <button type="submit" class="btn btn-success mt-3 w-100">Guardar Registro</button>
-        </form>
+  <!-- Navegación Responsiva -->
+  <nav class="navbar navbar-dark bg-primary shadow-sm px-3 mb-3">
+    <div class="container-fluid">
+      <span class="navbar-brand fw-bold">
+        <i class="bi bi-shield-lock-fill"></i> Garita Principal
+      </span>
+      <div class="d-flex align-items-center gap-2">
+        <span class="text-white small d-none d-sm-inline" id="userNombre">Guardia Turno</span>
+        <a href="/login.html" onclick="localStorage.clear()" class="btn btn-outline-light btn-sm">
+          <i class="bi bi-box-arrow-right"></i> Salir
+        </a>
       </div>
     </div>
+  </nav>
 
-    <!-- Tabla y Exportación (Admin) -->
-    <div class="card shadow-sm">
-      <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-        <span>Histórico de Ingresos</span>
-        <a href="/api/exportar-excel" class="btn btn-sm btn-outline-light">Descargar Excel</a>
-      </div>
-      <div class="card-body">
-        <div class="table-responsive">
-          <table class="table table-hover align-middle">
-            <thead>
-              <tr>
-                <th>Fecha/Hora</th>
-                <th>Tipo</th>
-                <th>Nombre</th>
-                <th>Cédula</th>
-                <th>Placa</th>
-                <th>Destino</th>
-              </tr>
-            </thead>
-            <tbody id="tablaBitacora"></tbody>
-          </table>
+  <div class="container-fluid px-3 px-md-4">
+    <div class="row g-4">
+      
+      <!-- Columna Formulario Ingreso (Móvil/PC) -->
+      <div class="col-12 col-lg-5">
+        <div class="card border-0 shadow-sm rounded-3">
+          <div class="card-header bg-dark text-white py-3">
+            <h5 class="fw-bold mb-0"><i class="bi bi-person-plus"></i> Registrar Nuevo Ingreso</h5>
+          </div>
+          <div class="card-body p-3 p-md-4">
+            <form id="formIngreso">
+              <div class="row g-3">
+                <div class="col-12 col-sm-6">
+                  <label class="form-label fw-semibold">Tipo de Visita</label>
+                  <select class="form-select form-select-lg" id="tipo_visita" required>
+                    <option value="Socio">Socio</option>
+                    <option value="Invitado">Invitado</option>
+                    <option value="Proveedor">Proveedor</option>
+                    <option value="Servicios">Servicios / Deliveries</option>
+                  </select>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label fw-semibold">Placa / Vehículo</label>
+                  <input type="text" class="form-control form-control-lg text-uppercase" id="placa" placeholder="Ej. ABC-1234">
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-semibold">Nombre Completo</label>
+                  <input type="text" class="form-control form-control-lg" id="nombre" placeholder="Ej. Juan Carlos Pérez" required>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label fw-semibold">Cédula / Pasaporte</label>
+                  <input type="text" class="form-control form-control-lg" id="cedula" placeholder="Ej. 1712345678" required>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label fw-semibold">Destino / Áreas</label>
+                  <input type="text" class="form-control form-control-lg" id="destino" placeholder="Ej. Casa Villa 12 / Tenis" required>
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-semibold">Novedades / Observaciones</label>
+                  <textarea class="form-control" id="novedades" rows="2" placeholder="Ej. Ingresa con material de construcción / Sin novedad"></textarea>
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-semibold"><i class="bi bi-camera"></i> Fotografía del Vehículo/Identificación</label>
+                  <input type="file" class="form-control" id="foto" accept="image/*" capture="environment">
+                </div>
+              </div>
+              <button type="submit" class="btn btn-success btn-touch w-100 mt-4">
+                <i class="bi bi-check-lg"></i> Guardar e Ingresar
+              </button>
+            </form>
+          </div>
         </div>
       </div>
+
+      <!-- Columna Tabla Ultimos Movimientos -->
+      <div class="col-12 col-lg-7">
+        <div class="card border-0 shadow-sm rounded-3">
+          <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-clock-history"></i> Movimientos Recientes del Turno</h5>
+            <button onclick="cargarRegistros()" class="btn btn-outline-primary btn-sm"><i class="bi bi-arrow-clockwise"></i> Actualizar</button>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Hora</th>
+                    <th>Tipo</th>
+                    <th>Nombre / Cédula</th>
+                    <th>Placa</th>
+                    <th>Destino</th>
+                    <th>Novedades</th>
+                  </tr>
+                </thead>
+                <tbody id="tablaBitacora"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
   <script>
+    // Verificar Sesión
+    const userLocal = JSON.parse(localStorage.getItem('user_bv') || '{}');
+    if (userLocal.nombre) {
+      document.getElementById('userNombre').innerText = userLocal.nombre;
+    }
+
     const API_URL = '/api/bitacora';
 
-    // Cargar la lista desde el servidor
     async function cargarRegistros() {
       try {
         const res = await fetch(API_URL);
         const data = await res.json();
         const tbody = document.getElementById('tablaBitacora');
+        
+        if (!data || data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">No hay registros en este turno</td></tr>';
+          return;
+        }
+
         tbody.innerHTML = data.map(r => `
           <tr>
-            <td>${new Date(r.hora_ingreso).toLocaleString()}</td>
-            <td><span class="badge bg-secondary">${r.tipo_visita}</span></td>
-            <td>${r.nombre}</td>
-            <td>${r.cedula}</td>
-            <td>${r.placa || 'N/A'}</td>
+            <td><small class="fw-bold">${new Date(r.hora_ingreso).toLocaleTimeString('es-EC', {hour: '2-digit', minute:'2-digit'})}</small></td>
+            <td><span class="badge ${r.tipo_visita === 'Socio' ? 'bg-success' : 'bg-primary'}">${r.tipo_visita}</span></td>
+            <td>
+              <div class="fw-semibold">${r.nombre}</div>
+              <small class="text-muted">${r.cedula}</small>
+            </td>
+            <td><span class="badge bg-secondary">${r.placa || 'Peatonal'}</span></td>
             <td>${r.destino}</td>
+            <td><small class="text-muted">${r.novedades || 'Sin novedad'}</small></td>
           </tr>
         `).join('');
       } catch (err) {
@@ -100,7 +149,6 @@
       }
     }
 
-    // Enviar nuevo registro al presionar el botón
     document.getElementById('formIngreso').addEventListener('submit', async (e) => {
       e.preventDefault();
       
@@ -109,7 +157,9 @@
         nombre: document.getElementById('nombre').value,
         cedula: document.getElementById('cedula').value,
         placa: document.getElementById('placa').value,
-        destino: document.getElementById('destino').value
+        destino: document.getElementById('destino').value,
+        novedades: document.getElementById('novedades').value,
+        registrado_por: userLocal.nombre || 'Guardia Garita'
       };
 
       const res = await fetch(API_URL, {
