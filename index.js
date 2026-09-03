@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
 const XLSX = require('xlsx');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,7 +11,9 @@ const PORT = process.env.PORT || 3000;
 // Configuración de Middlewares
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
-app.use(express.static('public'));
+
+// Servir archivos estáticos del frontend desde la carpeta 'public'
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Conexión a PostgreSQL (Supabase Transaction Pooler)
 const pool = new Pool({
@@ -18,6 +21,11 @@ const pool = new Pool({
   ssl: process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('localhost') 
     ? { rejectUnauthorized: false } 
     : false
+});
+
+// Redirección de la ruta raíz '/' a la página de login
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
 // ==========================================
@@ -205,9 +213,9 @@ app.get('/api/exportar-excel', async (req, res) => {
   }
 });
 
-// Levantar servidor local si no está en entorno Vercel
+// Levantar servidor en local o exportar módulo para Vercel
 if (process.env.VERCEL !== '1') {
-  app.listen(PORT, () => console.log(`🚀 Servidor en puerto ${PORT}`));
+  app.listen(PORT, () => console.log(`🚀 Servidor corriendo en puerto ${PORT}`));
 }
 
 module.exports = app;
