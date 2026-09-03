@@ -41,7 +41,7 @@
       <div class="col-12 col-md-4">
         <div class="card card-custom p-3 border-start border-primary border-4">
           <small class="text-muted fw-bold">SEDES REGISTRADAS</small>
-          <h3 class="fw-bold mb-0 text-dark" id="totalSedes">2</h3>
+          <h3 class="fw-bold mb-0 text-dark" id="totalSedes">0</h3>
         </div>
       </div>
       <div class="col-12 col-md-4">
@@ -53,14 +53,15 @@
       <div class="col-12 col-md-4">
         <div class="card card-custom p-3 border-start border-warning border-4">
           <small class="text-muted fw-bold">ESTADO DEL SISTEMA</small>
-          <h3 class="fw-bold mb-0 text-warning">ÓPTIMO</h3>
+          <h3 class="fw-bold mb-0 text-warning" id="estadoSistema">ÓPTIMO</h3>
         </div>
       </div>
     </div>
 
     <div class="row g-4">
-      <!-- FORMULARIO: REGISTRAR NUEVA SEDE / CLUB -->
+      <!-- FORMULARIOS -->
       <div class="col-12 col-lg-5">
+        <!-- FORMULARIO: REGISTRAR NUEVA SEDE / CLUB -->
         <div class="card card-custom mb-4">
           <div class="card-header header-custom py-3">
             <h6 class="fw-bold mb-0"><i class="bi bi-building me-2 text-primary"></i> Registrar Nueva Sede</h6>
@@ -75,7 +76,7 @@
                 <label class="form-label fw-semibold small text-secondary">DIRECCIÓN EXACTA</label>
                 <input type="text" id="direccionClub" class="form-control" placeholder="Ej. Av. Interoceánica Km 12" required>
               </div>
-              <button type="submit" class="btn btn-club w-100 py-2">
+              <button type="submit" id="btnGuardarSede" class="btn btn-club w-100 py-2">
                 <i class="bi bi-plus-circle me-1"></i> GUARDAR SEDE
               </button>
             </form>
@@ -99,7 +100,7 @@
               </div>
               <div class="mb-3">
                 <label class="form-label fw-semibold small text-secondary">CONTRASEÑA</label>
-                <input type="password" id="usrPass" class="form-control" placeholder="••••••••" required>
+                <input type="password" id="usrPass" class="form-control" placeholder="••••••••" minlength="6" required>
               </div>
               <div class="row g-2 mb-3">
                 <div class="col-6">
@@ -113,12 +114,11 @@
                 <div class="col-6">
                   <label class="form-label fw-semibold small text-secondary">SEDE ASIGNADA</label>
                   <select id="usrClub" class="form-select" required>
-                    <option value="1">Club Buena Vista</option>
-                    <option value="2">Club Buena Ventura</option>
+                    <option value="" disabled selected>Cargando sedes...</option>
                   </select>
                 </div>
               </div>
-              <button type="submit" class="btn btn-success w-100 py-2 fw-semibold">
+              <button type="submit" id="btnGuardarUsr" class="btn btn-success w-100 py-2 fw-semibold">
                 <i class="bi bi-person-check me-1"></i> CREAR CUENTA DE USUARIO
               </button>
             </form>
@@ -131,7 +131,7 @@
         <div class="card card-custom">
           <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
             <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-people-fill text-primary me-2"></i> Directorio de Usuarios Global</h6>
-            <button onclick="cargarUsuarios()" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+            <button onclick="cargarDatosSistema()" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
               <i class="bi bi-arrow-clockwise"></i> Actualizar
             </button>
           </div>
@@ -162,29 +162,75 @@
   </div>
 
   <script>
+    // Inicializar datos de usuario
     const userLocal = JSON.parse(localStorage.getItem('user_bv') || '{}');
-    if (userLocal.nombre) document.getElementById('nombreAdmin').innerText = userLocal.nombre;
+    if (userLocal.nombre) {
+      document.getElementById('nombreAdmin').innerText = userLocal.nombre;
+    }
+
+    // Helper para escapar HTML (Prevención de XSS)
+    function escapeHTML(str) {
+      return (str || '').toString().replace(/[&<>"']/g, match => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[match]));
+    }
+
+    // CARGAR SEDES DESDE LA API
+    async function cargarSedes() {
+      const selectClub = document.getElementById('usrClub');
+      try {
+        const res = await fetch('/api/clubes');
+        if (!res.ok) throw new Error('Error al obtener sedes');
+        
+        const data = await res.json();
+        const sedes = Array.isArray(data) ? data : (data.data || []);
+
+        document.getElementById('totalSedes').innerText = sedes.length;
+
+        if (sedes.length === 0) {
+          selectClub.innerHTML = '<option value="" disabled selected>No hay sedes registradas</option>';
+          return [];
+        }
+
+        selectClub.innerHTML = sedes.map(s => `
+          <option value="${s.id}">${escapeHTML(s.nombre)}</option>
+        `).join('');
+
+        return sedes;
+      } catch (err) {
+        console.error('Error en cargarSedes:', err);
+        selectClub.innerHTML = '<option value="" disabled selected>Error al cargar sedes</option>';
+        return [];
+      }
+    }
 
     // CARGAR DIRECTORIO DE USUARIOS
     async function cargarUsuarios() {
+      const tbody = document.getElementById('tablaUsuarios');
       try {
         const res = await fetch('/api/usuarios');
-        const usuarios = await res.json();
-        const tbody = document.getElementById('tablaUsuarios');
+        if (!res.ok) throw new Error('Error al obtener usuarios');
+
+        const data = await res.json();
+        const usuarios = Array.isArray(data) ? data : (data.data || []);
 
         document.getElementById('totalUsuarios').innerText = usuarios.length;
 
-        if (!usuarios || usuarios.length === 0) {
+        if (usuarios.length === 0) {
           tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">No hay usuarios registrados</td></tr>';
           return;
         }
 
         tbody.innerHTML = usuarios.map(u => `
           <tr>
-            <td class="fw-bold text-dark">${u.nombre}</td>
-            <td><small class="text-muted">${u.correo}</small></td>
-            <td><span class="badge ${u.rol === 'ADMIN' ? 'bg-danger' : u.rol === 'SUPERVISOR' ? 'bg-warning text-dark' : 'bg-primary'}">${u.rol}</span></td>
-            <td><small class="fw-semibold">${u.club_nombre || 'Club Buena Vista'}</small></td>
+            <td class="fw-bold text-dark">${escapeHTML(u.nombre)}</td>
+            <td><small class="text-muted">${escapeHTML(u.correo)}</small></td>
+            <td>
+              <span class="badge ${u.rol === 'ADMIN' ? 'bg-danger' : u.rol === 'SUPERVISOR' ? 'bg-warning text-dark' : 'bg-primary'}">
+                ${escapeHTML(u.rol)}
+              </span>
+            </td>
+            <td><small class="fw-semibold">${escapeHTML(u.club_nombre || 'Sin Sede')}</small></td>
             <td class="text-center">
               <button onclick="eliminarUsuario(${u.id})" class="btn btn-sm btn-outline-danger">
                 <i class="bi bi-person-x"></i> Dar de Baja
@@ -193,56 +239,115 @@
           </tr>
         `).join('');
       } catch (err) {
-        console.error(err);
+        console.error('Error en cargarUsuarios:', err);
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-danger">Error de conexión con el servidor</td></tr>';
       }
     }
 
-    // REGISTRAR SEDE
+    // CARGAR TODO
+    async function cargarDatosSistema() {
+      document.getElementById('estadoSistema').innerText = "ACTUALIZANDO...";
+      document.getElementById('estadoSistema').className = "fw-bold mb-0 text-muted";
+      
+      await Promise.all([cargarSedes(), cargarUsuarios()]);
+      
+      document.getElementById('estadoSistema').innerText = "ÓPTIMO";
+      document.getElementById('estadoSistema').className = "fw-bold mb-0 text-warning";
+    }
+
+    // REGISTRAR NUEVA SEDE
     document.getElementById('formSede').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const res = await fetch('/api/clubes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nombre: document.getElementById('nombreClub').value,
-          direccion: document.getElementById('direccionClub').value
-        })
-      });
-      if (res.ok) {
-        alert('Sede guardada con éxito');
-        document.getElementById('formSede').reset();
+      const btn = document.getElementById('btnGuardarSede');
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/clubes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nombre: document.getElementById('nombreClub').value.trim(),
+            direccion: document.getElementById('direccionClub').value.trim()
+          })
+        });
+
+        if (res.ok) {
+          alert('Sede guardada con éxito');
+          document.getElementById('formSede').reset();
+          await cargarSedes(); // Actualiza el selector dinámicamente
+        } else {
+          const errData = await res.json();
+          alert(`Error: ${errData.mensaje || 'No se pudo guardar la sede'}`);
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Error crítico de red al guardar la sede');
+      } finally {
+        btn.disabled = false;
       }
     });
 
-    // REGISTRAR USUARIO
+    // REGISTRAR NUEVO USUARIO
     document.getElementById('formUsuario').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const res = await fetch('/api/usuarios', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nombre: document.getElementById('usrNombre').value,
-          correo: document.getElementById('usrCorreo').value,
-          password: document.getElementById('usrPass').value,
-          rol: document.getElementById('usrRol').value,
-          club_id: document.getElementById('usrClub').value
-        })
-      });
-      if (res.ok) {
-        alert('Usuario creado con éxito');
-        document.getElementById('formUsuario').reset();
-        cargarUsuarios();
+      const btn = document.getElementById('btnGuardarUsr');
+      const clubId = document.getElementById('usrClub').value;
+
+      if (!clubId) {
+        alert('Por favor selecciona una sede válida.');
+        return;
+      }
+
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/usuarios', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nombre: document.getElementById('usrNombre').value.trim(),
+            correo: document.getElementById('usrCorreo').value.trim(),
+            password: document.getElementById('usrPass').value,
+            rol: document.getElementById('usrRol').value,
+            club_id: clubId
+          })
+        });
+
+        if (res.ok) {
+          alert('Usuario creado con éxito');
+          document.getElementById('formUsuario').reset();
+          await cargarUsuarios();
+        } else {
+          const errData = await res.json();
+          alert(`Error: ${errData.mensaje || 'No se pudo registrar el usuario'}`);
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Error de red al crear la cuenta de usuario');
+      } finally {
+        btn.disabled = false;
       }
     });
 
     // DAR DE BAJA USUARIO
     async function eliminarUsuario(id) {
-      if (!confirm('¿Seguro que deseas eliminar este usuario?')) return;
-      const res = await fetch(`/api/usuarios/${id}`, { method: 'DELETE' });
-      if (res.ok) cargarUsuarios();
+      if (!confirm('¿Seguro que deseas dar de baja a este usuario?')) return;
+      
+      try {
+        const res = await fetch(`/api/usuarios/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          await cargarUsuarios();
+        } else {
+          alert('No se pudo eliminar el usuario.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Error al conectar con el servidor.');
+      }
     }
 
-    cargarUsuarios();
+    // Carga inicial
+    cargarDatosSistema();
   </script>
 </body>
 </html>
