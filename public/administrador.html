@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administración Global - Club Buena Vista</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <style>
+    :root { --club-navy: #0f1e36; --club-blue: #3b82f6; }
+    body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .navbar-admin { background-color: var(--club-navy); border-bottom: 3px solid var(--club-blue); }
+    .card-custom { border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); background: #fff; }
+    .header-custom { background: var(--club-navy); color: #fff; border-radius: 12px 12px 0 0 !important; }
+    .btn-club { background: var(--club-navy); color: #fff; font-weight: 600; }
+    .btn-club:hover { background: #1a2a47; color: #fff; }
+  </style>
+</head>
+<body>
+
+  <!-- NAVEGACIÓN ADMINISTRADOR -->
+  <nav class="navbar navbar-dark navbar-admin px-3 py-2 mb-4">
+    <div class="container-fluid">
+      <span class="navbar-brand fw-bold d-flex align-items-center gap-2">
+        <i class="bi bi-gear-wide-connected text-primary fs-3"></i>
+        <span>PANEL ADMINISTRADOR <small class="fw-normal text-muted fs-6 d-none d-sm-inline">| Gestión Global</small></span>
+      </span>
+      <div class="d-flex align-items-center gap-3">
+        <span class="text-white small fw-semibold" id="nombreAdmin">Administrador</span>
+        <a href="/index.html" onclick="localStorage.clear()" class="btn btn-outline-light btn-sm rounded-pill px-3">
+          <i class="bi bi-box-arrow-right"></i> Salir
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container-fluid px-4 py-2">
+
+    <!-- MÉTRICAS GENERALES -->
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-md-4">
+        <div class="card card-custom p-3 border-start border-primary border-4">
+          <small class="text-muted fw-bold">SEDES REGISTRADAS</small>
+          <h3 class="fw-bold mb-0 text-dark" id="totalSedes">2</h3>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="card card-custom p-3 border-start border-success border-4">
+          <small class="text-muted fw-bold">USUARIOS ACTIVOS</small>
+          <h3 class="fw-bold mb-0 text-success" id="totalUsuarios">0</h3>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="card card-custom p-3 border-start border-warning border-4">
+          <small class="text-muted fw-bold">ESTADO DEL SISTEMA</small>
+          <h3 class="fw-bold mb-0 text-warning">ÓPTIMO</h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <!-- FORMULARIO: REGISTRAR NUEVA SEDE / CLUB -->
+      <div class="col-12 col-lg-5">
+        <div class="card card-custom mb-4">
+          <div class="card-header header-custom py-3">
+            <h6 class="fw-bold mb-0"><i class="bi bi-building me-2 text-primary"></i> Registrar Nueva Sede</h6>
+          </div>
+          <div class="card-body p-4">
+            <form id="formSede">
+              <div class="mb-3">
+                <label class="form-label fw-semibold small text-secondary">NOMBRE DEL CLUB / SEDE</label>
+                <input type="text" id="nombreClub" class="form-control" placeholder="Ej. Club Buena Vista Cumbayá" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-semibold small text-secondary">DIRECCIÓN EXACTA</label>
+                <input type="text" id="direccionClub" class="form-control" placeholder="Ej. Av. Interoceánica Km 12" required>
+              </div>
+              <button type="submit" class="btn btn-club w-100 py-2">
+                <i class="bi bi-plus-circle me-1"></i> GUARDAR SEDE
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- FORMULARIO: REGISTRAR USUARIO -->
+        <div class="card card-custom">
+          <div class="card-header header-custom py-3">
+            <h6 class="fw-bold mb-0"><i class="bi bi-person-plus me-2 text-primary"></i> Registrar Usuario (Guardia / Supervisor)</h6>
+          </div>
+          <div class="card-body p-4">
+            <form id="formUsuario">
+              <div class="mb-3">
+                <label class="form-label fw-semibold small text-secondary">NOMBRE COMPLETO</label>
+                <input type="text" id="usrNombre" class="form-control" placeholder="Ej. Carlos Mendoza" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-semibold small text-secondary">CORREO INSTITUCIONAL</label>
+                <input type="email" id="usrCorreo" class="form-control" placeholder="usuario@buenavista.com" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-semibold small text-secondary">CONTRASEÑA</label>
+                <input type="password" id="usrPass" class="form-control" placeholder="••••••••" required>
+              </div>
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <label class="form-label fw-semibold small text-secondary">ROL</label>
+                  <select id="usrRol" class="form-select" required>
+                    <option value="GUARDIA">GUARDIA</option>
+                    <option value="SUPERVISOR">SUPERVISOR</option>
+                    <option value="ADMIN">ADMINISTRADOR</option>
+                  </select>
+                </div>
+                <div class="col-6">
+                  <label class="form-label fw-semibold small text-secondary">SEDE ASIGNADA</label>
+                  <select id="usrClub" class="form-select" required>
+                    <option value="1">Club Buena Vista</option>
+                    <option value="2">Club Buena Ventura</option>
+                  </select>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-success w-100 py-2 fw-semibold">
+                <i class="bi bi-person-check me-1"></i> CREAR CUENTA DE USUARIO
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABLA DE CONTROL GLOBAL DE USUARIOS -->
+      <div class="col-12 col-lg-7">
+        <div class="card card-custom">
+          <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+            <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-people-fill text-primary me-2"></i> Directorio de Usuarios Global</h6>
+            <button onclick="cargarUsuarios()" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+              <i class="bi bi-arrow-clockwise"></i> Actualizar
+            </button>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light small">
+                  <tr>
+                    <th>NOMBRE</th>
+                    <th>CORREO</th>
+                    <th>ROL</th>
+                    <th>SEDE</th>
+                    <th class="text-center">ACCIONES</th>
+                  </tr>
+                </thead>
+                <tbody id="tablaUsuarios">
+                  <tr>
+                    <td colspan="5" class="text-center py-4 text-muted">Cargando directorio de usuarios...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const userLocal = JSON.parse(localStorage.getItem('user_bv') || '{}');
+    if (userLocal.nombre) document.getElementById('nombreAdmin').innerText = userLocal.nombre;
+
+    // CARGAR DIRECTORIO DE USUARIOS
+    async function cargarUsuarios() {
+      try {
+        const res = await fetch('/api/usuarios');
+        const usuarios = await res.json();
+        const tbody = document.getElementById('tablaUsuarios');
+
+        document.getElementById('totalUsuarios').innerText = usuarios.length;
+
+        if (!usuarios || usuarios.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">No hay usuarios registrados</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = usuarios.map(u => `
+          <tr>
+            <td class="fw-bold text-dark">${u.nombre}</td>
+            <td><small class="text-muted">${u.correo}</small></td>
+            <td><span class="badge ${u.rol === 'ADMIN' ? 'bg-danger' : u.rol === 'SUPERVISOR' ? 'bg-warning text-dark' : 'bg-primary'}">${u.rol}</span></td>
+            <td><small class="fw-semibold">${u.club_nombre || 'Club Buena Vista'}</small></td>
+            <td class="text-center">
+              <button onclick="eliminarUsuario(${u.id})" class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-person-x"></i> Dar de Baja
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // REGISTRAR SEDE
+    document.getElementById('formSede').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const res = await fetch('/api/clubes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre: document.getElementById('nombreClub').value,
+          direccion: document.getElementById('direccionClub').value
+        })
+      });
+      if (res.ok) {
+        alert('Sede guardada con éxito');
+        document.getElementById('formSede').reset();
+      }
+    });
+
+    // REGISTRAR USUARIO
+    document.getElementById('formUsuario').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const res = await fetch('/api/usuarios', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre: document.getElementById('usrNombre').value,
+          correo: document.getElementById('usrCorreo').value,
+          password: document.getElementById('usrPass').value,
+          rol: document.getElementById('usrRol').value,
+          club_id: document.getElementById('usrClub').value
+        })
+      });
+      if (res.ok) {
+        alert('Usuario creado con éxito');
+        document.getElementById('formUsuario').reset();
+        cargarUsuarios();
+      }
+    });
+
+    // DAR DE BAJA USUARIO
+    async function eliminarUsuario(id) {
+      if (!confirm('¿Seguro que deseas eliminar este usuario?')) return;
+      const res = await fetch(`/api/usuarios/${id}`, { method: 'DELETE' });
+      if (res.ok) cargarUsuarios();
+    }
+
+    cargarUsuarios();
+  </script>
+</body>
+</html>
