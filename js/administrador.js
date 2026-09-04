@@ -1,129 +1,240 @@
 import { supabase } from './supabase.js';
-import { protegerVista, cerrarSesion } from './auth-guard.js';
 
-let modalReset = null;
+// Variables Globales del Módulo Admin
+let usuariosGlobal = [];
+let sedesGlobal = [];
 let bitacoraGlobal = [];
+let modalReset = null;
 
-document.addEventListener('DOMContentLoaded', async () => {
-  // 1. Verificar sesión de Admin con el Guardia de Seguridad
-  const adminActivo = await protegerVista(['ADMIN', 'ADMINISTRADOR']);
-  if (!adminActivo) return;
-
-  // 2. Mostrar el nombre del Administrador en el encabezado
-  const lblNombre = document.getElementById('nombreAdmin');
-  if (lblNombre) {
-    lblNombre.innerText = `Admin: ${adminActivo.nombre_completo || adminActivo.nombre || 'Master'}`;
-  }
-
-  // 3. Inicializar Bootstrap Modal de Reseteo de Claves
+// Inicialización de la Aplicación al cargar el DOM
+document.addEventListener('DOMContentLoaded', () => {
+  // Inicializar componentes Bootstrap
   const modalEl = document.getElementById('modalResetPassword');
-  if (modalEl && window.bootstrap) {
+  if (modalEl) {
     modalReset = new bootstrap.Modal(modalEl);
   }
 
-  // 4. Asignar Event Listeners
-  document.getElementById('btnCerrarSesion')?.addEventListener('click', cerrarSesion);
-  document.getElementById('formUsuario')?.addEventListener('submit', registrarNuevoPersonal);
-  document.getElementById('formSede')?.addEventListener('submit', guardarSede);
-  document.getElementById('btnConfirmarResetClave')?.addEventListener('click', procesarResetClave);
-  document.getElementById('inputBuscarGlobal')?.addEventListener('keyup', filtrarBitacoraGlobal);
-  document.getElementById('btnExportar')?.addEventListener('click', exportarCSV);
-  document.getElementById('btnRefrescarDanos')?.addEventListener('click', cargarReportesDanos);
+  // Cargar datos del usuario logueado en la cabecera
+  const userLocal = JSON.parse(localStorage.getItem('user_bv') || '{}');
+  if (userLocal.nombre) {
+    const elNombre = document.getElementById('nombreAdmin');
+    if (elNombre) elNombre.innerText = `Admin: ${userLocal.nombre}`;
+  }
 
-  // Eventos de Pestañas
-  document.getElementById('tab-dashboard')?.addEventListener('click', cargarEstadisticas);
-  document.getElementById('tab-personal')?.addEventListener('click', cargarUsuarios);
-  document.getElementById('tab-danos')?.addEventListener('click', cargarReportesDanos);
-  document.getElementById('tab-sedes')?.addEventListener('click', cargarSedes);
-  document.getElementById('tab-bitacora')?.addEventListener('click', cargarBitacoraGlobal);
-
-  // 5. Carga Inicial de Datos
+  // Carga inicial de datos
   cargarEstadisticas();
   cargarSedes();
-  escucharNotificacionesRealtime();
+
+  // Suscripción de Eventos para Navegación por Pestañas (Solo 3 pestañas)
+  const tabDashboard = document.getElementById('tab-dashboard');
+  const tabPersonal = document.getElementById('tab-personal');
+  const tabSedesBitacora = document.getElementById('tab-sedes-bitacora');
+
+  if (tabDashboard) {
+    tabDashboard.addEventListener('click', cargarEstadisticas);
+  }
+
+  if (tabPersonal) {
+    tabPersonal.addEventListener('click', () => {
+      cargarSedes();
+      cargarPersonal();
+    });
+  }
+
+  if (tabSedesBitacora) {
+    tabSedesBitacora.addEventListener('click', () => {
+      cargarSedes();
+      cargarBitacoraGlobal();
+    });
+  }
+
+  // Escuchadores de Formularios y Botones
+  const formUsuario = document.getElementById('formUsuario');
+  if (formUsuario) formUsuario.addEventListener('submit', guardarUsuario);
+
+  const formSede = document.getElementById('formSede');
+  if (formSede) formSede.addEventListener('submit', guardarSede);
+
+  const inputBuscar = document.getElementById('inputBuscarGlobal');
+  if (inputBuscar) inputBuscar.addEventListener('keyup', filtrarBitacoraGlobal);
+
+  const btnExportar = document.getElementById('btnExportar');
+  if (btnExportar) btnExportar.addEventListener('click', exportarCSV);
+
+  const btnConfirmarReset = document.getElementById('btnConfirmarResetClave');
+  if (btnConfirmarReset) btnConfirmarReset.addEventListener('click', procesarResetClave);
+
+  const btnCerrarSesion = document.getElementById('btnCerrarSesion');
+  if (btnCerrarSesion) btnCerrarSesion.addEventListener('click', cerrarSesion);
 });
 
-/* ==========================================================================
-   1. REGISTRO Y GESTIÓN DE PERSONAL (USUARIOS & CLAVES)
-   ========================================================================== */
+// Función para Cerrar Sesión
+function cerrarSesion() {
+  localStorage.removeItem('user_bv');
+  window.location.href = './index.html';
+}
 
-async function registrarNuevoPersonal(e) {
-  e.preventDefault();
-
-  const nombre = document.getElementById('uNombre').value.trim();
-  const usuario = document.getElementById('uUsuario').value.trim();
-  const password = document.getElementById('uPassword').value.trim();
-  const rol = document.getElementById('uRol').value;
-  const sede = document.getElementById('uSede').value;
-
+// ==========================================
+// PESTAÑA 1: ESTADÍSTICAS & EFICIENCIA
+// ==========================================
+async function cargarEstadisticas() {
   try {
-    // Insertar directamente en la tabla personalizada 'usuarios'
-    const { error: dbError } = await supabase
+    const { data: bitacora, error: errBita } = await supabase
+      .from('bitacora')
+      .select('*')
+      .order('hora_ingreso', { ascending: false });
+
+    if (errBita) throw errBita;
+    bitacoraGlobal = bitacora || [];
+
+    const { data: usuarios, error: errUser } = await supabase
       .from('usuarios')
-      .insert([{
-        nombre: nombre,
-        usuario: usuario,
-        password: password,
-        rol: rol,
-        sede: sede
-      }]);
+      .select('*');
 
-    if (dbError) throw new Error('Error al guardar el usuario: ' + dbError.message);
+    if (errUser) throw errUser;
+    usuariosGlobal = usuarios || [];
 
-    alert(`Usuario ${nombre} (${rol}) creado exitosamente.`);
-    document.getElementById('formUsuario').reset();
-    cargarUsuarios();
+    // Filtrar personal que opera en garita (Guardia / Supervisor)
+    const personal = usuariosGlobal.filter(u => u.rol === 'GUARDIA' || u.rol === 'SUPERVISOR');
+    
+    const kpiAccesos = document.getElementById('kpiTotalAccesos');
+    if (kpiAccesos) kpiAccesos.innerText = bitacoraGlobal.length;
+
+    let inactivosCount = 0;
+    const htmlTabla = personal.map(g => {
+      const registrosGuardia = bitacoraGlobal.filter(b => b.registrado_por === g.nombre);
+      const cantidad = registrosGuardia.length;
+      let porcentaje = Math.min(cantidad * 10, 100);
+      let estadoBadge = '<span class="badge bg-success">Excelente Uso</span>';
+
+      if (porcentaje < 30) {
+        inactivosCount++;
+        estadoBadge = '<span class="badge bg-danger">Inactivo / Poco Uso</span>';
+      } else if (porcentaje < 70) {
+        estadoBadge = '<span class="badge bg-warning text-dark">Uso Moderado</span>';
+      }
+
+      return `
+        <tr>
+          <td class="fw-bold">${g.nombre} <small class="text-muted">(${g.rol})</small></td>
+          <td>${g.sede || 'Sede Principal'}</td>
+          <td><span class="fw-bold text-success">${cantidad}</span> registros</td>
+          <td>${cantidad > 0 ? (cantidad * 12) + ' min' : '0 min'}</td>
+          <td style="width: 200px;">
+            <div class="progress progress-sm mb-1">
+              <div class="progress-bar ${porcentaje < 30 ? 'bg-danger' : 'bg-success'}" style="width: ${porcentaje}%"></div>
+            </div>
+            <small class="text-muted">${porcentaje}% de uso estimado</small>
+          </td>
+          <td>${estadoBadge}</td>
+        </tr>
+      `;
+    }).join('');
+
+    const tablaEficiencia = document.getElementById('tablaEficienciaGuardias');
+    if (tablaEficiencia) {
+      tablaEficiencia.innerHTML = htmlTabla || '<tr><td colspan="6" class="text-center py-3">No hay personal registrado</td></tr>';
+    }
+
+    const kpiInactivos = document.getElementById('kpiInactivos');
+    if (kpiInactivos) kpiInactivos.innerText = inactivosCount;
+
+    const kpiEficiencia = document.getElementById('kpiEficiencia');
+    if (kpiEficiencia) {
+      kpiEficiencia.innerText = personal.length > 0 
+        ? Math.round(((personal.length - inactivosCount) / personal.length) * 100) + '%' 
+        : '100%';
+    }
 
   } catch (err) {
-    alert(err.message);
+    console.error("Error al cargar estadísticas:", err.message);
   }
 }
 
-export async function cargarUsuarios() {
-  const tbody = document.getElementById('tablaUsuarios');
-  if (!tbody) return;
-
+// ==========================================
+// PESTAÑA 2: CONTROL DE PERSONAL & ACCESOS
+// ==========================================
+async function cargarPersonal() {
   try {
     const { data: usuarios, error } = await supabase
       .from('usuarios')
       .select('*')
-      .order('nombre', { ascending: true });
+      .order('id', { ascending: true });
 
     if (error) throw error;
+    usuariosGlobal = usuarios || [];
 
-    if (!usuarios || usuarios.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted">No hay usuarios registrados.</td></tr>`;
-      return;
-    }
+    const tbody = document.getElementById('tablaUsuarios');
+    if (!tbody) return;
 
-    tbody.innerHTML = usuarios.map(u => `
+    tbody.innerHTML = usuariosGlobal.map(u => `
       <tr>
-        <td class="fw-bold">${u.nombre || ''}</td>
-        <td><code>${u.usuario || ''}</code></td>
-        <td><span class="badge ${u.rol === 'SUPERVISOR' ? 'bg-warning text-dark' : (u.rol === 'ADMIN' ? 'bg-danger' : 'bg-success')}">${u.rol || 'GUARDIA'}</span></td>
+        <td class="fw-bold">${u.nombre}</td>
+        <td><code>${u.usuario}</code></td>
+        <td><span class="badge ${u.rol === 'SUPERVISOR' ? 'bg-warning text-dark' : (u.rol === 'ADMIN' ? 'bg-danger' : 'bg-success')}">${u.rol}</span></td>
         <td>${u.sede || 'Sin Asignar'}</td>
         <td class="text-end">
-          <button class="btn btn-sm btn-outline-warning me-1 btn-reset-pass" data-id="${u.id}" data-nombre="${u.nombre}">
+          <button class="btn btn-sm btn-outline-warning btn-reset-pass me-1" data-id="${u.id}" data-nombre="${u.nombre}">
             <i class="bi bi-key"></i> Clave
           </button>
+          ${u.rol !== 'ADMIN' ? `
           <button class="btn btn-sm btn-outline-danger btn-eliminar-usr" data-id="${u.id}">
             <i class="bi bi-trash"></i>
-          </button>
+          </button>` : ''}
         </td>
       </tr>
     `).join('');
 
-    // Eventos dinámicos
-    tbody.querySelectorAll('.btn-eliminar-usr').forEach(btn => {
+    // Escuchadores dinámicos para botones de la tabla
+    document.querySelectorAll('.btn-eliminar-usr').forEach(btn => {
       btn.addEventListener('click', (e) => eliminarUsuario(e.currentTarget.getAttribute('data-id')));
     });
 
-    tbody.querySelectorAll('.btn-reset-pass').forEach(btn => {
-      btn.addEventListener('click', (e) => abrirModalReset(e.currentTarget.getAttribute('data-id'), e.currentTarget.getAttribute('data-nombre')));
+    document.querySelectorAll('.btn-reset-pass').forEach(btn => {
+      btn.addEventListener('click', (e) => abrirModalReset(
+        e.currentTarget.getAttribute('data-id'), 
+        e.currentTarget.getAttribute('data-nombre')
+      ));
     });
 
   } catch (err) {
-    console.error("Error al cargar usuarios:", err.message);
+    console.error("Error al cargar personal:", err.message);
+  }
+}
+
+async function guardarUsuario(e) {
+  e.preventDefault();
+  const payload = {
+    nombre: document.getElementById('uNombre').value,
+    usuario: document.getElementById('uUsuario').value,
+    password: document.getElementById('uPassword').value,
+    rol: document.getElementById('uRol').value,
+    sede: document.getElementById('uSede').value
+  };
+
+  try {
+    const { error } = await supabase.from('usuarios').insert([payload]);
+    if (error) throw error;
+
+    alert('¡Usuario registrado con éxito!');
+    document.getElementById('formUsuario').reset();
+    cargarPersonal();
+  } catch (err) {
+    alert('Error al guardar el usuario: ' + err.message);
+  }
+}
+
+async function eliminarUsuario(id) {
+  if (!confirm('¿Desea eliminar este usuario permanentemente?')) return;
+
+  try {
+    const { error } = await supabase.from('usuarios').delete().eq('id', id);
+    if (error) throw error;
+
+    alert('Usuario eliminado.');
+    cargarPersonal();
+  } catch (err) {
+    alert('Error al eliminar usuario: ' + err.message);
   }
 }
 
@@ -155,285 +266,135 @@ async function procesarResetClave() {
   }
 }
 
-async function eliminarUsuario(id) {
-  if (!confirm('¿Desea eliminar este usuario de la plataforma de manera permanente?')) return;
-
-  try {
-    const { error } = await supabase.from('usuarios').delete().eq('id', id);
-    if (error) throw error;
-    cargarUsuarios();
-  } catch (err) {
-    alert('Error al eliminar el usuario: ' + err.message);
-  }
-}
-
-/* ==========================================================================
-   2. ESTADÍSTICAS Y RENDIMIENTO DEL PERSONAL
-   ========================================================================== */
-
-async function cargarEstadisticas() {
-  try {
-    const { data: bitacora, error: errBita } = await supabase
-      .from('bitacora')
-      .select('*')
-      .order('hora_ingreso', { ascending: false });
-
-    if (errBita) throw errBita;
-    bitacoraGlobal = bitacora || [];
-
-    const { data: usuarios, error: errUser } = await supabase
-      .from('usuarios')
-      .select('*');
-
-    if (errUser) throw errUser;
-    const usuariosList = usuarios || [];
-
-    const guardias = usuariosList.filter(u => (u.rol || '').toUpperCase() === 'GUARDIA');
-    const danosContador = bitacoraGlobal.filter(b => b.tipo_visita === 'DAÑO' || (b.observaciones || '').toLowerCase().includes('daño')).length;
-
-    document.getElementById('kpiTotalAccesos').innerText = bitacoraGlobal.length;
-    document.getElementById('kpiIncidentes').innerText = danosContador;
-    
-    const badgeDanos = document.getElementById('badgeCantDanos');
-    if (badgeDanos) badgeDanos.innerText = danosContador;
-
-    let inactivosCount = 0;
-    const htmlTabla = guardias.map(g => {
-      const registrosGuardia = bitacoraGlobal.filter(b => b.registrado_por === g.nombre);
-      const cantidad = registrosGuardia.length;
-      let porcentaje = Math.min(cantidad * 10, 100);
-      let estadoBadge = '<span class="badge bg-success">Excelente Uso</span>';
-
-      if (porcentaje < 30) {
-        inactivosCount++;
-        estadoBadge = '<span class="badge bg-danger">Inactivo / No usa App</span>';
-      } else if (porcentaje < 70) {
-        estadoBadge = '<span class="badge bg-warning text-dark">Uso Moderado</span>';
-      }
-
-      return `
-        <tr>
-          <td class="fw-bold">${g.nombre}</td>
-          <td>${g.sede || 'Sede Principal'}</td>
-          <td><span class="fw-bold text-success">${cantidad}</span> registros</td>
-          <td>${cantidad > 0 ? (cantidad * 12) + ' min' : '0 min'}</td>
-          <td style="width: 200px;">
-            <div class="progress progress-sm mb-1" style="height: 8px;">
-              <div class="progress-bar ${porcentaje < 30 ? 'bg-danger' : 'bg-success'}" style="width: ${porcentaje}%"></div>
-            </div>
-            <small class="text-muted">${porcentaje}% del turno activo</small>
-          </td>
-          <td>${estadoBadge}</td>
-        </tr>
-      `;
-    }).join('');
-
-    const elTabla = document.getElementById('tablaEficienciaGuardias');
-    if (elTabla) elTabla.innerHTML = htmlTabla || '<tr><td colspan="6" class="text-center py-3">No hay guardias registrados</td></tr>';
-
-    document.getElementById('kpiInactivos').innerText = inactivosCount;
-    document.getElementById('kpiEficiencia').innerText = guardias.length > 0 ? Math.round(((guardias.length - inactivosCount) / guardias.length) * 100) + '%' : '100%';
-
-  } catch (err) {
-    console.error("Error al cargar estadísticas:", err.message);
-  }
-}
-
-/* ==========================================================================
-   3. GESTIÓN DE SEDES Y CLUBES
-   ========================================================================== */
-
+// ==========================================
+// PESTAÑA 3: GESTOR DE SEDES Y BITÁCORA GLOBAL
+// ==========================================
 async function cargarSedes() {
   try {
-    const { data: sedes, error } = await supabase
-      .from('sedes')
-      .select('*')
-      .order('nombre', { ascending: true });
-
+    const { data: sedes, error } = await supabase.from('sedes').select('*');
     if (error) throw error;
-    const sedesList = sedes || [];
+    sedesGlobal = sedes || [];
 
-    const selectSedes = document.getElementById('uSede');
-    if (selectSedes) {
-      selectSedes.innerHTML = sedesList.map(s => `<option value="${s.nombre}">${s.nombre}</option>`).join('');
+    // Sincronizar inmediatamente el combo desplegable de la Pestaña 2
+    const selectSede = document.getElementById('uSede');
+    if (selectSede) {
+      selectSede.innerHTML = sedesGlobal.length > 0 
+        ? sedesGlobal.map(s => `<option value="${s.nombre}">${s.nombre}</option>`).join('')
+        : '<option value="">No hay sedes creadas</option>';
     }
 
+    // Renderizar tabla de Sedes en Pestaña 3
     const tbody = document.getElementById('tablaSedes');
     if (tbody) {
-      tbody.innerHTML = sedesList.map(s => `
+      tbody.innerHTML = sedesGlobal.map(s => `
         <tr>
           <td class="fw-bold">${s.nombre}</td>
-          <td>${s.ubicacion || 'Sin Ubicación'}</td>
-          <td><span class="badge bg-secondary">${s.capacidad || 0} personas</span></td>
+          <td>${s.ubicacion || 'N/A'}</td>
+          <td>${s.capacidad || 'Sin Límite'} personas</td>
           <td class="text-end">
             <button class="btn btn-sm btn-outline-danger btn-eliminar-sede" data-id="${s.id}">
-              <i class="bi bi-trash"></i> Eliminar
+              <i class="bi bi-trash"></i>
             </button>
           </td>
         </tr>
       `).join('');
 
-      tbody.querySelectorAll('.btn-eliminar-sede').forEach(btn => {
+      document.querySelectorAll('.btn-eliminar-sede').forEach(btn => {
         btn.addEventListener('click', (e) => eliminarSede(e.currentTarget.getAttribute('data-id')));
       });
     }
 
   } catch (err) {
-    console.error("Error al cargar sedes:", err.message);
+    console.error("Error cargando sedes:", err.message);
   }
 }
 
 async function guardarSede(e) {
   e.preventDefault();
   const payload = {
-    nombre: document.getElementById('sNombre').value.trim(),
-    ubicacion: document.getElementById('sUbicacion').value.trim(),
-    capacidad: parseInt(document.getElementById('sCapacidad').value) || 0
+    nombre: document.getElementById('sNombre').value,
+    ubicacion: document.getElementById('sUbicacion').value,
+    capacidad: document.getElementById('sCapacidad').value
   };
 
   try {
     const { error } = await supabase.from('sedes').insert([payload]);
     if (error) throw error;
 
-    alert('Sede registrada con éxito.');
+    alert('¡Sede creada exitosamente y disponible para asignación!');
     document.getElementById('formSede').reset();
     cargarSedes();
   } catch (err) {
-    alert('Error al guardar la sede: ' + err.message);
+    alert('Error creando sede: ' + err.message);
   }
 }
 
 async function eliminarSede(id) {
-  if (!confirm('¿Está seguro de eliminar esta sede?')) return;
-
+  if (!confirm('¿Desea eliminar esta sede?')) return;
   try {
     const { error } = await supabase.from('sedes').delete().eq('id', id);
     if (error) throw error;
     cargarSedes();
   } catch (err) {
-    alert('Error al eliminar la sede: ' + err.message);
+    alert('Error eliminando sede: ' + err.message);
   }
 }
 
-/* ==========================================================================
-   4. DAÑOS Y ALERTAS EN TIEMPO REAL
-   ========================================================================== */
-
-function escucharNotificacionesRealtime() {
-  supabase
-    .channel('schema-db-changes')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'bitacora' }, payload => {
-      const registro = payload.new;
-      if (registro.tipo_visita === 'DAÑO' || registro.tipo_visita === 'NOVEDAD' || (registro.observaciones || '').toUpperCase().includes('DAÑO')) {
-        const banner = document.getElementById('contenedorAlertasVivas');
-        const txt = document.getElementById('txtUltimaAlerta');
-        if (banner && txt) {
-          txt.innerHTML = `<strong>${registro.registrado_por || 'Garita'}:</strong> ${registro.observaciones || 'Reporte de daño/novedad en garita'}`;
-          banner.style.display = 'block';
-        }
-      }
-    })
-    .subscribe();
-}
-
-async function cargarReportesDanos() {
+async function cargarBitacoraGlobal() {
   try {
     const { data, error } = await supabase
       .from('bitacora')
       .select('*')
-      .or('tipo_visita.eq.DAÑO,tipo_visita.eq.NOVEDAD,observaciones.ilike.%daño%')
       .order('hora_ingreso', { ascending: false });
 
     if (error) throw error;
-    const danos = data || [];
-
-    const tbody = document.getElementById('tablaDanosGlobal');
-    if (!tbody) return;
-
-    if (danos.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted"><i class="bi bi-check-circle text-success fs-4 d-block mb-1"></i>No hay reportes de daños pendientes en garita.</td></tr>`;
-      return;
-    }
-
-    tbody.innerHTML = danos.map(d => `
-      <tr>
-        <td><small class="fw-bold">${d.hora_ingreso ? new Date(d.hora_ingreso).toLocaleString('es-EC') : 'N/A'}</small></td>
-        <td class="fw-bold">${d.registrado_por || 'Guardia'}</td>
-        <td><span class="badge bg-secondary">${d.destino || 'Garita Principal'}</span></td>
-        <td class="text-danger fw-semibold">${d.observaciones || 'Reporte sin descripción'}</td>
-        <td><span class="badge bg-warning text-dark">Pendiente Revisión</span></td>
-        <td class="text-end">
-          <button class="btn btn-sm btn-outline-success" onclick="alert('Marcado como Atendido.')">
-            <i class="bi bi-check-lg"></i> Atendido
-          </button>
-        </td>
-      </tr>
-    `).join('');
-
+    bitacoraGlobal = data || [];
+    renderizarTablaBitacora(bitacoraGlobal);
   } catch (err) {
-    console.error("Error al cargar daños:", err.message);
+    console.error("Error al cargar bitácora:", err.message);
   }
 }
 
-/* ==========================================================================
-   5. BITÁCORA GLOBAL Y EXPORTACIÓN A EXCEL/CSV
-   ========================================================================== */
-
-async function cargarBitacoraGlobal() {
-  try {
-    const { data: bitacora, error } = await supabase
-      .from('bitacora')
-      .select('*')
-      .order('hora_ingreso', { ascending: false });
-
-    if (error) throw error;
-    bitacoraGlobal = bitacora || [];
-    renderTablaBitacora(bitacoraGlobal);
-  } catch (err) {
-    console.error("Error al cargar la bitácora:", err.message);
-  }
-}
-
-function renderTablaBitacora(datos) {
+function renderizarTablaBitacora(lista) {
   const tbody = document.getElementById('tablaBitacoraGlobal');
   if (!tbody) return;
 
-  tbody.innerHTML = datos.map(b => `
+  tbody.innerHTML = lista.map(b => `
     <tr>
-      <td><small class="fw-bold">${b.hora_ingreso ? new Date(b.hora_ingreso).toLocaleString('es-EC') : 'N/A'}</small></td>
-      <td><span class="badge bg-secondary">${b.tipo_visita || 'N/A'}</span></td>
-      <td class="fw-bold">${b.nombre || ''}</td>
-      <td><small>${b.cedula || b.placa || 'Peatonal'}</small></td>
-      <td class="text-success fw-bold">${b.destino || 'General'}</td>
-      <td><small class="fw-semibold text-muted">${b.registrado_por || 'Garita'}</small></td>
-      <td>${b.hora_salida ? '<span class="badge bg-secondary">SALIÓ</span>' : '<span class="badge bg-success">DENTRO</span>'}</td>
+      <td>${b.hora_ingreso ? new Date(b.hora_ingreso).toLocaleString() : 'N/A'}</td>
+      <td><span class="badge bg-secondary">${b.tipo_visita || 'VISITA'}</span></td>
+      <td class="fw-bold">${b.nombre_visitante || 'Anónimo'}</td>
+      <td><code>${b.placa || b.cedula || 'N/A'}</code></td>
+      <td>${b.destino || 'Club'}</td>
+      <td>${b.registrado_por || 'Garita'}</td>
     </tr>
   `).join('');
 }
 
 function filtrarBitacoraGlobal() {
-  const q = document.getElementById('inputBuscarGlobal').value.toLowerCase();
+  const query = document.getElementById('inputBuscarGlobal').value.toLowerCase();
   const filtrados = bitacoraGlobal.filter(b => 
-    (b.nombre && b.nombre.toLowerCase().includes(q)) ||
-    (b.registrado_por && b.registrado_por.toLowerCase().includes(q)) ||
-    (b.placa && b.placa.toLowerCase().includes(q))
+    (b.nombre_visitante || '').toLowerCase().includes(query) ||
+    (b.placa || '').toLowerCase().includes(query) ||
+    (b.registrado_por || '').toLowerCase().includes(query)
   );
-  renderTablaBitacora(filtrados);
+  renderizarTablaBitacora(filtrados);
 }
 
 function exportarCSV() {
-  if (bitacoraGlobal.length === 0) return alert('No hay registros para exportar.');
+  if (bitacoraGlobal.length === 0) {
+    return alert('No hay datos en la bitácora para exportar.');
+  }
 
-  let csv = "ID,Fecha,Tipo,Nombre,Cedula,Placa,Destino,Guardia,Estado\n";
-  bitacoraGlobal.forEach(r => {
-    csv += `"${r.id}","${r.hora_ingreso ? new Date(r.hora_ingreso).toLocaleString('es-EC') : ''}","${r.tipo_visita || ''}","${r.nombre || ''}","${r.cedula || ''}","${r.placa || ''}","${r.destino || ''}","${r.registrado_por || ''}","${r.hora_salida ? 'SALIO' : 'DENTRO'}"\n`;
+  let csv = 'Fecha,Tipo,Nombre,Placa_CI,Destino,Registrado_Por\n';
+  bitacoraGlobal.forEach(b => {
+    csv += `"${b.hora_ingreso}","${b.tipo_visita}","${b.nombre_visitante}","${b.placa || b.cedula}","${b.destino}","${b.registrado_por}"\n`;
   });
 
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.setAttribute("download", `Reporte_Bitacora_Club_${new Date().toISOString().slice(0,10)}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `bitacora_buenavista_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
 }
