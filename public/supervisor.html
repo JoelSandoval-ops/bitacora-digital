@@ -12,110 +12,134 @@
   <style>
     body {
       font-family: 'Poppins', sans-serif;
-      background-color: #f4f6f9;
+      background-color: #f8f9fa;
       color: #333;
     }
+
+    /* Header superior exacto a la imagen */
     .header-bv {
       background-color: #004d25;
       color: white;
-      padding: 12px 25px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      padding: 10px 20px;
     }
-    .logo-img {
-      width: 50px;
-      height: 50px;
-      object-fit: contain;
-      background: #fff;
-      border-radius: 50%;
-      padding: 2px;
-      border: 2px solid #d99b38;
+
+    .header-title {
+      font-weight: 800;
+      font-size: 1.3rem;
+      letter-spacing: 0.5px;
+      line-height: 1.1;
+    }
+
+    .header-sub {
+      color: #e5a93b;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    /* Pestañas */
+    .nav-tabs {
+      border-bottom: none;
     }
     .nav-tabs .nav-link {
+      border: 1px solid #ddd;
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+      font-weight: 700;
       color: #004d25;
-      font-weight: 600;
-      font-size: 1.05rem;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px 8px 0 0;
-      margin-right: 5px;
-      background-color: #ffffff;
-      transition: all 0.2s ease;
+      padding: 10px 20px;
+      background-color: #f1f1f1;
     }
     .nav-tabs .nav-link.active {
-      background-color: #d99b38;
+      background-color: #e09b2d;
       color: white;
-      border-color: #d99b38;
+      border-color: #e09b2d;
     }
+
+    /* Tablas estilo exacto */
     .table-dark-custom th {
       background-color: #212529 !important;
       color: white !important;
-      font-weight: 600;
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding: 12px;
       vertical-align: middle;
     }
-    .badge-estado-dentro {
-      background-color: #ffc107;
-      color: #000;
-      font-weight: bold;
-      padding: 6px 12px;
-      border-radius: 5px;
-      font-size: 0.8rem;
+
+    .titulo-reportes {
+      color: #008744;
+      font-weight: 700;
+      font-size: 1.25rem;
     }
-    .badge-estado-salida {
-      background-color: #198754;
-      color: #fff;
-      font-weight: bold;
-      padding: 6px 12px;
-      border-radius: 5px;
-      font-size: 0.8rem;
-    }
-    .img-novedad-fila {
-      max-width: 220px;
-      max-height: 140px;
+
+    /* Tarjeta de imagen con borde amarillo/dorado */
+    .img-card-frame {
+      width: 140px;
+      height: 85px;
       object-fit: cover;
       border-radius: 8px;
-      border: 2px solid #004d25;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+      border: 3px solid #e09b2d;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
       cursor: pointer;
       transition: transform 0.2s;
     }
-    .img-novedad-fila:hover {
-      transform: scale(1.03);
+    .img-card-frame:hover {
+      transform: scale(1.05);
     }
-    .titulo-seccion-bv {
-      color: #004d25;
-      font-family: 'Times New Roman', Georgia, serif;
-      font-weight: bold;
-      letter-spacing: 0.5px;
+
+    /* Badges */
+    .badge-ubicacion {
+      background-color: #dc3545;
+      color: white;
+      font-weight: 600;
+      border-radius: 12px;
+      padding: 4px 12px;
+      font-size: 0.8rem;
+    }
+
+    .btn-delete-custom {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 10px;
+    }
+    .btn-delete-custom:hover {
+      background-color: #bb2d3b;
     }
   </style>
 </head>
 <body>
 
-  <!-- Encabezado con Logo Oficial -->
+  <!-- Encabezado Principal -->
   <header class="header-bv d-flex justify-content-between align-items-center">
-    <div class="d-flex align-items-center gap-3">
-      <img src="https://clubbuenavista.com.ec/wp-content/uploads/2021/08/logo-club-buena-vista.png" alt="Logo Buena Vista" class="logo-img" onerror="this.onerror=null; this.src='https://cdn-icons-png.flaticon.com/512/814/814513.png';">
+    <div class="d-flex align-items-center gap-2">
+      <div class="bg-warning text-dark p-2 rounded-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+        <i class="fa-solid fa-shield-halved fs-5"></i>
+      </div>
       <div>
-        <h3 class="m-0 fw-bold text-white" style="font-size: 1.4rem;">CLUB BUENA VISTA</h3>
-        <small class="text-warning fw-semibold"><i class="fa-solid fa-trophy me-1"></i> PANEL DE SUPERVISIÓN Y CONTROL</small>
+        <div class="header-title">CLUB BUENA VISTA</div>
+        <div class="header-sub"><i class="fa-solid fa-trophy me-1"></i> PANEL DE SUPERVISIÓN Y CONTROL</div>
       </div>
     </div>
-    <div class="d-flex align-items-center">
-      <span class="badge bg-success me-3 py-2 px-3"><i class="fa-solid fa-bolt"></i> En Vivo</span>
+
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge bg-success py-2 px-3 fw-normal"><i class="fa-solid fa-bolt me-1"></i> En Vivo</span>
       <button id="btnSalir" class="btn btn-outline-light btn-sm"><i class="fa-solid fa-right-from-bracket me-1"></i> Cerrar Sesión</button>
     </div>
   </header>
 
-  <div class="container-fluid py-4 px-4">
+  <div class="container-fluid py-3 px-3">
 
-    <!-- Navegación por Pestañas -->
-    <ul class="nav nav-tabs border-bottom-0 mb-3" id="superTabs" role="tablist">
+    <!-- Pestañas de Navegación -->
+    <ul class="nav nav-tabs mb-3" id="superTabs" role="tablist">
       <li class="nav-item flex-fill text-center" role="presentation">
-        <button class="nav-link w-100 active" id="tab-asistencia" data-bs-toggle="tab" data-bs-target="#sec-asistencia" type="button" role="tab">
+        <button class="nav-link w-100" id="tab-asistencia" data-bs-toggle="tab" data-bs-target="#sec-asistencia" type="button" role="tab">
           <i class="fa-solid fa-list-check me-2"></i> BITÁCORA DE ASISTENCIA
         </button>
       </li>
       <li class="nav-item flex-fill text-center" role="presentation">
-        <button class="nav-link w-100" id="tab-novedades" data-bs-toggle="tab" data-bs-target="#sec-novedades" type="button" role="tab">
+        <button class="nav-link w-100 active" id="tab-novedades" data-bs-toggle="tab" data-bs-target="#sec-novedades" type="button" role="tab">
           <i class="fa-solid fa-triangle-exclamation me-2"></i> BITÁCORA DE NOVEDADES (SUPERVISIÓN)
         </button>
       </li>
@@ -123,68 +147,54 @@
 
     <div class="tab-content" id="superTabsContent">
 
-      <!-- ========================================== -->
-      <!-- PESTAÑA 1: BITÁCORA DE ASISTENCIA -->
-      <!-- ========================================== -->
-      <div class="tab-pane fade show active" id="sec-asistencia" role="tabpanel">
-        <div class="card p-3 shadow-sm border-0">
-          
-          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-            <div>
-              <h4 class="titulo-seccion-bv m-0"><i class="fa-solid fa-shield-halved text-success me-2"></i>BITÁCORA DE ASISTENCIA</h4>
-              <small class="text-muted">Control de entrada y salida de socios y visitantes en tiempo real</small>
-            </div>
-            <div class="d-flex flex-wrap gap-2 align-items-center">
-              <input type="date" id="filtroFechaAsistencia" class="form-control form-control-sm" style="width: auto;">
-              <input type="text" id="filtroTextoAsistencia" class="form-control form-control-sm" placeholder="Buscar por Nombre o Cédula..." style="width: 210px;">
-              <button id="btnVerTodoAsistencia" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-xmark"></i> Ver Todo</button>
-              <button class="btn btn-outline-success btn-sm btn-actualizar"><i class="fa-solid fa-rotate"></i> Actualizar</button>
+      <!-- PESTAÑA ASISTENCIA -->
+      <div class="tab-pane fade" id="sec-asistencia" role="tabpanel">
+        <div class="card p-3 border shadow-sm">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="titulo-reportes m-0"><i class="fa-solid fa-shield-halved me-2"></i>Reportes de Asistencia</h4>
+            <div class="d-flex gap-2">
+              <input type="date" id="filtroFechaAsistencia" class="form-control form-control-sm">
+              <input type="text" id="filtroTextoAsistencia" class="form-control form-control-sm" placeholder="Buscar socio/cédula...">
+              <button id="btnVerTodoAsistencia" class="btn btn-outline-secondary btn-sm">Ver Todo</button>
+              <button class="btn btn-outline-success btn-sm btn-actualizar">Actualizar</button>
               <button id="btnExcelAsistencia" class="btn btn-success btn-sm"><i class="fa-solid fa-file-excel me-1"></i> Descargar Excel</button>
               <button id="btnPDFAsistencia" class="btn btn-danger btn-sm"><i class="fa-solid fa-file-pdf me-1"></i> Descargar PDF</button>
             </div>
           </div>
-
           <div class="table-responsive" id="areaPDFAsistencia">
             <table class="table table-hover align-middle border">
               <thead class="table-dark-custom">
                 <tr>
-                  <th style="width: 15%;">Fecha / Hora Entrada</th>
-                  <th style="width: 15%;">Fecha / Hora Salida</th>
-                  <th style="width: 18%;">Socio / Visitante</th>
-                  <th style="width: 12%;">Cédula</th>
-                  <th style="width: 14%;">Destino</th>
-                  <th style="width: 16%; color: #dc3545;">OBSERVACION</th>
-                  <th style="width: 10%; text-align: center;" class="no-export">Acciones</th>
+                  <th>Fecha / Hora Entrada</th>
+                  <th>Fecha / Hora Salida</th>
+                  <th>Socio / Visitante</th>
+                  <th>Cédula</th>
+                  <th>Destino</th>
+                  <th>Observación</th>
+                  <th class="text-center no-export">Acciones</th>
                 </tr>
               </thead>
-              <tbody id="tbodyAsistencia">
-                <tr>
-                  <td colspan="7" class="text-center py-4 text-muted"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando registros de asistencia...</td>
-                </tr>
-              </tbody>
+              <tbody id="tbodyAsistencia"></tbody>
             </table>
           </div>
-
         </div>
       </div>
 
-      <!-- ========================================== -->
-      <!-- PESTAÑA 2: BITÁCORA DE NOVEDADES -->
-      <!-- ========================================== -->
-      <div class="tab-pane fade" id="sec-novedades" role="tabpanel">
-        <div class="card p-3 shadow-sm border-0">
+      <!-- PESTAÑA NOVEDADES -->
+      <div class="tab-pane fade show active" id="sec-novedades" role="tabpanel">
+        <div class="card p-3 border shadow-sm">
           
-          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-            <div>
-              <h3 class="titulo-seccion-bv m-0"><i class="fa-solid fa-shield-cat text-success me-2"></i>BITÁCORA DE NOVEDADES (SUPERVISIÓN)</h3>
-              <p class="text-muted m-0 small">Reportes de novedades con imágenes integradas en tamaño fila</p>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex align-items-center gap-2">
+              <i class="fa-solid fa-shield-cat titulo-reportes fs-4"></i>
+              <span class="titulo-reportes">Reportes de Novedades</span>
             </div>
-            <div class="d-flex flex-wrap gap-2 align-items-center">
-              <input type="date" id="filtroFechaNovedad" class="form-control form-control-sm" style="width: auto;">
-              <button id="btnVerTodoNovedad" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-xmark"></i> Ver Todo</button>
-              <button class="btn btn-outline-success btn-sm btn-actualizar"><i class="fa-solid fa-rotate"></i> Actualizar Novedades</button>
-              <button id="btnExcelNovedad" class="btn btn-success btn-sm"><i class="fa-solid fa-file-excel me-1"></i> Descargar Excel</button>
-              <button id="btnPDFNovedad" class="btn btn-danger btn-sm"><i class="fa-solid fa-file-pdf me-1"></i> Descargar PDF</button>
+            <div class="d-flex gap-2 align-items-center">
+              <input type="date" id="filtroFechaNovedad" class="form-control form-control-sm" style="width: 150px;">
+              <button id="btnVerTodoNovedad" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-xmark me-1"></i>Ver Todo</button>
+              <button class="btn btn-outline-success btn-sm btn-actualizar"><i class="fa-solid fa-rotate me-1"></i>Actualizar Novedades</button>
+              <button id="btnExcelNovedad" class="btn btn-success btn-sm"><i class="fa-solid fa-file-excel me-1"></i>Descargar Excel</button>
+              <button id="btnPDFNovedad" class="btn btn-danger btn-sm"><i class="fa-solid fa-file-pdf me-1"></i>Descargar PDF</button>
             </div>
           </div>
 
@@ -192,19 +202,15 @@
             <table class="table table-hover align-middle border">
               <thead class="table-dark-custom">
                 <tr>
-                  <th style="width: 16%;">Fecha y Hora</th>
-                  <th style="width: 18%;">Asunto / Novedad</th>
-                  <th style="width: 16%;">Ubicación / Sector</th>
-                  <th style="width: 22%;">Detalle / Observación</th>
-                  <th style="width: 20%; text-align: center;">Imagen</th>
+                  <th style="width: 18%;">Fecha y Hora</th>
+                  <th style="width: 20%;">Asunto / Novedad</th>
+                  <th style="width: 15%;">Ubicación / Sector</th>
+                  <th style="width: 27%;">Detalle / Observación</th>
+                  <th style="width: 12%; text-align: center;">Imagen</th>
                   <th style="width: 8%; text-align: center;" class="no-export">Acciones</th>
                 </tr>
               </thead>
-              <tbody id="tbodyNovedades">
-                <tr>
-                  <td colspan="6" class="text-center py-4 text-muted"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando reportes de novedades...</td>
-                </tr>
-              </tbody>
+              <tbody id="tbodyNovedades"></tbody>
             </table>
           </div>
 
@@ -214,37 +220,37 @@
     </div>
   </div>
 
-  <!-- Modal Editar Asistencia -->
+  <!-- Modal Editar -->
   <div class="modal fade" id="modalEditarAsistencia" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header bg-dark text-white">
-          <h5 class="modal-title"><i class="fa-solid fa-pen-to-square me-2"></i> Editar Registro de Asistencia</h5>
+          <h5 class="modal-title">Editar Registro</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
         <form id="formEditarAsistencia">
           <div class="modal-body">
             <input type="hidden" id="editId">
             <div class="mb-3">
-              <label for="editNombre" class="form-label fw-bold">Socio / Visitante</label>
+              <label class="form-label fw-bold">Socio / Visitante</label>
               <input type="text" class="form-control" id="editNombre" required>
             </div>
             <div class="mb-3">
-              <label for="editCedula" class="form-label fw-bold">Cédula</label>
+              <label class="form-label fw-bold">Cédula</label>
               <input type="text" class="form-control" id="editCedula" required>
             </div>
             <div class="mb-3">
-              <label for="editDestino" class="form-label fw-bold">Destino</label>
+              <label class="form-label fw-bold">Destino</label>
               <input type="text" class="form-control" id="editDestino" required>
             </div>
             <div class="mb-3">
-              <label for="editObservacion" class="form-label fw-bold">Observación</label>
+              <label class="form-label fw-bold">Observación</label>
               <textarea class="form-control" id="editObservacion" rows="3"></textarea>
             </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-success"><i class="fa-solid fa-floppy-disk me-1"></i> Guardar Cambios</button>
+            <button type="submit" class="btn btn-success">Guardar Cambios</button>
           </div>
         </form>
       </div>
@@ -253,14 +259,14 @@
 
   <!-- Modal Ampliar Imagen -->
   <div class="modal fade" id="modalImagen" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content bg-dark">
         <div class="modal-header border-0 text-white">
-          <h5 class="modal-title"><i class="fa-solid fa-image me-2"></i> Visualización de Novedad</h5>
+          <h5 class="modal-title">Visualización de Novedad</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body text-center p-2">
-          <img id="imgModalSrc" src="" class="img-fluid rounded" style="max-height: 82vh; object-fit: contain;">
+          <img id="imgModalSrc" src="" class="img-fluid rounded" style="max-height: 80vh;">
         </div>
       </div>
     </div>

@@ -19,7 +19,6 @@ function configurarEventos() {
     btn.addEventListener('click', () => cargarDatos());
   });
 
-  // Filtros Asistencia
   const inputFechaAsis = document.getElementById('filtroFechaAsistencia');
   const inputTextoAsis = document.getElementById('filtroTextoAsistencia');
   const btnVerTodoAsis = document.getElementById('btnVerTodoAsistencia');
@@ -34,7 +33,6 @@ function configurarEventos() {
     });
   }
 
-  // Filtros Novedades
   const inputFechaNov = document.getElementById('filtroFechaNovedad');
   const btnVerTodoNov = document.getElementById('btnVerTodoNovedad');
 
@@ -46,28 +44,23 @@ function configurarEventos() {
     });
   }
 
-  // Exportaciones Asistencia
   document.getElementById('btnExcelAsistencia')?.addEventListener('click', () => exportarExcel('areaPDFAsistencia', 'Asistencia_Club_Buena_Vista'));
   document.getElementById('btnPDFAsistencia')?.addEventListener('click', () => exportarPDF('areaPDFAsistencia', 'Asistencia_Club_Buena_Vista.pdf'));
 
-  // Exportaciones Novedades
   document.getElementById('btnExcelNovedad')?.addEventListener('click', () => exportarExcel('areaPDFNovedad', 'Novedades_Club_Buena_Vista'));
   document.getElementById('btnPDFNovedad')?.addEventListener('click', () => exportarPDF('areaPDFNovedad', 'Novedades_Club_Buena_Vista.pdf'));
 
-  // Guardar Cambios de Edición
   document.getElementById('formEditarAsistencia')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     await guardarCambiosAsistencia();
   });
 
-  // Cerrar Sesión
   document.getElementById('btnSalir')?.addEventListener('click', async () => {
     await supabase.auth.signOut();
     window.location.href = './login.html';
   });
 }
 
-// Extraer imagen Base64 o URL limpiamente
 function extraerImagen(item) {
   const campos = [item.imagen_url, item.foto_url, item.foto, item.destino, item.ubicacion, item.observaciones, item.detalle, item.novedades];
   for (let c of campos) {
@@ -78,7 +71,6 @@ function extraerImagen(item) {
   return null;
 }
 
-// Limpiar valores para que la cadena base64 no ensucie las columnas de texto
 function limpiarTexto(valor) {
   if (!valor) return '';
   const str = String(valor).trim();
@@ -97,10 +89,6 @@ function obtenerFechaLocalYYYYMMDD(fechaStr) {
   const day = String(d.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
-
-// ==========================================
-// CONSULTA Y CLASIFICACIÓN DE DATOS
-// ==========================================
 
 async function cargarDatos() {
   let { data: todos, error } = await supabase.from('bitacora').select('*').order('id', { ascending: false });
@@ -130,10 +118,6 @@ async function cargarDatos() {
   renderTablaNovedades(listaNovedades);
 }
 
-// ==========================================
-// RENDER ASISTENCIA
-// ==========================================
-
 function renderTablaAsistencias(datos) {
   const tbody = document.getElementById('tbodyAsistencia');
   if (!tbody) return;
@@ -151,9 +135,9 @@ function renderTablaAsistencias(datos) {
     let hSalida = '---';
 
     if (fSalida && fSalida !== null && fSalida !== '') {
-      hSalida = `<span class="badge badge-estado-salida"><i class="fa-solid fa-check me-1"></i>${new Date(fSalida).toLocaleString('es-EC')}</span>`;
+      hSalida = `<span class="badge bg-success p-2">${new Date(fSalida).toLocaleString('es-EC')}</span>`;
     } else {
-      hSalida = `<span class="badge badge-estado-dentro"><i class="fa-solid fa-clock me-1"></i>DENTRO DEL CLUB</span>`;
+      hSalida = `<span class="badge bg-warning text-dark p-2">DENTRO DEL CLUB</span>`;
     }
 
     const nombre = item.socio_visitante || item.nombre || 'Sin Nombre';
@@ -170,8 +154,8 @@ function renderTablaAsistencias(datos) {
         <td>${destino}</td>
         <td class="text-muted">${observacion}</td>
         <td class="text-center no-export">
-          <button class="btn btn-warning btn-sm btn-editar py-0 px-2 me-1" data-id="${item.id}" title="Editar"><i class="fa-solid fa-pen-to-square"></i></button>
-          <button class="btn btn-danger btn-sm btn-eliminar py-0 px-2" data-id="${item.id}" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+          <button class="btn btn-warning btn-sm btn-editar py-0 px-2 me-1" data-id="${item.id}"><i class="fa-solid fa-pen-to-square"></i></button>
+          <button class="btn btn-danger btn-sm btn-eliminar py-0 px-2" data-id="${item.id}"><i class="fa-solid fa-trash"></i></button>
         </td>
       </tr>
     `;
@@ -185,10 +169,6 @@ function renderTablaAsistencias(datos) {
     btn.addEventListener('click', (e) => eliminarRegistro(e.currentTarget.getAttribute('data-id')));
   });
 }
-
-// ==========================================
-// RENDER NOVEDADES
-// ==========================================
 
 function renderTablaNovedades(datos) {
   const tbody = document.getElementById('tbodyNovedades');
@@ -206,25 +186,25 @@ function renderTablaNovedades(datos) {
     const asunto = limpiarTexto(item.asunto || item.socio_visitante) || 'Novedad Reportada';
     
     let ubi = limpiarTexto(item.ubicacion || item.sector || item.destino);
-    if (!ubi) ubi = 'Cancha tres';
+    if (!ubi) ubi = 'General';
 
     let detalle = limpiarTexto(item.observaciones || item.detalle || item.novedades);
     if (!detalle) detalle = 'Sin detalle reportado';
 
     const foto = extraerImagen(item);
     const imgHtml = foto 
-      ? `<img src="${foto}" class="img-novedad-fila btn-ver-img" data-src="${foto}" alt="Foto Novedad">`
+      ? `<img src="${foto}" class="img-card-frame btn-ver-img" data-src="${foto}" alt="Imagen Novedad">`
       : `<span class="badge bg-secondary">Sin Imagen</span>`;
 
     return `
       <tr>
-        <td class="fw-semibold">${fStr}</td>
-        <td><strong style="font-size: 1.05rem;">${asunto}</strong></td>
-        <td><span class="badge bg-danger fs-6 px-3 py-2">${ubi}</span></td>
-        <td class="text-secondary">${detalle}</td>
+        <td class="fw-bold">${fStr}</td>
+        <td class="fw-bold text-dark">${asunto}</td>
+        <td><span class="badge-ubicacion">${ubi}</span></td>
+        <td class="text-secondary fw-semibold">${detalle}</td>
         <td class="text-center py-2">${imgHtml}</td>
         <td class="text-center no-export">
-          <button class="btn btn-danger btn-sm btn-eliminar-nov py-0 px-2" data-id="${item.id}" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+          <button class="btn-delete-custom btn-eliminar-nov" data-id="${item.id}"><i class="fa-solid fa-trash"></i></button>
         </td>
       </tr>
     `;
@@ -242,10 +222,6 @@ function renderTablaNovedades(datos) {
     btn.addEventListener('click', (e) => eliminarRegistro(e.currentTarget.getAttribute('data-id')));
   });
 }
-
-// ==========================================
-// FILTROS, EDITAR Y ELIMINAR
-// ==========================================
 
 function aplicarFiltrosAsistencia() {
   const fechaVal = document.getElementById('filtroFechaAsistencia')?.value;
@@ -335,7 +311,7 @@ async function eliminarRegistro(id) {
 
 function activarTiempoReal() {
   supabase
-    .channel('realtime-supervisor-v5')
+    .channel('realtime-supervisor-v6')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora' }, () => cargarDatos())
     .subscribe();
 }
