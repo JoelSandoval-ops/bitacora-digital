@@ -87,25 +87,26 @@ async function cargarAsistencias() {
 
   console.log("📡 [SUPERVISOR] Consultando asistencias en Supabase...");
 
-  let { data, error } = await supabase
-    .from('bitacora_asistencia')
-    .select('*')
-    .order('id', { ascending: false });
-
-  if (error) {
-    console.warn("⚠️ Falló bitacora_asistencia, intentando tabla 'bitacora':", error);
-    const resp = await supabase.from('bitacora').select('*').order('id', { ascending: false });
-    data = resp.data;
-    error = resp.error;
+  // Intenta leer secuencialmente según el nombre de tabla disponible
+  let resp = await supabase.from('bitacora_asistencia').select('*').order('id', { ascending: false });
+  
+  if (resp.error || !resp.data || resp.data.length === 0) {
+    resp = await supabase.from('bitacora').select('*').order('id', { ascending: false });
   }
 
-  if (error) {
-    console.error("❌ Error de lectura en Supabase:", error);
-    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-3">Error de lectura: ${error.message}</td></tr>`;
+  if (resp.error || !resp.data || resp.data.length === 0) {
+    resp = await supabase.from('asistencia').select('*').order('id', { ascending: false });
+  }
+
+  console.log("📊 Registros de asistencia cargados:", resp.data);
+
+  if (resp.error) {
+    console.error("❌ Error de lectura en Supabase:", resp.error);
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-3">Error de lectura: ${resp.error.message}</td></tr>`;
     return;
   }
 
-  listaAsistencias = data || [];
+  listaAsistencias = resp.data || [];
   renderTablaAsistencias(listaAsistencias);
 }
 
@@ -183,24 +184,18 @@ async function cargarNovedades() {
 
   console.log("📡 [SUPERVISOR] Consultando novedades...");
 
-  let { data, error } = await supabase
-    .from('bitacora_novedades')
-    .select('*')
-    .order('id', { ascending: false });
+  let resp = await supabase.from('bitacora_novedades').select('*').order('id', { ascending: false });
 
-  if (error) {
-    console.warn("⚠️ Falló bitacora_novedades, intentando tabla 'novedades':", error);
-    const resp = await supabase.from('novedades').select('*').order('id', { ascending: false });
-    data = resp.data;
-    error = resp.error;
+  if (resp.error || !resp.data || resp.data.length === 0) {
+    resp = await supabase.from('novedades').select('*').order('id', { ascending: false });
   }
 
-  if (error) {
+  if (resp.error) {
     tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-3">Error al cargar novedades.</td></tr>`;
     return;
   }
 
-  listaNovedades = data || [];
+  listaNovedades = resp.data || [];
   renderTablaNovedades(listaNovedades);
 }
 
@@ -274,6 +269,7 @@ function activarTiempoReal() {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora_asistencia' }, () => cargarAsistencias())
     .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora_novedades' }, () => cargarNovedades())
     .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora' }, () => cargarAsistencias())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'asistencia' }, () => cargarAsistencias())
     .subscribe();
 }
 
