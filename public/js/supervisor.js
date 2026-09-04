@@ -9,7 +9,7 @@ let listaAsistencias = [];
 let listaNovedades = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
-  console.log("🔍 [SUPERVISOR] Cargando modulo...");
+  console.log("🔍 [SUPERVISOR] Cargando Bitácora de Asistencia...");
   await cargarDatos();
   activarTiempoReal();
   configurarEventos();
@@ -20,7 +20,7 @@ function configurarEventos() {
     btn.addEventListener('click', () => cargarDatos());
   });
 
-  // Filtros Asistencia
+  // Filtros de Asistencia
   const inputFechaAsis = document.getElementById('filtroFechaAsistencia');
   const inputTextoAsis = document.getElementById('filtroTextoAsistencia');
   const btnVerTodoAsis = document.getElementById('btnVerTodoAsistencia');
@@ -35,17 +35,11 @@ function configurarEventos() {
     });
   }
 
-  // Filtros Novedades
-  const inputFechaNov = document.getElementById('filtroFechaNovedades');
-  const btnVerTodoNov = document.getElementById('btnVerTodoNovedades');
-
-  if (inputFechaNov) inputFechaNov.addEventListener('change', aplicarFiltrosNovedades);
-  if (btnVerTodoNov) {
-    btnVerTodoNov.addEventListener('click', () => {
-      if (inputFechaNov) inputFechaNov.value = '';
-      renderTarjetasNovedades(listaNovedades);
-    });
-  }
+  // Exportar Asistencia
+  const btnExcelAsis = document.getElementById('btnExcelAsistencia');
+  const btnPDFAsis = document.getElementById('btnPDFAsistencia');
+  if (btnExcelAsis) btnExcelAsis.addEventListener('click', () => exportarExcel('areaPDFAsistencia', 'Asistencia_Club_Buena_Vista'));
+  if (btnPDFAsis) btnPDFAsis.addEventListener('click', () => exportarPDF('areaPDFAsistencia', 'Asistencia_Club_Buena_Vista.pdf'));
 
   // Cerrar Sesión
   const btnSalir = document.getElementById('btnSalir');
@@ -57,6 +51,10 @@ function configurarEventos() {
   }
 }
 
+// ==========================================
+// CONSULTA DE DATOS DESDE SUPABASE
+// ==========================================
+
 async function cargarDatos() {
   let { data: todos, error } = await supabase.from('bitacora').select('*').order('id', { ascending: false });
 
@@ -67,75 +65,76 @@ async function cargarDatos() {
 
   const registros = todos || [];
 
-  // Filtrado de Novedades
-  listaNovedades = registros.filter(item => {
-    const destinoStr = String(item.destino || '');
-    const obsStr = String(item.observaciones || item.novedades || item.detalle || '');
-    const fotoStr = String(item.imagen_url || item.foto_url || item.foto || '');
-    const tipoStr = String(item.tipo || '').toLowerCase();
-
-    return destinoStr.startsWith('data:image') || 
-           obsStr.startsWith('data:image') || 
-           fotoStr.startsWith('data:image') ||
-           fotoStr.length > 50 ||
-           tipoStr === 'novedad' ||
-           item.ubicacion || 
-           item.sector || 
-           item.asunto;
-  });
-
-  // Filtrado de Asistencias
+  // FILTRO ESTRICTO PARA ASISTENCIA (Solo entradas/salidas de personas)
   listaAsistencias = registros.filter(item => {
     const destinoStr = String(item.destino || '');
     const obsStr = String(item.observaciones || item.novedades || item.detalle || '');
     const fotoStr = String(item.imagen_url || item.foto_url || item.foto || '');
 
-    const esNovedad = destinoStr.startsWith('data:image') || 
-                      obsStr.startsWith('data:image') || 
-                      fotoStr.startsWith('data:image') ||
-                      fotoStr.length > 50;
+    // Si contiene imagen o es un reporte técnico, NO va en asistencia
+    const esFotoONovedad = destinoStr.startsWith('data:image') || 
+                           obsStr.startsWith('data:image') || 
+                           fotoStr.startsWith('data:image') ||
+                           fotoStr.length > 50 ||
+                           item.ubicacion || 
+                           item.sector;
 
-    return !esNovedad;
+    return !esFotoONovedad;
   });
 
   renderTablaAsistencias(listaAsistencias);
-  renderTarjetasNovedades(listaNovedades);
 }
 
 // ==========================================
-// RENDER ASISTENCIAS
+// RENDERIZADO DE LA TABLA DE ASISTENCIA
 // ==========================================
+
 function renderTablaAsistencias(datos) {
   const tbody = document.getElementById('tbodyAsistencia');
   if (!tbody) return;
 
   if (!datos || datos.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-warning fw-bold py-4">No hay asistencias registradas.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-warning fw-bold py-4">No hay asistencias registradas.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = datos.map(item => {
+    // 1. Hora de entrada
     const fEntrada = item.fecha_hora_entrada || item.hora_ingreso || item.created_at;
     const hEntrada = fEntrada ? new Date(fEntrada).toLocaleString('es-EC') : '---';
 
+    // 2. Hora de salida (Si no ha salido, muestra badge "DENTRO DEL CLUB")
     const fSalida = item.fecha_hora_salida || item.hora_salida;
-    const hSalida = fSalida 
-      ? new Date(fSalida).toLocaleString('es-EC') 
-      : '<span class="badge bg-warning text-dark font-weight-bold">DENTRO DEL CLUB</span>';
+    let hSalida = '---';
 
+    if (fSalida && fSalida !== null && fSalida !== '') {
+      hSalida = `<span class="badge badge-estado-salida"><i class="fa-solid fa-check me-1"></i>${new Date(fSalida).toLocaleString('es-EC')}</span>`;
+    } else {
+      hSalida = `<span class="badge badge-estado-dentro"><i class="fa-solid fa-clock me-1"></i>DENTRO DEL CLUB</span>`;
+    }
+
+    // 3. Socio / Visitante
     const nombre = item.socio_visitante || item.nombre || 'Sin Nombre';
-    const cedula = item.cedula || '---';
-    let destino = item.destino || 'Instalaciones';
 
+    // 4. Cédula
+    const cedula = item.cedula || '---';
+
+    // 5. Destino
+    let destino = item.destino || 'Instalaciones';
     if (String(destino).startsWith('data:image')) destino = 'Instalaciones';
+
+    // 6. Observación real del guardia
+    let observacion = item.observaciones || item.observacion || item.detalle || 'Sin observaciones';
+    if (String(observacion).startsWith('data:image')) observacion = 'Sin observaciones';
 
     return `
       <tr>
-        <td>${hEntrada}</td>
+        <td class="fw-semibold">${hEntrada}</td>
         <td>${hSalida}</td>
         <td><strong>${nombre}</strong></td>
         <td class="text-danger fw-bold">${cedula}</td>
         <td>${destino}</td>
+        <td class="text-muted">${observacion}</td>
       </tr>
     `;
   }).join('');
@@ -165,118 +164,31 @@ function aplicarFiltrosAsistencia() {
   renderTablaAsistencias(resultado);
 }
 
-// ==========================================
-// RENDER NOVEDADES CON DISEÑO DISEÑO EXACTO
-// ==========================================
-function renderTarjetasNovedades(datos) {
-  const contenedor = document.getElementById('contenedorNovedades');
-  if (!contenedor) return;
-
-  if (!datos || datos.length === 0) {
-    contenedor.innerHTML = `<div class="text-center text-muted py-4 fw-bold">No hay novedades registradas.</div>`;
-    return;
-  }
-
-  contenedor.innerHTML = datos.map(item => {
-    // Fecha y hora
-    const fecha = item.fecha_registro || item.fecha_hora || item.fecha_hora_entrada || item.created_at;
-    const hFecha = fecha ? new Date(fecha).toLocaleString('es-EC') : '---';
-
-    // Sector / Ubicacion
-    const sector = item.ubicacion || item.sector || item.lugar || 'Porteria';
-
-    // Asunto / Novedad
-    let asunto = item.asunto || item.socio_visitante || item.novedad || 'Novedad Reportada';
-    if (String(asunto).startsWith('data:image')) asunto = 'Novedad Reportada';
-
-    // Detalle / Observacion
-    let detalle = item.detalle || item.observaciones || item.descripcion || 'Sin detalle escrito';
-    if (String(detalle).startsWith('data:image')) detalle = 'Sin detalle escrito';
-
-    // Recuperar foto
-    let foto = item.imagen_url || item.foto_url || item.foto || '';
-    if (!foto && String(item.destino).startsWith('data:image')) foto = item.destino;
-    if (!foto && String(item.observaciones).startsWith('data:image')) foto = item.observaciones;
-
-    const fotoHTML = foto 
-      ? `<img src="${foto}" class="img-novedad-card ver-foto-btn" data-url="${foto}" alt="Evidencia Novedad" title="Clic para ampliar">`
-      : `<div class="sin-foto-box"><i class="fa-regular fa-image me-2"></i> - Sin Foto -</div>`;
-
-    return `
-      <div class="novedad-card">
-        <div class="row g-0 align-items-center">
-          
-          <!-- COLUMNA IZQUIERDA (DATOS CON ENCABEZADOS NEGROS) -->
-          <div class="col-md-8 col-lg-8 border-end">
-            
-            <!-- BLOQUE 1: FECHA Y ASUNTO -->
-            <div class="row g-0 novedad-header-row">
-              <div class="col-6">Fecha y Hora</div>
-              <div class="col-6">Asunto / Novedad</div>
-            </div>
-            <div class="row g-0 novedad-content-row border-bottom">
-              <div class="col-6 fw-semibold">${hFecha}</div>
-              <div class="col-6 fw-bold text-dark">${asunto}</div>
-            </div>
-
-            <!-- BLOQUE 2: UBICACIÓN Y DETALLE -->
-            <div class="row g-0 novedad-header-row">
-              <div class="col-6">Ubicación / Sector</div>
-              <div class="col-6">Detalle / Observación</div>
-            </div>
-            <div class="row g-0 novedad-content-row">
-              <div class="col-6">
-                <span class="badge-sector-red">${sector}</span>
-              </div>
-              <div class="col-6 text-secondary" style="white-space: pre-line;">${detalle}</div>
-            </div>
-
-          </div>
-
-          <!-- COLUMNA DERECHA (IMAGEN GIGANTE A LA DERECHA) -->
-          <div class="col-md-4 col-lg-4 text-center p-3 d-flex justify-content-center align-items-center bg-light">
-            <div>
-              <div class="fw-bold mb-2 text-dark d-md-none">Imagen / Evidencia</div>
-              ${fotoHTML}
-            </div>
-          </div>
-
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  // Evento modal para fotos
-  document.querySelectorAll('.ver-foto-btn').forEach(img => {
-    img.addEventListener('click', (e) => {
-      const url = e.target.getAttribute('data-url');
-      const imgTarget = document.getElementById('imgModalTarget');
-      if (imgTarget && url) {
-        imgTarget.src = url;
-        const modal = new bootstrap.Modal(document.getElementById('modalVerImagen'));
-        modal.show();
-      }
-    });
-  });
-}
-
-function aplicarFiltrosNovedades() {
-  const fechaVal = document.getElementById('filtroFechaNovedades')?.value;
-  let resultado = [...listaNovedades];
-
-  if (fechaVal) {
-    resultado = resultado.filter(item => {
-      const f = item.fecha_registro || item.fecha_hora || item.created_at;
-      return f && f.startsWith(fechaVal);
-    });
-  }
-
-  renderTarjetasNovedades(resultado);
-}
-
 function activarTiempoReal() {
   supabase
-    .channel('realtime-supervisor-v6')
+    .channel('realtime-supervisor-asis')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora' }, () => cargarDatos())
     .subscribe();
+}
+
+function exportarExcel(elementId, nombreArchivo) {
+  const elemento = document.getElementById(elementId);
+  if (!elemento) return;
+  const wb = XLSX.utils.table_to_book(elemento, { sheet: "Asistencia" });
+  XLSX.writeFile(wb, `${nombreArchivo}.xlsx`);
+}
+
+function exportarPDF(elementId, nombreArchivo) {
+  const elemento = document.getElementById(elementId);
+  if (!elemento) return;
+
+  const opt = {
+    margin:       0.3,
+    filename:     nombreArchivo,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2 },
+    jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
+  };
+
+  html2pdf().set(opt).from(elemento).save();
 }
