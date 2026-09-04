@@ -5,27 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Control de Garita - Club Buena Vista</title>
   
-  <!-- Tipografía Sofisticada y Fuentes Elegantes -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
 
   <style>
     :root {
-      --navy-dark: #0f1e36;
-      --navy-medium: #172a46;
-      --electric-blue: #1d4ed8;
-      --accent-gold: #d97706;
-      --marble-white: #f8fafc;
+      --gold-primary: #d4af37;
+      --gold-dark: #b8860b;
+      --gold-light: #f3e5ab;
+      --bg-cream: #f9f8f3;
+      --dark-charcoal: #111111;
       --card-bg: #ffffff;
-      --text-main: #0f172a;
+      --text-main: #1a1a1a;
     }
 
     body {
-      background-color: #e2e8f0;
+      background-color: var(--bg-cream);
       font-family: 'Montserrat', sans-serif;
       color: var(--text-main);
       min-height: 100vh;
@@ -33,63 +32,84 @@
 
     /* Barra Superior Ejecutiva */
     .brand-header {
-      background: linear-gradient(135deg, #0b1326 0%, #172a46 100%);
-      border-bottom: 3px solid var(--electric-blue);
-      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-      padding: 1rem 2rem;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1e1e1e 100%);
+      border-bottom: 3px solid var(--gold-primary);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      padding: 0.8rem 2rem;
+    }
+
+    /* CONTENEDOR DEL LOGO EN LA ESQUINA */
+    .brand-logo-container {
+      height: 55px;
+      width: auto;
+      background: #ffffff;
+      padding: 4px 8px;
+      border-radius: 8px;
+      border: 1px solid var(--gold-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand-logo {
+      height: 100%;
+      width: auto;
+      object-fit: contain;
     }
 
     .brand-title {
       font-family: 'Cinzel', serif;
       letter-spacing: 2px;
       color: #ffffff;
-      font-size: 1.35rem;
+      font-size: 1.3rem;
       font-weight: 700;
     }
 
     .brand-sub {
-      color: #94a3b8;
-      font-size: 0.8rem;
-      letter-spacing: 1px;
+      color: var(--gold-primary);
+      font-size: 0.75rem;
+      letter-spacing: 1.5px;
       text-transform: uppercase;
+      font-weight: 600;
     }
 
     /* Navegación por Pestañas Estilo VIP */
     .custom-tabs-nav {
-      background: var(--navy-dark);
-      border-radius: 14px;
-      padding: 0.5rem;
-      box-shadow: 0 8px 25px rgba(15, 30, 54, 0.15);
+      background: var(--dark-charcoal);
+      border-radius: 12px;
+      padding: 0.4rem;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      border: 1px solid rgba(212, 175, 55, 0.25);
     }
 
     .custom-tabs-nav .nav-link {
-      color: #cbd5e1;
+      color: #cccccc;
       font-weight: 600;
-      font-size: 0.92rem;
-      padding: 0.9rem 1.5rem;
-      border-radius: 10px;
+      font-size: 0.9rem;
+      padding: 0.85rem 1.25rem;
+      border-radius: 8px;
       transition: all 0.3s ease;
       border: 1px solid transparent;
     }
 
     .custom-tabs-nav .nav-link:hover {
-      color: #ffffff;
+      color: var(--gold-primary);
       background: rgba(255, 255, 255, 0.05);
     }
 
     .custom-tabs-nav .nav-link.active {
-      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-      color: #ffffff;
-      box-shadow: 0 4px 15px rgba(29, 78, 216, 0.4);
-      border: 1px solid rgba(255,255,255,0.2);
+      background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+      color: #111111;
+      font-weight: 700;
+      box-shadow: 0 4px 15px rgba(212, 175, 55, 0.35);
     }
 
     /* Contenedores de Tarjeta */
     .vip-card {
       background: var(--card-bg);
-      border-radius: 18px;
-      border: 1px solid #cbd5e1;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+      border-radius: 16px;
+      border: 1px solid #e5e0d8;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.04);
       padding: 2.2rem;
     }
 
@@ -97,14 +117,14 @@
       font-family: 'Cinzel', serif;
       font-size: 1.25rem;
       font-weight: 700;
-      color: var(--navy-dark);
-      border-bottom: 2px solid #e2e8f0;
-      padding-bottom: 0.75rem;
+      color: var(--dark-charcoal);
+      border-bottom: 2px solid var(--gold-light);
+      padding-bottom: 0.65rem;
     }
 
     /* Formulario Estilizado */
     .form-label-custom {
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -114,55 +134,39 @@
 
     .form-control-custom, .form-select-custom {
       border: 1.5px solid #cbd5e1;
-      border-radius: 10px;
-      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      padding: 0.7rem 1rem;
       font-size: 0.95rem;
-      background-color: #f8fafc;
+      background-color: #faf9f6;
       transition: all 0.25s;
     }
 
     .form-control-custom:focus, .form-select-custom:focus {
-      border-color: var(--electric-blue);
+      border-color: var(--gold-primary);
       background-color: #ffffff;
-      box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.12);
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
     }
 
-    /* Botones de Acción Elegantes */
-    .btn-vip-blue {
-      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-      color: white;
-      font-weight: 600;
+    /* Botones Dorado Imperial */
+    .btn-vip-gold {
+      background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+      color: #111111;
+      font-weight: 700;
       letter-spacing: 0.5px;
       padding: 0.85rem 2rem;
-      border-radius: 10px;
+      border-radius: 8px;
       border: none;
-      box-shadow: 0 4px 14px rgba(29, 78, 216, 0.3);
+      box-shadow: 0 4px 14px rgba(184, 134, 11, 0.3);
       transition: all 0.25s ease;
     }
 
-    .btn-vip-blue:hover {
-      background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
-      transform: translateY(-1px);
-      box-shadow: 0 6px 18px rgba(29, 78, 216, 0.4);
-      color: white;
-    }
-
-    .btn-vip-gold {
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-      color: white;
-      font-weight: 600;
-      padding: 0.85rem 2rem;
-      border-radius: 10px;
-      border: none;
-      box-shadow: 0 4px 14px rgba(217, 119, 6, 0.3);
-    }
-
     .btn-vip-gold:hover {
-      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
-      color: white;
+      background: linear-gradient(135deg, #b8860b 0%, #8b6508 100%);
+      color: #ffffff;
+      transform: translateY(-1px);
     }
 
-    /* Tabla Corporativa */
+    /* Tabla Corporativa Estilo Dorado */
     .table-vip {
       width: 100%;
       border-collapse: separate;
@@ -170,8 +174,8 @@
     }
 
     .table-vip thead th {
-      background-color: var(--navy-dark);
-      color: #ffffff;
+      background-color: var(--dark-charcoal);
+      color: var(--gold-primary);
       font-family: 'Cinzel', serif;
       font-size: 0.85rem;
       letter-spacing: 1px;
@@ -179,55 +183,48 @@
       border: none;
     }
 
-    .table-vip thead th:first-child { border-radius: 10px 0 0 10px; }
-    .table-vip thead th:last-child { border-radius: 0 10px 10px 0; }
+    .table-vip thead th:first-child { border-radius: 8px 0 0 8px; }
+    .table-vip thead th:last-child { border-radius: 0 8px 8px 0; }
 
     .table-vip tbody tr {
       background-color: #ffffff;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-      transition: transform 0.2s;
-    }
-
-    .table-vip tbody tr:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 12px rgba(0,0,0,0.08);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
     }
 
     .table-vip td {
       padding: 1rem;
       vertical-align: middle;
-      border-top: 1px solid #f1f5f9;
-      border-bottom: 1px solid #f1f5f9;
+      border-top: 1px solid #f0ece1;
+      border-bottom: 1px solid #f0ece1;
     }
 
-    .table-vip td:first-child { border-left: 1px solid #f1f5f9; border-radius: 10px 0 0 10px; }
-    .table-vip td:last-child { border-right: 1px solid #f1f5f9; border-radius: 0 10px 10px 0; }
-
-    .badge-socio { background-color: #dcfce7; color: #166534; font-weight: 600; }
-    .badge-novedad { background-color: #fef3c7; color: #92400e; font-weight: 600; }
+    .badge-socio { background-color: #fef3c7; color: #92400e; font-weight: 700; }
+    .badge-novedad { background-color: #fee2e2; color: #991b1b; font-weight: 700; }
   </style>
 </head>
 <body>
 
-  <!-- Encabezado de la Garita -->
   <header class="brand-header d-flex justify-content-between align-items-center">
     <div class="d-flex align-items-center gap-3">
-      <div class="p-2 rounded-3 text-white" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
-        <i class="bi bi-shield-lock fs-3 text-warning"></i>
+      
+      <div class="brand-logo-container">
+        <img src="logo.png" alt="Buena Vista Logo" class="brand-logo" onerror="this.style.display='none'; document.getElementById('logo-icon-fallback').style.display='block';">
+        <i id="logo-icon-fallback" class="bi bi-shield-lock-fill text-warning fs-3" style="display:none;"></i>
       </div>
+
       <div>
         <div class="brand-title">CLUB BUENA VISTA</div>
-        <div class="brand-sub"><i class="bi bi-geo-alt-fill me-1 text-primary"></i> Control de Acceso y Bitácora Operativa</div>
+        <div class="brand-sub"><i class="bi bi-geo-alt-fill me-1"></i> Control de Acceso y Bitácora Operativa</div>
       </div>
     </div>
-    <button class="btn btn-outline-light btn-sm px-3 rounded-3" onclick="cerrarSesion()">
+
+    <button class="btn btn-outline-light btn-sm px-3 rounded-2" onclick="cerrarSesion()">
       <i class="bi bi-box-arrow-right me-1"></i> Cerrar Sesión
     </button>
   </header>
 
   <main class="container my-4">
     
-    <!-- Pestañas Desplegables de Alto Nivel -->
     <ul class="nav nav-pills custom-tabs-nav mb-4 nav-justified" id="pills-tab" role="tablist">
       <li class="nav-item" role="presentation">
         <button class="nav-link active" id="tab-asistencia-btn" data-bs-toggle="pill" data-bs-target="#panel-asistencia" type="button">
@@ -248,10 +245,9 @@
 
     <div class="tab-content" id="pills-tabContent">
       
-      <!-- PESTAÑA 1: REGISTRO DE ASISTENCIA DE SOCIOS -->
       <div class="tab-pane fade show active" id="panel-asistencia" role="tabpanel">
         <div class="vip-card">
-          <h5 class="panel-title mb-4"><i class="bi bi-person-badge text-primary me-2"></i>Control de Ingreso de Socios y Visitantes</h5>
+          <h5 class="panel-title mb-4"><i class="bi bi-person-badge text-warning me-2"></i>Control de Ingreso de Socios y Visitantes</h5>
           
           <form id="formAsistencia" onsubmit="guardarAsistencia(event)">
             <div class="row g-3">
@@ -284,7 +280,7 @@
                 <textarea class="form-control form-control-custom" id="asi_obs" rows="2" placeholder="Notas sobre la autorización de ingreso..."></textarea>
               </div>
               <div class="col-12 text-end mt-4">
-                <button type="submit" class="btn btn-vip-blue">
+                <button type="submit" class="btn btn-vip-gold">
                   <i class="bi bi-check-circle-fill me-2"></i> Guardar y Registrar Ingreso
                 </button>
               </div>
@@ -293,7 +289,6 @@
         </div>
       </div>
 
-      <!-- PESTAÑA 2: NOVEDADES E IMÁGENES -->
       <div class="tab-pane fade" id="panel-novedades" role="tabpanel">
         <div class="vip-card">
           <h5 class="panel-title mb-4"><i class="bi bi-exclamation-diamond text-warning me-2"></i>Reporte Operativo de Novedades e Infraestructura</h5>
@@ -305,7 +300,7 @@
                 <input type="text" class="form-control form-control-custom" id="nov_ubicacion" placeholder="Ej: En el patio 3" required>
               </div>
               <div class="col-md-6">
-                <label class="form-label-custom">Asunto / Novedad Principales</label>
+                <label class="form-label-custom">Asunto / Novedad Principal</label>
                 <input type="text" class="form-control form-control-custom" id="nov_titulo" placeholder="Ej: Lámpara dañada sin iluminación" required>
               </div>
               <div class="col-12">
@@ -326,15 +321,14 @@
         </div>
       </div>
 
-      <!-- PESTAÑA 3: VISUALIZACIÓN DE LA BITÁCORA -->
       <div class="tab-pane fade" id="panel-bitacora" role="tabpanel">
         <div class="vip-card">
           <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-              <h5 class="panel-title border-0 pb-0 mb-1"><i class="bi bi-journal-text text-primary me-2"></i>Bitácora Digital en Tiempo Real</h5>
+              <h5 class="panel-title border-0 pb-0 mb-1"><i class="bi bi-journal-text text-warning me-2"></i>Bitácora Digital en Tiempo Real</h5>
               <small class="text-muted">Consulta de ingresos, salidas y reportes registrados</small>
             </div>
-            <button class="btn btn-outline-primary btn-sm px-3 rounded-3 fw-bold" onclick="cargarBitacora()">
+            <button class="btn btn-outline-dark btn-sm px-3 rounded-2 fw-bold" onclick="cargarBitacora()">
               <i class="bi bi-arrow-clockwise me-1"></i> Actualizar Bitácora
             </button>
           </div>
@@ -364,7 +358,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="../supabase.js"></script>
+  <script src="../supabase.js?v=2.2"></script>
 
   <script>
     // 1. Guardar Ingreso de Asistencia

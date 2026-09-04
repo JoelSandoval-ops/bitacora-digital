@@ -3,293 +3,439 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Acceso Corporativo - Club Buena Vista</title>
+  <title>Garita de Control - Club Buena Vista</title>
   
-  <!-- CSS Bootstrap 5 & Icons -->
+  <!-- Fuentes Elegantes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-
-  <!-- Supabase JS Client (Versión Global CDN) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
 
   <style>
     :root {
-      --navy-primary: #0f1e36;
-      --navy-secondary: #1a2a47;
-      --accent-blue: #3b82f6;
+      --gold-primary: #d4af37;
+      --gold-dark: #b8860b;
+      --gold-light: #f3e5ab;
+      --bg-cream: #f9f8f3;
+      --dark-charcoal: #1a1a1a;
+      --card-bg: #ffffff;
     }
+
     body {
-      background: linear-gradient(135deg, var(--navy-primary) 0%, var(--navy-secondary) 100%);
+      background-color: var(--bg-cream);
+      font-family: 'Montserrat', sans-serif;
+      color: var(--dark-charcoal);
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-    .card-login {
-      border: none;
-      border-radius: 16px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+
+    /* Header Ejecutivo con Logo */
+    .brand-header {
+      background: linear-gradient(135deg, #111111 0%, #222222 100%);
+      border-bottom: 3px solid var(--gold-primary);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      padding: 0.8rem 2rem;
+    }
+
+    /* CONTENEDOR DEL LOGO */
+    .brand-logo-container {
+      height: 60px;
+      width: auto;
       background: #ffffff;
-      overflow: hidden;
-      width: 100%;
-      max-width: 440px;
+      padding: 4px;
+      border-radius: 8px;
+      border: 1px solid var(--gold-primary);
     }
-    .header-logo {
-      background: var(--navy-primary);
-      padding: 35px 20px 25px;
-      text-align: center;
-      border-bottom: 4px solid var(--accent-blue);
+
+    .brand-logo {
+      height: 100%;
+      width: auto;
+      object-fit: contain;
     }
-    .club-title {
+
+    .brand-title {
+      font-family: 'Cinzel', serif;
+      letter-spacing: 2px;
       color: #ffffff;
-      font-size: 1.6rem;
-      font-weight: 800;
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .brand-sub {
+      color: var(--gold-primary);
+      font-size: 0.75rem;
       letter-spacing: 1.5px;
-      margin-top: 10px;
       text-transform: uppercase;
     }
-    .club-subtitle {
-      color: #94a3b8;
-      font-size: 0.8rem;
-      letter-spacing: 2px;
+
+    /* Pestañas de Navegación */
+    .custom-tabs-nav {
+      background: #111111;
+      border-radius: 12px;
+      padding: 0.4rem;
+      border: 1px solid rgba(212, 175, 55, 0.3);
+    }
+
+    .custom-tabs-nav .nav-link {
+      color: #cccccc;
       font-weight: 600;
-    }
-    .form-control:focus {
-      border-color: var(--accent-blue);
-      box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.2);
-    }
-    .btn-club {
-      background: var(--navy-primary);
-      color: #ffffff;
-      font-weight: 700;
-      padding: 12px;
+      font-size: 0.9rem;
+      padding: 0.8rem 1.2rem;
       border-radius: 8px;
-      letter-spacing: 0.5px;
       transition: all 0.3s ease;
     }
-    .btn-club:hover {
-      background: var(--navy-secondary);
-      color: var(--accent-blue);
+
+    .custom-tabs-nav .nav-link:hover {
+      color: var(--gold-primary);
     }
+
+    .custom-tabs-nav .nav-link.active {
+      background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+      color: #111111;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+    }
+
+    /* Tarjetas de Trabajo */
+    .vip-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 1px solid #e5e0d8;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.04);
+      padding: 2rem;
+    }
+
+    .panel-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--dark-charcoal);
+      border-bottom: 2px solid var(--gold-light);
+      padding-bottom: 0.6rem;
+    }
+
+    .form-label-custom {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #555555;
+      margin-bottom: 0.4rem;
+    }
+
+    .form-control-custom, .form-select-custom {
+      border: 1.5px solid #dcd6cd;
+      border-radius: 8px;
+      padding: 0.65rem 0.9rem;
+      font-size: 0.95rem;
+      background-color: #faf9f6;
+    }
+
+    .form-control-custom:focus, .form-select-custom:focus {
+      border-color: var(--gold-primary);
+      background-color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+    }
+
+    /* Botones Dorado Imperial */
+    .btn-vip-gold {
+      background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+      color: #111111;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      padding: 0.75rem 1.8rem;
+      border-radius: 8px;
+      border: none;
+      box-shadow: 0 4px 12px rgba(184, 134, 11, 0.3);
+      transition: all 0.25s ease;
+    }
+
+    .btn-vip-gold:hover {
+      background: linear-gradient(135deg, #b8860b 0%, #8b6508 100%);
+      color: #ffffff;
+    }
+
+    /* Tabla Estilo Dorado */
+    .table-vip {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 8px;
+    }
+
+    .table-vip thead th {
+      background-color: #111111;
+      color: var(--gold-primary);
+      font-family: 'Cinzel', serif;
+      font-size: 0.82rem;
+      padding: 0.9rem;
+      border: none;
+    }
+
+    .table-vip tbody tr {
+      background-color: #ffffff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+
+    .table-vip td {
+      padding: 0.9rem;
+      vertical-align: middle;
+      border-top: 1px solid #f0ece1;
+      border-bottom: 1px solid #f0ece1;
+    }
+
+    .badge-socio { background-color: #fef3c7; color: #92400e; font-weight: 700; }
+    .badge-novedad { background-color: #fee2e2; color: #991b1b; font-weight: 700; }
   </style>
 </head>
 <body>
 
-  <div class="card-login mx-3">
-    <div class="header-logo">
-      <i class="bi bi-shield-lock-fill text-primary display-4"></i>
-      <div class="club-title">BUENA VISTA</div>
-      <div class="club-subtitle">SISTEMA CONTROL DE ACCESOS</div>
-    </div>
-    
-    <div class="card-body p-4 p-md-5">
-      <!-- Alertas dinámicas -->
-      <div id="alertBox" class="alert alert-danger d-none py-2 small" role="alert"></div>
-      <div id="successBox" class="alert alert-success d-none py-2 small" role="alert"></div>
+  <!-- Header Superior con Espacio para el Logo -->
+  <header class="brand-header d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center gap-3">
+      
+      <!-- AQUÍ SE RENDERIZA EL LOGO -->
+      <div class="brand-logo-container">
+        <img src="logo.png" alt="Buena Vista Logo" class="brand-logo" onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='block';">
+        <i id="logo-fallback" class="bi bi-trophy-fill text-warning fs-3 px-2" style="display:none;"></i>
+      </div>
 
-      <!-- FORMULARIO DE LOGIN -->
-      <form id="formLogin">
-        <div class="mb-3">
-          <label class="form-label fw-semibold small text-secondary">CORREO INSTITUCIONAL</label>
-          <div class="input-group">
-            <span class="input-group-text bg-light text-secondary"><i class="bi bi-person-badge"></i></span>
-            <input type="email" id="loginUser" class="form-control py-2" placeholder="ejemplo@buenavista.com" required autocomplete="email">
-          </div>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label fw-semibold small text-secondary">CONTRASEÑA DE ACCESO</label>
-          <div class="input-group">
-            <span class="input-group-text bg-light text-secondary"><i class="bi bi-key-fill"></i></span>
-            <input type="password" id="loginPass" class="form-control py-2" placeholder="••••••••" required autocomplete="current-password">
-          </div>
-        </div>
-
-        <div class="text-end mb-4">
-          <a href="#" class="text-decoration-none small text-primary fw-semibold" data-bs-toggle="modal" data-bs-target="#modalRecuperar">
-            ¿Olvidaste tu contraseña?
-          </a>
-        </div>
-
-        <button type="submit" id="btnSubmit" class="btn btn-club w-100">
-          <span id="btnText">INGRESAR AL SISTEMA</span>
-          <i class="bi bi-arrow-right-short ms-1 fs-5 align-middle"></i>
-        </button>
-      </form>
-    </div>
-
-    <div class="card-footer bg-light text-center py-3 border-0">
-      <small class="text-muted fw-semibold">Club Buena Vista &copy; 2026</small>
-    </div>
-  </div>
-
-  <!-- MODAL RECUPERACIÓN DE CONTRASEÑA -->
-  <div class="modal fade" id="modalRecuperar" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
-        <div class="modal-header border-0 pb-0">
-          <h5 class="modal-title fw-bold text-dark"><i class="bi bi-envelope-at text-primary me-2"></i>Recuperar Contraseña</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body py-4">
-          <p class="text-muted small mb-3">Ingresa tu correo institucional para enviarte las instrucciones.</p>
-          <div class="mb-3">
-            <label class="form-label fw-semibold small text-secondary">CORREO INSTITUCIONAL</label>
-            <input type="email" id="emailRecuperar" class="form-control py-2" placeholder="ejemplo@buenavista.com" required>
-          </div>
-        </div>
-        <div class="modal-footer border-0 pt-0">
-          <button type="button" class="btn btn-light btn-sm fw-semibold" data-bs-dismiss="modal">Cancelar</button>
-          <button type="button" id="btnReset" class="btn btn-primary btn-sm fw-semibold">
-            Enviar Instrucciones
-          </button>
-        </div>
+      <div>
+        <div class="brand-title">BUENA VISTA</div>
+        <div class="brand-sub">Club de Tenis — Garita de Control</div>
       </div>
     </div>
-  </div>
+
+    <button class="btn btn-outline-light btn-sm px-3 rounded-2" onclick="cerrarSesion()">
+      <i class="bi bi-box-arrow-right me-1"></i> Salir
+    </button>
+  </header>
+
+  <main class="container my-4">
+    
+    <!-- Pestañas de Navegación -->
+    <ul class="nav nav-pills custom-tabs-nav mb-4 nav-justified" id="pills-tab" role="tablist">
+      <li class="nav-item">
+        <button class="nav-link active" id="tab-asistencia-btn" data-bs-toggle="pill" data-bs-target="#panel-asistencia" type="button">
+          <i class="bi bi-person-check-fill me-2"></i>1. Asistencia de Socios
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" id="tab-novedades-btn" data-bs-toggle="pill" data-bs-target="#panel-novedades" type="button">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>2. Novedades e Infraestructura
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" id="tab-bitacora-btn" data-bs-toggle="pill" data-bs-target="#panel-bitacora" type="button" onclick="cargarBitacora()">
+          <i class="bi bi-journal-text me-2"></i>3. Visualización de Bitácora
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content" id="pills-tabContent">
+      
+      <!-- PESTAÑA 1 -->
+      <div class="tab-pane fade show active" id="panel-asistencia" role="tabpanel">
+        <div class="vip-card">
+          <h5 class="panel-title mb-4"><i class="bi bi-person-badge text-warning me-2"></i>Registro de Ingreso de Socios y Visitantes</h5>
+          <form id="formAsistencia" onsubmit="guardarAsistencia(event)">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label-custom">Tipo de Visita</label>
+                <select class="form-select form-select-custom" id="asi_tipo" required>
+                  <option value="Socio">Socio</option>
+                  <option value="Invitado">Invitado</option>
+                  <option value="Proveedor">Proveedor</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label-custom">Placa / Vehículo</label>
+                <input type="text" class="form-control form-control-custom" id="asi_placa" placeholder="Ej: JHY-5677" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label-custom">Cédula / Pasaporte</label>
+                <input type="text" class="form-control form-control-custom" id="asi_cedula" placeholder="1722731898" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label-custom">Nombre Completo</label>
+                <input type="text" class="form-control form-control-custom" id="asi_nombre" placeholder="Nombre y apellido" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label-custom">Destino / Área del Club</label>
+                <input type="text" class="form-control form-control-custom" id="asi_destino" placeholder="Ej: Canchas de Tenis N° 2" required>
+              </div>
+              <div class="col-12">
+                <label class="form-label-custom">Observaciones</label>
+                <textarea class="form-control form-control-custom" id="asi_obs" rows="2" placeholder="Notas de ingreso..."></textarea>
+              </div>
+              <div class="col-12 text-end mt-4">
+                <button type="submit" class="btn btn-vip-gold">
+                  <i class="bi bi-check-circle-fill me-2"></i>Guardar e Registrar Ingreso
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- PESTAÑA 2 -->
+      <div class="tab-pane fade" id="panel-novedades" role="tabpanel">
+        <div class="vip-card">
+          <h5 class="panel-title mb-4"><i class="bi bi-tools text-warning me-2"></i>Reporte Operativo de Novedades</h5>
+          <form id="formNovedad" onsubmit="guardarNovedad(event)">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label-custom">Ubicación Exacta</label>
+                <input type="text" class="form-control form-control-custom" id="nov_ubicacion" placeholder="Ej: Patio 3 / Lado de canchas" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label-custom">Asunto de la Novedad</label>
+                <input type="text" class="form-control form-control-custom" id="nov_titulo" placeholder="Ej: Lámpara dañada" required>
+              </div>
+              <div class="col-12">
+                <label class="form-label-custom">Detalle Explicativo</label>
+                <textarea class="form-control form-control-custom" id="nov_detalle" rows="3" placeholder="Ej: Se dañó la lámpara, necesita reemplazo inmediato por falta de luz..." required></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-label-custom">Referencia / Imagen Adjunta</label>
+                <input type="text" class="form-control form-control-custom" id="nov_foto" placeholder="Nombre o nota de archivo (Ej: Foto_Lampara_Patio3.jpg)">
+              </div>
+              <div class="col-12 text-end mt-4">
+                <button type="submit" class="btn btn-vip-gold">
+                  <i class="bi bi-send-fill me-2"></i>Enviar Reporte
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- PESTAÑA 3 -->
+      <div class="tab-pane fade" id="panel-bitacora" role="tabpanel">
+        <div class="vip-card">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h5 class="panel-title border-0 pb-0 mb-1"><i class="bi bi-journal-bookmark-fill text-warning me-2"></i>Historial de Bitácora Digital</h5>
+              <small class="text-muted">Registro en tiempo real del club</small>
+            </div>
+            <button class="btn btn-outline-dark btn-sm px-3 rounded-2 fw-bold" onclick="cargarBitacora()">
+              <i class="bi bi-arrow-clockwise me-1"></i>Actualizar
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-vip">
+              <thead>
+                <tr>
+                  <th>Fecha/Hora</th>
+                  <th>Tipo</th>
+                  <th>Nombre / Asunto</th>
+                  <th>Placa / Sector</th>
+                  <th>Destino</th>
+                  <th>Observación</th>
+                </tr>
+              </thead>
+              <tbody id="tablaBitacora">
+                <tr><td colspan="6" class="text-center text-muted py-4">Cargando registros...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../supabase.js?v=2.1"></script>
 
   <script>
-    // CONFIGURACIÓN REAL DE SUPABASE
-    const SUPABASE_URL = 'https://irdgnyqomuwajsezswal.supabase.co'; 
-    const SUPABASE_ANON_KEY = 'sb_publishable_dHiFIWqRS9XAedJLYMdeew_XVQUYDvp'; 
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    async function guardarAsistencia(e) {
+      e.preventDefault();
+      try {
+        const datos = {
+          tipo_visita: document.getElementById('asi_tipo').value,
+          placa: document.getElementById('asi_placa').value,
+          cedula: document.getElementById('asi_cedula').value,
+          nombre: document.getElementById('asi_nombre').value,
+          destino: document.getElementById('asi_destino').value,
+          observacion: document.getElementById('asi_obs').value,
+          fecha_ingreso: new Date().toISOString()
+        };
 
-    // 1. REDIRECCIÓN CENTRALIZADA POR ROL
-    function redireccionarSegunRol(rol) {
-      const rolNormalizado = (rol || '').toString().toUpperCase().trim();
-      
-      switch (rolNormalizado) {
-        case 'ADMIN':
-        case 'ADMINISTRADOR':
-          window.location.href = 'administrador.html';
-          break;
-        case 'SUPERVISOR':
-          window.location.href = 'supervisor.html';
-          break;
-        case 'GUARDIA':
-        default:
-          window.location.href = 'guardia.html';
-          break;
+        const { error } = await window.supabaseClient.from('bitacora').insert([datos]);
+        if (error) throw error;
+
+        alert('¡Ingreso registrado exitosamente!');
+        document.getElementById('formAsistencia').reset();
+      } catch (err) {
+        alert('Error al registrar: ' + err.message);
       }
     }
 
-    // 2. VERIFICAR SESIÓN ACTIVA AL CARGAR
-    document.addEventListener('DOMContentLoaded', () => {
-      const sesionGuardada = sessionStorage.getItem('sesion_bitacora');
-      if (sesionGuardada) {
-        try {
-          const usuario = JSON.parse(sesionGuardada);
-          if (usuario && usuario.rol) {
-            redireccionarSegunRol(usuario.rol);
-          }
-        } catch (e) {
-          sessionStorage.removeItem('sesion_bitacora');
-        }
-      }
-    });
-
-    // 3. PROCESAMIENTO DEL LOGIN
-    document.getElementById('formLogin').addEventListener('submit', async (e) => {
+    async function guardarNovedad(e) {
       e.preventDefault();
-      
-      const alertBox = document.getElementById('alertBox');
-      const successBox = document.getElementById('successBox');
-      const btnSubmit = document.getElementById('btnSubmit');
-      const btnText = document.getElementById('btnText');
-      
-      alertBox.classList.add('d-none');
-      successBox.classList.add('d-none');
-      btnSubmit.disabled = true;
-      btnText.innerText = 'VERIFICANDO...';
-
-      const correo = document.getElementById('loginUser').value.trim();
-      const password = document.getElementById('loginPass').value.trim();
-
       try {
-        const { data: usuario, error } = await _supabase
-          .from('usuarios')
-          .select('*')
-          .eq('correo', correo)
-          .eq('password', password)
-          .maybeSingle();
+        const datos = {
+          tipo_visita: 'NOVEDAD',
+          placa: document.getElementById('nov_ubicacion').value,
+          nombre: document.getElementById('nov_titulo').value,
+          observacion: document.getElementById('nov_detalle').value,
+          destino: document.getElementById('nov_foto').value || 'Sin Evidencia',
+          fecha_ingreso: new Date().toISOString()
+        };
 
-        if (error) {
-          console.error('Error de Supabase:', error);
-          alertBox.innerText = 'Error de conexión con la base de datos';
-          alertBox.classList.remove('d-none');
-          btnSubmit.disabled = false;
-          btnText.innerText = 'INGRESAR AL SISTEMA';
+        const { error } = await window.supabaseClient.from('bitacora').insert([datos]);
+        if (error) throw error;
+
+        alert('¡Novedad registrada exitosamente!');
+        document.getElementById('formNovedad').reset();
+      } catch (err) {
+        alert('Error al guardar novedad: ' + err.message);
+      }
+    }
+
+    async function cargarBitacora() {
+      const tbody = document.getElementById('tablaBitacora');
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Cargando bitácora...</td></tr>';
+      
+      try {
+        const { data, error } = await window.supabaseClient
+          .from('bitacora')
+          .select('*')
+          .order('fecha_ingreso', { ascending: false })
+          .limit(20);
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Sin registros.</td></tr>';
           return;
         }
 
-        if (usuario) {
-          // Guardar objeto de sesión compatible con las vistas
-          const sesion = {
-            id: usuario.id,
-            nombre: usuario.nombre,
-            correo: usuario.correo,
-            rol: usuario.rol,
-            sede: usuario.sede || 'GENERAL'
-          };
-
-          sessionStorage.setItem('sesion_bitacora', JSON.stringify(sesion));
-          redireccionarSegunRol(usuario.rol);
-        } else {
-          alertBox.innerText = 'Credenciales incorrectas. Verifique correo y contraseña.';
-          alertBox.classList.remove('d-none');
-          btnSubmit.disabled = false;
-          btnText.innerText = 'INGRESAR AL SISTEMA';
-        }
+        tbody.innerHTML = data.map(r => `
+          <tr>
+            <td><small class="text-muted fw-semibold">${new Date(r.fecha_ingreso || r.created_at).toLocaleString()}</small></td>
+            <td>
+              <span class="badge ${r.tipo_visita === 'NOVEDAD' ? 'badge-novedad' : 'badge-socio'} rounded-pill px-3 py-2">
+                ${r.tipo_visita || 'Ingreso'}
+              </span>
+            </td>
+            <td><strong>${r.nombre || 'N/A'}</strong></td>
+            <td><code class="bg-light text-dark px-2 py-1 rounded border">${r.placa || 'N/A'}</code></td>
+            <td><small>${r.destino || 'Garita'}</small></td>
+            <td>${r.observacion || 'Sin detalles'}</td>
+          </tr>
+        `).join('');
       } catch (err) {
-        console.error('Error inesperado:', err);
-        alertBox.innerText = 'Error inesperado al conectar.';
-        alertBox.classList.remove('d-none');
-        btnSubmit.disabled = false;
-        btnText.innerText = 'INGRESAR AL SISTEMA';
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Error: ${err.message}</td></tr>`;
       }
-    });
+    }
 
-    // 4. RECUPERACIÓN DE CONTRASEÑA VÍA SUPABASE
-    document.getElementById('btnReset').addEventListener('click', async () => {
-      const emailInput = document.getElementById('emailRecuperar');
-      const email = emailInput.value.trim();
-      const btnReset = document.getElementById('btnReset');
-      const alertBox = document.getElementById('alertBox');
-      const successBox = document.getElementById('successBox');
-
-      if (!email) {
-        alert('Por favor, ingresa tu correo electrónico.');
-        return;
-      }
-
-      btnReset.disabled = true;
-      btnReset.innerText = 'Enviando...';
-
-      try {
-        const { error } = await _supabase.auth.resetPasswordForEmail(email);
-        
-        const modalElement = document.getElementById('modalRecuperar');
-        const modal = bootstrap.Modal.getInstance(modalElement);
-        if (modal) modal.hide();
-
-        if (error) {
-          alertBox.innerText = 'No se pudo enviar el correo de recuperación.';
-          alertBox.classList.remove('d-none');
-        } else {
-          successBox.innerText = 'Se han enviado las instrucciones a tu correo electrónico.';
-          successBox.classList.remove('d-none');
-          emailInput.value = '';
-        }
-      } catch (err) {
-        alert('Error al conectar con el servicio.');
-      } finally {
-        btnReset.disabled = false;
-        btnReset.innerText = 'Enviar Instrucciones';
-      }
-    });
+    function cerrarSesion() {
+      sessionStorage.clear();
+      window.location.href = 'login.html';
+    }
   </script>
 </body>
 </html>
