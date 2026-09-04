@@ -3,191 +3,768 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal Socio - Club Buena Vista</title>
+  <title>Supervisión Multi-Club - Bitácora Inteligente</title>
+  
+  <!-- Tipografía Poppins (Igual a la del guardia) -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <!-- FontAwesome Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  
+  <!-- Librerías Externas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
-    :root { 
-      --club-navy: #0f1e36; 
-      --club-blue: #3b82f6; 
+    :root {
+      --bg-dark: #0f172a;
+      --card-dark: #1e293b;
+      --card-border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-blue: #38bdf8;
+      --accent-green: #22c55e;
+      --accent-warning: #f59e0b;
+      --accent-danger: #ef4444;
+      --accent-purple: #a855f7;
     }
-    body { 
-      background-color: #f4f6f9; 
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Poppins', sans-serif;
+      letter-spacing: 0.2px;
     }
-    .navbar-club { 
-      background-color: var(--club-navy); 
-      border-bottom: 3px solid var(--club-blue); 
+
+    /* Navbar Estilo Guardia */
+    .navbar-custom {
+      background-color: #0b1120;
+      border-bottom: 1px solid var(--card-border);
     }
-    .card-custom { 
-      border: none; 
-      border-radius: 12px; 
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); 
-      background-color: #ffffff;
+
+    /* Tarjetas y Contenedores */
+    .card-dark-custom {
+      background-color: var(--card-dark);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      color: var(--text-main);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
     }
-    .header-custom { 
-      background-color: var(--club-navy); 
-      color: #ffffff; 
-      border-radius: 12px 12px 0 0 !important; 
+
+    /* Tarjetas KPI Neón */
+    .kpi-card {
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+      background: linear-gradient(145deg, #1e293b, #0f172a);
+      transition: all 0.3s ease;
     }
-    .btn-club-primary { 
-      background-color: var(--club-navy); 
-      color: #ffffff; 
-      font-weight: 600; 
+
+    .kpi-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .kpi-total { border-left: 4px solid var(--accent-blue); }
+    .kpi-dentro { border-left: 4px solid var(--accent-green); }
+    .kpi-salidas { border-left: 4px solid var(--accent-purple); }
+    .kpi-novedades { border-left: 4px solid var(--accent-warning); }
+
+    /* Estilos de Controles de Formulario */
+    .form-control-dark, .form-select-dark {
+      background-color: #0f172a;
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
       border-radius: 8px;
-      transition: background-color 0.2s ease;
     }
-    .btn-club-primary:hover { 
-      background-color: #1a2a47; 
-      color: #ffffff; 
+
+    .form-control-dark:focus, .form-select-dark:focus {
+      background-color: #0f172a;
+      border-color: var(--accent-blue);
+      color: var(--text-main);
+      box-shadow: 0 0 0 0.25rem rgba(56, 189, 248, 0.25);
+    }
+
+    /* Pestañas (Tabs) estilo moderno */
+    .nav-tabs {
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .nav-tabs .nav-link {
+      color: var(--text-muted);
+      font-weight: 500;
+      border: none;
+      border-bottom: 3px solid transparent;
+      padding: 0.8rem 1.2rem;
+      transition: all 0.2s ease;
+    }
+
+    .nav-tabs .nav-link:hover {
+      color: var(--text-main);
+    }
+
+    .nav-tabs .nav-link.active {
+      color: var(--accent-blue);
+      border-bottom: 3px solid var(--accent-blue);
+      background: transparent;
+      font-weight: 600;
+    }
+
+    /* Tabla Oscura Elegante */
+    .table-dark-custom {
+      color: var(--text-main);
+    }
+
+    .table-dark-custom thead {
+      background-color: #0b1120;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .table-dark-custom th, .table-dark-custom td {
+      border-bottom: 1px solid var(--card-border);
+      padding: 1rem 0.75rem;
+      vertical-align: middle;
+    }
+
+    .table-dark-custom tbody tr:hover {
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    /* Miniatura Evidencia Fotográfica */
+    .img-preview {
+      width: 48px;
+      height: 48px;
+      object-fit: cover;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1px solid var(--card-border);
+      transition: transform 0.2s ease;
+    }
+
+    .img-preview:hover {
+      transform: scale(1.1);
+      border-color: var(--accent-blue);
+    }
+
+    /* Modal Estilo Oscuro */
+    .modal-content-dark {
+      background-color: var(--card-dark);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+    }
+
+    .modal-header-dark {
+      border-bottom: 1px solid var(--card-border);
+      background-color: #0b1120;
+    }
+
+    .modal-footer-dark {
+      border-top: 1px solid var(--card-border);
+    }
+
+    /* Scrollbar Personalizado */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-dark);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--card-border);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
     }
   </style>
 </head>
 <body>
 
-  <!-- Navegación Ejecutiva del Socio -->
-  <nav class="navbar navbar-dark navbar-club px-3 py-2 mb-4">
-    <div class="container-fluid">
-      <span class="navbar-brand fw-bold d-flex align-items-center gap-2">
-        <i class="bi bi-activity text-primary fs-4"></i>
-        <span>CLUB BUENA VISTA <small class="fw-normal text-muted fs-6 d-none d-sm-inline">| Portal de Socio</small></span>
-      </span>
-      <div class="d-flex align-items-center gap-3">
-        <span class="text-white small fw-semibold" id="nombreSocio">Socio</span>
-        <a href="/login.html" onclick="localStorage.clear()" class="btn btn-outline-light btn-sm rounded-pill px-3">
-          <i class="bi bi-box-arrow-right"></i> Salir
-        </a>
+  <!-- Barra de Navegación -->
+  <nav class="navbar navbar-expand-lg navbar-dark navbar-custom sticky-top">
+    <div class="container-fluid px-4">
+      <a class="navbar-brand fw-bold text-white d-flex align-items-center" href="#">
+        <i class="fa-solid fa-user-shield me-2 text-warning fs-4"></i>
+        <span>PANEL DE SUPERVISIÓN GENERAL</span>
+      </a>
+      <div class="d-flex align-items-center">
+        <span class="me-3 small text-muted"><i class="fa-solid fa-circle-user me-1 text-info"></i> <span id="usuarioNombre" class="text-white fw-medium">Supervisor</span></span>
+        <button class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="cerrarSesion()">
+          <i class="fa-solid fa-right-from-bracket me-1"></i>Salir
+        </button>
       </div>
     </div>
   </nav>
 
-  <div class="container py-2">
-    <!-- Formulario de Pre-autorización -->
-    <div class="card card-custom mb-4">
-      <div class="card-header header-custom py-3">
-        <h6 class="fw-bold mb-0">
-          <i class="bi bi-person-plus-fill me-2 text-primary"></i> Pre-autorizar Visitante o Evento
-        </h6>
-      </div>
-      <div class="card-body p-4">
-        <form id="formPreAutorizar">
-          <div class="row g-3">
-            <div class="col-12 col-md-4">
-              <label class="form-label fw-semibold small text-secondary">NOMBRE DEL INVITADO</label>
-              <input type="text" id="preNombre" class="form-control" required placeholder="Ej. Carlos Mendoza">
-            </div>
-            <div class="col-12 col-md-4">
-              <label class="form-label fw-semibold small text-secondary">CÉDULA / IDENTIFICACIÓN</label>
-              <input type="text" id="preCedula" class="form-control" required placeholder="Ej. 1712345678">
-            </div>
-            <div class="col-12 col-md-4">
-              <label class="form-label fw-semibold small text-secondary">PLACA VEHÍCULO (OPCIONAL)</label>
-              <input type="text" id="prePlaca" class="form-control text-uppercase" placeholder="Ej. ABC-1234">
-            </div>
-            <div class="col-12">
-              <label class="form-label fw-semibold small text-secondary">ÁREA DE DESTINO / OBSERVACIONES</label>
-              <input type="text" id="preDestino" class="form-control" required placeholder="Ej. Casa Villa 12 / Canchas de Tenis">
-            </div>
+  <div class="container-fluid px-4 py-4">
+
+    <!-- Filtros Globales -->
+    <div class="card card-dark-custom mb-4">
+      <div class="card-body">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-3">
+            <label class="form-label fw-medium small text-muted">Sede / Club</label>
+            <select id="filtroSede" class="form-select form-select-dark form-select-sm" onchange="aplicarFiltros()">
+              <option value="TODAS">Todas las Sedes</option>
+            </select>
           </div>
-          <button type="submit" class="btn btn-club-primary w-100 py-2 mt-4">
-            <i class="bi bi-send-check me-1"></i> ENVIAR PRE-AUTORIZACIÓN A GARITA
-          </button>
-        </form>
+          <div class="col-md-2">
+            <label class="form-label fw-medium small text-muted">Fecha Inicio</label>
+            <input type="date" id="filtroFechaInicio" class="form-control form-control-dark form-control-sm" onchange="aplicarFiltros()">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-medium small text-muted">Fecha Fin</label>
+            <input type="date" id="filtroFechaFin" class="form-control form-control-dark form-control-sm" onchange="aplicarFiltros()">
+          </div>
+          <div class="col-md-5 d-flex gap-2">
+            <button class="btn btn-sm btn-outline-secondary w-100 text-white" onclick="limpiarFiltros()">
+              <i class="fa-solid fa-rotate-left me-1"></i>Limpiar
+            </button>
+            <button class="btn btn-sm btn-success w-100 fw-semibold" onclick="exportarExcel()">
+              <i class="fa-solid fa-file-excel me-1"></i>Excel
+            </button>
+            <button class="btn btn-sm btn-danger w-100 fw-semibold" onclick="exportarPDF()">
+              <i class="fa-solid fa-file-pdf me-1"></i>PDF
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Historial de Visitas -->
-    <div class="card card-custom">
-      <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-        <h6 class="fw-bold mb-0 text-dark">
-          <i class="bi bi-clock-history text-primary me-2"></i> Historial de Visitas
-        </h6>
-        <button onclick="cargarVisitasSocio()" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
-          <i class="bi bi-arrow-clockwise"></i> Actualizar
-        </button>
+    <!-- Métrica KPIs -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-3">
+        <div class="card kpi-card kpi-total p-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="text-muted small mb-1">Total Ingresos</h6>
+              <h2 class="mb-0 fw-bold text-white" id="kpiTotal">0</h2>
+            </div>
+            <i class="fa-solid fa-users fa-2x text-info"></i>
+          </div>
+        </div>
       </div>
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0">
-            <thead class="table-light small">
-              <tr>
-                <th>FECHA / HORA</th>
-                <th>INVITADO</th>
-                <th>CÉDULA</th>
-                <th>PLACA</th>
-                <th>ESTADO</th>
-              </tr>
-            </thead>
-            <tbody id="tablaSocio">
-              <tr>
-                <td colspan="5" class="text-center py-4 text-muted">Cargando registros...</td>
-              </tr>
-            </tbody>
-          </table>
+      <div class="col-md-3">
+        <div class="card kpi-card kpi-dentro p-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="text-muted small mb-1">En Sede (Dentro)</h6>
+              <h2 class="mb-0 fw-bold text-white" id="kpiDentro">0</h2>
+            </div>
+            <i class="fa-solid fa-door-open fa-2x text-success"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card kpi-card kpi-salidas p-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="text-muted small mb-1">Salidas Registradas</h6>
+              <h2 class="mb-0 fw-bold text-white" id="kpiSalidas">0</h2>
+            </div>
+            <i class="fa-solid fa-door-closed fa-2x text-purple" style="color: var(--accent-purple);"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card kpi-card kpi-novedades p-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="text-muted small mb-1">Novedades Reportadas</h6>
+              <h2 class="mb-0 fw-bold text-white" id="kpiNovedades">0</h2>
+            </div>
+            <i class="fa-solid fa-triangle-exclamation fa-2x text-warning"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pestañas de Vista -->
+    <ul class="nav nav-tabs mb-4" id="mainTabs" role="tablist">
+      <li class="nav-item">
+        <button class="nav-link active" id="tab-asistencias-tab" data-bs-toggle="tab" data-bs-target="#tab-asistencias" type="button">
+          <i class="fa-solid fa-list-check me-2"></i>Bitácora General de Asistencia
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" id="tab-novedades-tab" data-bs-toggle="tab" data-bs-target="#tab-novedades" type="button">
+          <i class="fa-solid fa-shield-cat me-2"></i>Bitácora de Novedades
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" id="tab-estadisticas-tab" data-bs-toggle="tab" data-bs-target="#tab-estadisticas" type="button">
+          <i class="fa-solid fa-chart-pie me-2"></i>Estadísticas y Análisis
+        </button>
+      </li>
+    </ul>
+
+    <!-- Contenido de Pestañas -->
+    <div class="tab-content" id="reportArea">
+      
+      <!-- TAB 1: Bitácora General -->
+      <div class="tab-pane fade show active" id="tab-asistencias">
+        <div class="card card-dark-custom p-3">
+          <div class="table-responsive">
+            <table class="table table-dark-custom align-middle" id="tablaAsistencias">
+              <thead>
+                <tr>
+                  <th>Sede</th>
+                  <th>Fecha/Hora Ingreso</th>
+                  <th>Fecha/Hora Salida</th>
+                  <th>Persona</th>
+                  <th>Cédula / ID</th>
+                  <th>Tipo</th>
+                  <th>Estado</th>
+                  <th>Guardia</th>
+                  <th>Foto</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyAsistencias"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: Bitácora de Novedades -->
+      <div class="tab-pane fade" id="tab-novedades">
+        <div class="card card-dark-custom p-3">
+          <div class="table-responsive">
+            <table class="table table-dark-custom align-middle" id="tablaNovedades">
+              <thead>
+                <tr>
+                  <th>Fecha y Hora</th>
+                  <th>Ubicación / Sector</th>
+                  <th>Asunto / Novedad</th>
+                  <th>Detalle / Observación</th>
+                  <th>Imagen</th>
+                  <th>Estado Gestión</th>
+                  <th>Fecha Atención</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyNovedades"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: Estadísticas -->
+      <div class="tab-pane fade" id="tab-estadisticas">
+        <div class="row g-4">
+          <div class="col-md-6">
+            <div class="card card-dark-custom p-4">
+              <h6 class="fw-bold mb-3 text-info"><i class="fa-solid fa-chart-donut me-2"></i>Distribución por Tipo de Persona</h6>
+              <div style="max-height: 280px; position: relative;">
+                <canvas id="chartTipos"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card card-dark-custom p-4">
+              <h6 class="fw-bold mb-3 text-info"><i class="fa-solid fa-ranking-star me-2"></i>Ranking de Frecuencia (Top Visitas)</h6>
+              <ul class="list-group list-group-flush bg-transparent" id="listaFrecuentes"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal Gestión de Novedad -->
+  <div class="modal fade" id="modalResolver" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content modal-content-dark">
+        <div class="modal-header modal-header-dark">
+          <h5 class="modal-title fw-bold text-warning"><i class="fa-solid fa-pen-to-square me-2"></i>Gestionar Novedad</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="modalNovedadId">
+          <div class="mb-3">
+            <label class="form-label small fw-medium text-muted">Estado de la Gestión</label>
+            <select id="modalEstado" class="form-select form-select-dark">
+              <option value="PENDIENTE">PENDIENTE</option>
+              <option value="EN PROCESO">EN PROCESO</option>
+              <option value="SOLUCIONADO">SOLUCIONADO / RESUELTO</option>
+              <option value="EN ESPERA">EN ESPERA</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-medium text-muted">Observación del Supervisor</label>
+            <textarea id="modalObservacion" class="form-control form-control-dark" rows="3" placeholder="Escriba aquí los detalles o acciones tomadas..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer modal-footer-dark">
+          <button type="button" class="btn btn-sm btn-outline-secondary text-white" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-sm btn-primary fw-semibold" onclick="guardarResolucionNovedad()">Guardar Registro</button>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- Modal para Evidencia Fotográfica HD -->
+  <div class="modal fade" id="modalFoto" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content modal-content-dark">
+        <div class="modal-header modal-header-dark">
+          <h6 class="modal-title fw-bold text-white"><i class="fa-solid fa-image me-2 text-info"></i>Evidencia Fotográfica Capturada</h6>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body text-center p-2">
+          <img id="imgModalAmpliada" src="" class="img-fluid rounded shadow" alt="Evidencia">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
   <script>
-    const userLocal = JSON.parse(localStorage.getItem('user_bv') || '{}');
-    if (userLocal.nombre) {
-      document.getElementById('nombreSocio').innerText = userLocal.nombre;
-    }
+    // CONFIGURACIÓN DE SUPABASE
+    const SUPABASE_URL = 'https://xyzcompany.supabase.co'; 
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; 
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    async function cargarVisitasSocio() {
-      try {
-        const res = await fetch('/api/bitacora');
-        const data = await res.json();
-        const tbody = document.getElementById('tablaSocio');
-        
-        if (!data || data.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">No se registran visitas aún</td></tr>';
-          return;
-        }
+    let bitacoraGlobal = [];
+    let bitacoraFiltrada = [];
+    let chartTipos = null;
 
-        tbody.innerHTML = data.map(r => `
-          <tr>
-            <td><small class="fw-bold text-dark">${new Date(r.hora_ingreso).toLocaleString('es-EC')}</small></td>
-            <td class="fw-semibold">${r.nombre}</td>
-            <td class="text-muted">${r.cedula}</td>
-            <td><span class="badge bg-secondary">${r.placa || 'Peatonal'}</span></td>
-            <td><span class="badge bg-success">${r.estado || 'Ingresado'}</span></td>
-          </tr>
-        `).join('');
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    document.getElementById('formPreAutorizar').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const nuevoRegistro = {
-        club_id: userLocal.club_id || 1,
-        tipo_visita: 'Invitado',
-        nombre: document.getElementById('preNombre').value,
-        cedula: document.getElementById('preCedula').value,
-        placa: document.getElementById('prePlaca').value,
-        destino: document.getElementById('preDestino').value,
-        registrado_por: 'Socio: ' + (userLocal.nombre || 'Residente')
-      };
-
-      const res = await fetch('/api/bitacora', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(nuevoRegistro)
-      });
-
-      if (res.ok) {
-        alert('Pre-autorización enviada con éxito a Garita.');
-        document.getElementById('formPreAutorizar').reset();
-        cargarVisitasSocio();
-      } else {
-        alert('Error al registrar pre-autorización.');
-      }
+    document.addEventListener("DOMContentLoaded", () => {
+      verificarAccesoSupervisor();
+      inicializarFechas();
+      cargarBitacoraGeneral();
     });
 
-    cargarVisitasSocio();
+    function verificarAccesoSupervisor() {
+      const sesion = JSON.parse(sessionStorage.getItem('sesion_bitacora') || '{}');
+      if (sesion.nombre) {
+        document.getElementById('usuarioNombre').innerText = sesion.nombre;
+      }
+    }
+
+    function cerrarSesion() {
+      sessionStorage.removeItem('sesion_bitacora');
+      window.location.href = 'index.html';
+    }
+
+    function inicializarFechas() {
+      const hoy = new Date().toISOString().split('T')[0];
+      document.getElementById('filtroFechaInicio').value = hoy;
+      document.getElementById('filtroFechaFin').value = hoy;
+    }
+
+    async function cargarBitacoraGeneral() {
+      try {
+        const { data, error } = await _supabase
+          .from('bitacora')
+          .select('*')
+          .order('id', { ascending: false });
+
+        if (error) throw error;
+        
+        bitacoraGlobal = data || [];
+        poblarSelectorSedes();
+        aplicarFiltros();
+      } catch (err) {
+        console.error("Error al cargar la bitácora:", err);
+      }
+    }
+
+    function poblarSelectorSedes() {
+      const select = document.getElementById('filtroSede');
+      const sedesSet = new Set(bitacoraGlobal.map(item => item.club_id || item.sede).filter(Boolean));
+      
+      select.innerHTML = '<option value="TODAS">Todas las Sedes</option>';
+      sedesSet.forEach(sede => {
+        const option = document.createElement('option');
+        option.value = sede;
+        option.textContent = sede;
+        select.appendChild(option);
+      });
+    }
+
+    function aplicarFiltros() {
+      const sede = document.getElementById('filtroSede').value;
+      const fInicio = document.getElementById('filtroFechaInicio').value;
+      const fFin = document.getElementById('filtroFechaFin').value;
+
+      bitacoraFiltrada = bitacoraGlobal.filter(item => {
+        if (sede !== 'TODAS' && (item.club_id !== sede && item.sede !== sede)) {
+          return false;
+        }
+
+        const fechaRef = item.fecha_hora_ingreso || item.fecha;
+        if (fechaRef) {
+          const rawFecha = fechaRef.split('T')[0];
+          if (fInicio && rawFecha < fInicio) return false;
+          if (fFin && rawFecha > fFin) return false;
+        }
+
+        return true;
+      });
+
+      actualizarKPIs();
+      renderTablas();
+      renderizarGraficos();
+      renderFrecuentes();
+    }
+
+    function limpiarFiltros() {
+      document.getElementById('filtroSede').value = 'TODAS';
+      inicializarFechas();
+      aplicarFiltros();
+    }
+
+    function actualizarKPIs() {
+      const total = bitacoraFiltrada.length;
+      const dentro = bitacoraFiltrada.filter(i => !i.fecha_hora_salida).length;
+      const salidas = bitacoraFiltrada.filter(i => i.fecha_hora_salida).length;
+      const novedades = bitacoraFiltrada.filter(i => 
+        (i.asunto_novedad && i.asunto_novedad.trim() !== '') || 
+        (i.novedades && i.novedades.trim() !== '')
+      ).length;
+
+      document.getElementById('kpiTotal').innerText = total;
+      document.getElementById('kpiDentro').innerText = dentro;
+      document.getElementById('kpiSalidas').innerText = salidas;
+      document.getElementById('kpiNovedades').innerText = novedades;
+    }
+
+    function renderTablas() {
+      const tbodyA = document.getElementById('tbodyAsistencias');
+      const tbodyN = document.getElementById('tbodyNovedades');
+
+      tbodyA.innerHTML = '';
+      tbodyN.innerHTML = '';
+
+      bitacoraFiltrada.forEach(r => {
+        const asunto = r.asunto_novedad || r.novedades || r.novedad || '';
+        const detalle = r.detalle_observacion || 'Sin observaciones';
+        const ubicacion = r.ubicacion || r.club_id || r.sede || 'N/A';
+
+        // 1. Render Tab Asistencias
+        const trA = document.createElement('tr');
+        trA.innerHTML = `
+          <td><span class="badge bg-secondary">${r.club_id || r.sede || 'N/A'}</span></td>
+          <td>${formatearFechaHora(r.fecha_hora_ingreso || r.fecha)}</td>
+          <td>${r.fecha_hora_salida ? formatearFechaHora(r.fecha_hora_salida) : '<span class="badge bg-success-subtle text-success border border-success">EN SEDE</span>'}</td>
+          <td class="fw-medium">${r.nombre || 'N/A'}</td>
+          <td><code class="text-info">${r.cedula || 'N/A'}</code></td>
+          <td><span class="badge bg-dark border border-secondary text-light">${r.tipo_persona || 'VISITA'}</span></td>
+          <td>
+            <span class="badge ${r.fecha_hora_salida ? 'bg-secondary' : 'bg-success'}">
+              ${r.fecha_hora_salida ? 'FINALIZADO' : 'DENTRO'}
+            </span>
+          </td>
+          <td class="small text-muted">${r.guardia_ingreso || 'N/A'}</td>
+          <td>
+            ${r.foto_url ? `<img src="${r.foto_url}" class="img-preview" onclick="ampliarImagen('${r.foto_url}')">` : '<span class="text-muted small">-</span>'}
+          </td>
+        `;
+        tbodyA.appendChild(trA);
+
+        // 2. Render Tab Novedades
+        if (asunto.trim() !== '') {
+          const trN = document.createElement('tr');
+          const estadoRes = r.estado_resolucion || 'PENDIENTE';
+          
+          let badgeColor = 'bg-danger';
+          if (estadoRes === 'EN PROCESO') badgeColor = 'bg-warning text-dark';
+          if (estadoRes === 'SOLUCIONADO' || estadoRes === 'RESUELTO') badgeColor = 'bg-success';
+          if (estadoRes === 'EN ESPERA') badgeColor = 'bg-info text-dark';
+
+          trN.innerHTML = `
+            <td>${formatearFechaHora(r.fecha_hora_ingreso || r.fecha)}</td>
+            <td><span class="badge bg-danger-subtle text-danger border border-danger">${ubicacion}</span></td>
+            <td class="fw-semibold text-warning">${asunto}</td>
+            <td class="small text-muted text-wrap" style="max-width: 250px;">${detalle}</td>
+            <td>
+              ${r.foto_url ? `<img src="${r.foto_url}" class="img-preview" onclick="ampliarImagen('${r.foto_url}')">` : '<span class="text-muted small">-</span>'}
+            </td>
+            <td><span class="badge ${badgeColor}">${estadoRes}</span></td>
+            <td class="small text-muted">${r.fecha_resolucion ? formatearFechaHora(r.fecha_resolucion) : '<em>Pendiente</em>'}</td>
+            <td>
+              <button class="btn btn-sm btn-outline-info rounded-pill" onclick="prepararModalResolucion(${r.id})">
+                <i class="fa-solid fa-pen-to-square me-1"></i>Gestionar
+              </button>
+            </td>
+          `;
+          tbodyN.appendChild(trN);
+        }
+      });
+    }
+
+    function prepararModalResolucion(id) {
+      const registro = bitacoraGlobal.find(item => item.id === id);
+      if (!registro) return;
+
+      document.getElementById('modalNovedadId').value = registro.id;
+      document.getElementById('modalEstado').value = registro.estado_resolucion || 'PENDIENTE';
+      document.getElementById('modalObservacion').value = registro.observacion_supervisor || '';
+
+      const modal = new bootstrap.Modal(document.getElementById('modalResolver'));
+      modal.show();
+    }
+
+    async function guardarResolucionNovedad() {
+      const id = document.getElementById('modalNovedadId').value;
+      const estado = document.getElementById('modalEstado').value;
+      const observacion = document.getElementById('modalObservacion').value;
+      const ahora = new Date().toISOString();
+
+      try {
+        const { error } = await _supabase
+          .from('bitacora')
+          .update({
+            estado_resolucion: estado,
+            observacion_supervisor: observacion,
+            fecha_resolucion: ahora
+          })
+          .eq('id', id);
+
+        if (error) throw error;
+
+        const item = bitacoraGlobal.find(i => i.id == id);
+        if (item) {
+          item.estado_resolucion = estado;
+          item.observacion_supervisor = observacion;
+          item.fecha_resolucion = ahora;
+        }
+
+        aplicarFiltros();
+        bootstrap.Modal.getInstance(document.getElementById('modalResolver')).hide();
+      } catch (e) {
+        console.error('Error al actualizar novedad:', e);
+        alert('No se pudo guardar los cambios.');
+      }
+    }
+
+    function renderizarGraficos() {
+      const ctx = document.getElementById('chartTipos').getContext('2d');
+      const conteo = {};
+      
+      bitacoraFiltrada.forEach(i => {
+        const tipo = i.tipo_persona || 'OTROS';
+        conteo[tipo] = (conteo[tipo] || 0) + 1;
+      });
+
+      if (chartTipos instanceof Chart) chartTipos.destroy();
+
+      chartTipos = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(conteo),
+          datasets: [{
+            data: Object.values(conteo),
+            backgroundColor: ['#38bdf8', '#22c55e', '#f59e0b', '#ef4444', '#a855f7'],
+            borderColor: '#1e293b',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { 
+            legend: { 
+              position: 'bottom',
+              labels: { color: '#94a3b8', font: { family: 'Poppins' } }
+            } 
+          }
+        }
+      });
+    }
+
+    function renderFrecuentes() {
+      const ul = document.getElementById('listaFrecuentes');
+      ul.innerHTML = '';
+
+      const frecuencia = {};
+      bitacoraFiltrada.forEach(i => {
+        if (i.cedula) {
+          frecuencia[i.cedula] = frecuencia[i.cedula] || { nombre: i.nombre, accesos: 0, tipo: i.tipo_persona };
+          frecuencia[i.cedula].accesos += 1;
+        }
+      });
+
+      const ordenados = Object.values(frecuencia).sort((a, b) => b.accesos - a.accesos).slice(0, 5);
+
+      if (ordenados.length === 0) {
+        ul.innerHTML = '<li class="list-group-item bg-transparent text-muted small border-0">Sin datos registrados</li>';
+        return;
+      }
+
+      ordenados.forEach(item => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item bg-transparent border-bottom border-secondary d-flex justify-content-between align-items-center text-white';
+        li.innerHTML = `
+          <div>
+            <span class="fw-medium d-block">${item.nombre}</span>
+            <span class="text-muted small">${item.tipo || 'VISITA'}</span>
+          </div>
+          <span class="badge bg-info text-dark rounded-pill fw-bold">${item.accesos} accesos</span>
+        `;
+        ul.appendChild(li);
+      });
+    }
+
+    function ampliarImagen(url) {
+      document.getElementById('imgModalAmpliada').src = url;
+      new bootstrap.Modal(document.getElementById('modalFoto')).show();
+    }
+
+    function formatearFechaHora(strFecha) {
+      if (!strFecha) return 'N/A';
+      const f = new Date(strFecha);
+      return isNaN(f.getTime()) ? strFecha : f.toLocaleString('es-EC', { dateStyle: 'short', timeStyle: 'medium' });
+    }
+
+    function exportarExcel() {
+      if (bitacoraFiltrada.length === 0) {
+        alert("No hay datos para exportar.");
+        return;
+      }
+
+      const datosExcel = bitacoraFiltrada.map(item => ({
+        "Sede": item.ubicacion || item.club_id || item.sede || 'N/A',
+        "Fecha/Hora Ingreso": formatearFechaHora(item.fecha_hora_ingreso || item.fecha),
+        "Fecha/Hora Salida": item.fecha_hora_salida ? formatearFechaHora(item.fecha_hora_salida) : 'EN SEDE',
+        "Nombre": item.nombre || 'N/A',
+        "Cédula": item.cedula || 'N/A',
+        "Tipo": item.tipo_persona || 'VISITA',
+        "Guardia": item.guardia_ingreso || 'N/A',
+        "Asunto/Novedad": item.asunto_novedad || item.novedades || '',
+        "Detalle": item.detalle_observacion || '',
+        "Estado": item.estado_resolucion || 'PENDIENTE',
+        "Fecha Atención": item.fecha_resolucion ? formatearFechaHora(item.fecha_resolucion) : '',
+        "Observación Supervisor": item.observacion_supervisor || '',
+        "Foto Evidencia": item.foto_url || 'Sin Foto'
+      }));
+
+      const hoja = XLSX.utils.json_to_sheet(datosExcel);
+      const libro = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(libro, hoja, "Bitacora");
+      XLSX.writeFile(libro, `Reporte_Supervision_${new Date().toISOString().split('T')[0]}.xlsx`);
+    }
+
+    function exportarPDF() {
+      const elemento = document.getElementById('reportArea');
+      const opciones = {
+        margin: 0.3,
+        filename: `Reporte_Supervision_${new Date().toISOString().split('T')[0]}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
+      };
+      html2pdf().set(opciones).from(elemento).save();
+    }
   </script>
 </body>
 </html>
