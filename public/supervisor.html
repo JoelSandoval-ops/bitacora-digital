@@ -11,7 +11,6 @@
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root {
@@ -102,15 +101,6 @@
       background-color: #f8f9fa;
     }
 
-    .badge-ubicacion {
-      background-color: #dc3545;
-      color: #ffffff;
-      font-weight: 600;
-      border-radius: 6px;
-      padding: 4px 8px;
-      font-size: 0.8rem;
-    }
-
     .badge-estado-dentro {
       background-color: #ffc107;
       color: #000;
@@ -151,7 +141,7 @@
     </div>
     <div class="d-flex align-items-center gap-2">
       <span class="badge bg-success" id="indicadorRealtime"><i class="fa-solid fa-bolt me-1"></i>En Vivo</span>
-      <button class="btn btn-outline-light btn-sm" onclick="cerrarSesion()">Cerrar Sesión</button>
+      <button class="btn btn-outline-light btn-sm" id="btnSalir"><i class="fa-solid fa-right-from-bracket me-1"></i>Cerrar Sesión</button>
     </div>
   </header>
 
@@ -178,20 +168,20 @@
           <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
             <div class="d-flex align-items-center gap-2 flex-wrap">
               <h5 class="m-0 fw-bold text-success me-2"><i class="fa-solid fa-users me-1"></i>Asistencia en Tiempo Real</h5>
-              <input type="date" id="filtroFechaAsistencia" class="form-control form-control-sm" style="width: 160px;" onchange="filtrarAsistencia()">
-              <input type="text" id="filtroTextoAsistencia" class="form-control form-control-sm" placeholder="Buscar por Nombre o Cédula..." style="width: 230px;" onkeyup="filtrarAsistencia()">
-              <button class="btn btn-sm btn-outline-secondary" onclick="limpiarFiltroAsistencia()"><i class="fa-solid fa-xmark me-1"></i>Ver Todo</button>
-              <button class="btn btn-sm btn-outline-success" onclick="cargarTodo()"><i class="fa-solid fa-rotate me-1"></i>Actualizar</button>
+              <input type="date" id="filtroFechaAsistencia" class="form-control form-control-sm" style="width: 160px;">
+              <input type="text" id="filtroTextoAsistencia" class="form-control form-control-sm" placeholder="Buscar por Nombre o Cédula..." style="width: 230px;">
+              <button class="btn btn-sm btn-outline-secondary" id="btnVerTodoAsistencia"><i class="fa-solid fa-xmark me-1"></i>Ver Todo</button>
+              <button class="btn btn-sm btn-outline-success btn-actualizar"><i class="fa-solid fa-rotate me-1"></i>Actualizar</button>
             </div>
             
             <div class="d-flex gap-2">
-              <button class="btn btn-sm btn-success fw-bold" onclick="exportarExcelAsistencia()"><i class="fa-solid fa-file-excel me-1"></i>Descargar Excel</button>
-              <button class="btn btn-sm btn-danger fw-bold" onclick="exportarPDFAsistencia()"><i class="fa-solid fa-file-pdf me-1"></i>Descargar PDF</button>
+              <button class="btn btn-sm btn-success fw-bold" id="btnExcelAsistencia"><i class="fa-solid fa-file-excel me-1"></i>Descargar Excel</button>
+              <button class="btn btn-sm btn-danger fw-bold" id="btnPDFAsistencia"><i class="fa-solid fa-file-pdf me-1"></i>Descargar PDF</button>
             </div>
           </div>
 
           <div class="table-responsive" id="areaPDFAsistencia">
-            <table class="table bv-table">
+            <table class="table bv-table align-middle">
               <thead>
                 <tr>
                   <th>Fecha / Hora Entrada</th>
@@ -203,7 +193,11 @@
                   <th>Estado</th>
                 </tr>
               </thead>
-              <tbody id="tbodyAsistencia"></tbody>
+              <tbody id="tbodyAsistencia">
+                <tr>
+                  <td colspan="7" class="text-center text-muted py-4"><i class="fa-solid fa-spinner fa-spin me-2"></i>Conectando con Supabase...</td>
+                </tr>
+              </tbody>
             </table>
           </div>
         </div>
@@ -215,29 +209,33 @@
           <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
             <div class="d-flex align-items-center gap-2 flex-wrap">
               <h5 class="fw-bold text-success mb-0"><i class="fa-solid fa-shield-cat me-2"></i>Reportes de Novedades</h5>
-              <input type="date" id="filtroFechaNovedades" class="form-control form-control-sm" style="width: 160px;" onchange="filtrarNovedades()">
-              <button class="btn btn-sm btn-outline-secondary" onclick="limpiarFiltroNovedades()"><i class="fa-solid fa-xmark me-1"></i>Ver Todo</button>
-              <button class="btn btn-sm btn-outline-success" onclick="cargarTodo()"><i class="fa-solid fa-rotate me-1"></i>Actualizar Novedades</button>
+              <input type="date" id="filtroFechaNovedades" class="form-control form-control-sm" style="width: 160px;">
+              <button class="btn btn-sm btn-outline-secondary" id="btnVerTodoNovedades"><i class="fa-solid fa-xmark me-1"></i>Ver Todo</button>
+              <button class="btn btn-sm btn-outline-success btn-actualizar"><i class="fa-solid fa-rotate me-1"></i>Actualizar Novedades</button>
             </div>
 
             <div class="d-flex gap-2">
-              <button class="btn btn-sm btn-success fw-bold" onclick="exportarExcelNovedades()"><i class="fa-solid fa-file-excel me-1"></i>Descargar Excel</button>
-              <button class="btn btn-sm btn-danger fw-bold" onclick="exportarPDFNovedades()"><i class="fa-solid fa-file-pdf me-1"></i>Descargar PDF</button>
+              <button class="btn btn-sm btn-success fw-bold" id="btnExcelNovedades"><i class="fa-solid fa-file-excel me-1"></i>Descargar Excel</button>
+              <button class="btn btn-sm btn-danger fw-bold" id="btnPDFNovedades"><i class="fa-solid fa-file-pdf me-1"></i>Descargar PDF</button>
             </div>
           </div>
 
           <div class="table-responsive" id="areaPDFNovedades">
-            <table class="table bv-table">
+            <table class="table bv-table align-middle">
               <thead>
                 <tr>
                   <th>Fecha y Hora</th>
-                  <th>Ubicación / Sector</th>
-                  <th>Asunto / Novedad</th>
+                  <th>Guardia / Reportador</th>
                   <th>Detalle / Observación</th>
                   <th>Imagen</th>
+                  <th>Estado</th>
                 </tr>
               </thead>
-              <tbody id="tbodyNovedades"></tbody>
+              <tbody id="tbodyNovedades">
+                <tr>
+                  <td colspan="5" class="text-center text-muted py-4"><i class="fa-solid fa-spinner fa-spin me-2"></i>Conectando con Supabase...</td>
+                </tr>
+              </tbody>
             </table>
           </div>
         </div>
@@ -246,212 +244,23 @@
     </div>
   </div>
 
-  <script>
-    const SUPABASE_URL = 'https://xyzcompany.supabase.co'; 
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; 
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  <!-- Modal para visualización ampliada de evidencias -->
+  <div class="modal fade" id="modalVerImagen" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-dark text-white py-2">
+          <h6 class="modal-title m-0"><i class="fa-solid fa-image me-2"></i>Evidencia de Novedad</h6>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center p-0 bg-black">
+          <img id="imgModalTarget" src="" class="img-fluid" style="max-height: 75vh; object-fit: contain;">
+        </div>
+      </div>
+    </div>
+  </div>
 
-    let datosAsistencia = [];
-    let datosNovedades = [];
-
-    document.addEventListener("DOMContentLoaded", () => {
-      cargarTodo();
-      suscribirTiempoReal();
-    });
-
-    async function cargarTodo() {
-      await Promise.all([cargarAsistencia(), cargarNovedades()]);
-      filtrarAsistencia();
-      filtrarNovedades();
-    }
-
-    async function cargarAsistencia() {
-      try {
-        const { data, error } = await _supabase.from('bitacora_asistencia').select('*').order('id', { ascending: false });
-        if (error) throw error;
-        datosAsistencia = data || [];
-      } catch (err) {
-        console.error("Error cargando Asistencia:", err);
-      }
-    }
-
-    async function cargarNovedades() {
-      try {
-        const { data, error } = await _supabase.from('bitacora_novedades').select('*').order('id', { ascending: false });
-        if (error) throw error;
-        datosNovedades = data || [];
-      } catch (err) {
-        console.error("Error cargando Novedades:", err);
-      }
-    }
-
-    function suscribirTiempoReal() {
-      _supabase.channel('replica-guardia-supervisor')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora_asistencia' }, () => cargarAsistencia().then(filtrarAsistencia))
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora_novedades' }, () => cargarNovedades().then(filtrarNovedades))
-        .subscribe();
-    }
-
-    function limpiarFiltroAsistencia() {
-      document.getElementById('filtroFechaAsistencia').value = '';
-      document.getElementById('filtroTextoAsistencia').value = '';
-      filtrarAsistencia();
-    }
-
-    function limpiarFiltroNovedades() {
-      document.getElementById('filtroFechaNovedades').value = '';
-      filtrarNovedades();
-    }
-
-    function filtrarAsistencia() {
-      const fechaSel = document.getElementById('filtroFechaAsistencia').value;
-      const textoSel = document.getElementById('filtroTextoAsistencia').value.toLowerCase().trim();
-
-      const resultado = datosAsistencia.filter(item => {
-        const rawFecha = item.fecha_hora_entrada || item.created_at || '';
-        const strFecha = rawFecha ? rawFecha.split('T')[0] : '';
-        const coincideFecha = !fechaSel || strFecha === fechaSel;
-        
-        const nombreSocio = (item.nombre || item.socio || item.visitante || '').toLowerCase();
-        const numCedula = (item.cedula || item.documento || '').toLowerCase();
-        const coincideTexto = !textoSel || nombreSocio.includes(textoSel) || numCedula.includes(textoSel);
-
-        return coincideFecha && coincideTexto;
-      });
-
-      renderAsistencia(resultado);
-    }
-
-    function renderAsistencia(lista) {
-      const tbody = document.getElementById('tbodyAsistencia');
-      tbody.innerHTML = '';
-
-      if (lista.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">No hay registros de asistencia.</td></tr>`;
-        return;
-      }
-
-      lista.forEach(item => {
-        const rawEntrada = item.fecha_hora_entrada || item.created_at;
-        const fEntrada = rawEntrada ? new Date(rawEntrada).toLocaleString('es-EC') : '-';
-        const fSalida = item.fecha_hora_salida ? new Date(item.fecha_hora_salida).toLocaleString('es-EC') : null;
-
-        const nombre = item.nombre || item.socio || item.visitante || '-';
-        const cedula = item.cedula || item.documento || '-';
-        const destino = item.destino || 'Instalaciones';
-        const observaciones = item.observaciones || item.observacion || 'Sin observaciones';
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${fEntrada}</td>
-          <td>${fSalida ? `<span class="badge-estado-salida">${fSalida}</span>` : '<span class="badge-estado-dentro">DENTRO DEL CLUB</span>'}</td>
-          <td class="fw-bold">${nombre}</td>
-          <td class="text-danger fw-bold">${cedula}</td>
-          <td>${destino}</td>
-          <td class="small text-muted">${observaciones}</td>
-          <td>${fSalida ? '<span class="badge bg-secondary">COMPLETADO</span>' : '<span class="badge bg-warning text-dark">ACTIVO</span>'}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function filtrarNovedades() {
-      const fechaSel = document.getElementById('filtroFechaNovedades').value;
-
-      const resultado = datosNovedades.filter(item => {
-        const rawFecha = item.fecha_hora || item.created_at || '';
-        const strFecha = rawFecha ? rawFecha.split('T')[0] : '';
-        return !fechaSel || strFecha === fechaSel;
-      });
-
-      renderNovedades(resultado);
-    }
-
-    function renderNovedades(lista) {
-      const tbody = document.getElementById('tbodyNovedades');
-      tbody.innerHTML = '';
-
-      if (lista.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No hay novedades registradas.</td></tr>`;
-        return;
-      }
-
-      lista.forEach(n => {
-        const rawFecha = n.fecha_hora || n.created_at;
-        const fFecha = rawFecha ? new Date(rawFecha).toLocaleString('es-EC') : '-';
-
-        const ubicacion = n.ubicacion || n.sector || 'Garita principal';
-        const asunto = n.asunto || n.novedad || 'Sin asunto';
-        const detalle = n.observacion_guardia || n.observacion || n.detalle || 'Sin detalle';
-        const foto = n.foto_url || n.imagen_url || n.foto || null;
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${fFecha}</td>
-          <td><span class="badge-ubicacion">${ubicacion}</span></td>
-          <td class="fw-bold">${asunto}</td>
-          <td class="small">${detalle}</td>
-          <td>
-            ${foto 
-              ? `<a href="${foto}" target="_blank"><img src="${foto}" class="img-thumbnail-table" title="Clic para ampliar foto"></a>` 
-              : '<span class="text-muted small">- Sin Foto -</span>'}
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    // Exportaciones PDF y Excel
-    function exportarExcelAsistencia() {
-      const dataFormat = datosAsistencia.map(i => ({
-        "Fecha / Hora Entrada": (i.fecha_hora_entrada || i.created_at) ? new Date(i.fecha_hora_entrada || i.created_at).toLocaleString('es-EC') : '',
-        "Fecha / Hora Salida": i.fecha_hora_salida ? new Date(i.fecha_hora_salida).toLocaleString('es-EC') : 'DENTRO DEL CLUB',
-        "Socio / Visitante": i.nombre || i.socio || i.visitante,
-        "Cédula": i.cedula || i.documento,
-        "Destino": i.destino || 'Instalaciones',
-        "Observaciones": i.observaciones || i.observacion || '-'
-      }));
-      const hoja = XLSX.utils.json_to_sheet(dataFormat);
-      const libro = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(libro, hoja, "Asistencia");
-      XLSX.writeFile(libro, `Bitacora_Asistencia.xlsx`);
-    }
-
-    function exportarPDFAsistencia() {
-      html2pdf().set({
-        margin: 0.3,
-        filename: `Bitacora_Asistencia.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
-      }).from(document.getElementById('areaPDFAsistencia')).save();
-    }
-
-    function exportarExcelNovedades() {
-      const dataFormat = datosNovedades.map(n => ({
-        "Fecha y Hora": (n.fecha_hora || n.created_at) ? new Date(n.fecha_hora || n.created_at).toLocaleString('es-EC') : '',
-        "Ubicación / Sector": n.ubicacion || n.sector || 'Garita principal',
-        "Asunto / Novedad": n.asunto || n.novedad,
-        "Detalle / Observación": n.observacion_guardia || n.observacion || n.detalle
-      }));
-      const hoja = XLSX.utils.json_to_sheet(dataFormat);
-      const libro = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(libro, hoja, "Novedades");
-      XLSX.writeFile(libro, `Bitacora_Novedades.xlsx`);
-    }
-
-    function exportarPDFNovedades() {
-      html2pdf().set({
-        margin: 0.3,
-        filename: `Bitacora_Novedades.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
-      }).from(document.getElementById('areaPDFNovedades')).save();
-    }
-
-    function cerrarSesion() { window.location.href = 'index.html'; }
-  </script>
+  <!-- Scripts necesarios de Bootstrap y lógica principal -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="./supervisor.js"></script>
 </body>
 </html>
