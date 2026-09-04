@@ -1,12 +1,10 @@
-import './supabase.js';
-const supabase = window.supabaseClient;
+import { supabase } from './supabase.js';
 
 let listaAsistencias = [];
 let listaNovedades = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
   console.log("🔍 [SUPERVISOR] Iniciando script...");
-
   await cargarAsistencias();
   await cargarNovedades();
   activarTiempoReal();
