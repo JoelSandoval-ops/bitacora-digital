@@ -115,18 +115,17 @@
             <table class="table table-hover align-middle border">
               <thead class="table-dark-custom">
                 <tr>
-                  <th style="width: 15%;">Fecha / Hora Entrada</th>
-                  <th style="width: 15%;">Fecha / Hora Salida</th>
-                  <th style="width: 18%;">Socio / Visitante</th>
-                  <th style="width: 12%;">Cédula</th>
-                  <th style="width: 14%;">Destino</th>
-                  <th style="width: 16%; color: #dc3545;">OBSERVACION</th>
-                  <th style="width: 10%; text-align: center;" class="no-export">Acciones</th>
+                  <th style="width: 16%;">Fecha / Hora Entrada</th>
+                  <th style="width: 16%;">Fecha / Hora Salida</th>
+                  <th style="width: 20%;">Socio / Visitante</th>
+                  <th style="width: 13%;">Cédula</th>
+                  <th style="width: 15%;">Destino</th>
+                  <th style="width: 20%; color: #dc3545;">OBSERVACION</th>
                 </tr>
               </thead>
               <tbody id="tbodyAsistencia">
                 <tr>
-                  <td colspan="7" class="text-center py-4 text-muted"><i class="fa-solid fa-spinner fa-spin"></i> Cargando registros de asistencia...</td>
+                  <td colspan="6" class="text-center py-4 text-muted"><i class="fa-solid fa-spinner fa-spin"></i> Cargando registros de asistencia...</td>
                 </tr>
               </tbody>
             </table>
@@ -136,7 +135,7 @@
       </div>
 
       <!-- ========================================== -->
-      <!-- PESTAÑA 2: BITÁCORA DE NOVEDADES -->
+      <!-- PESTAÑA 2: BITÁCORA DE NOVEDADES (MANTENIDA) -->
       <!-- ========================================== -->
       <div class="tab-pane fade" id="sec-novedades" role="tabpanel">
         <div class="card p-3 shadow-sm border-0">
@@ -147,43 +146,6 @@
         </div>
       </div>
 
-    </div>
-  </div>
-
-  <!-- Modal para Editar Registro de Asistencia -->
-  <div class="modal fade" id="modalEditarAsistencia" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header bg-dark text-white">
-          <h5 class="modal-title"><i class="fa-solid fa-pen-to-square me-2"></i> Editar Registro de Asistencia</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <form id="formEditarAsistencia">
-          <div class="modal-body">
-            <input type="hidden" id="editId">
-            <div class="mb-3">
-              <label for="editNombre" class="form-label fw-bold">Socio / Visitante</label>
-              <input type="text" class="form-control" id="editNombre" required>
-            </div>
-            <div class="mb-3">
-              <label for="editCedula" class="form-label fw-bold">Cédula</label>
-              <input type="text" class="form-control" id="editCedula" required>
-            </div>
-            <div class="mb-3">
-              <label for="editDestino" class="form-label fw-bold">Destino</label>
-              <input type="text" class="form-control" id="editDestino" required>
-            </div>
-            <div class="mb-3">
-              <label for="editObservacion" class="form-label fw-bold">Observación</label>
-              <textarea class="form-control" id="editObservacion" rows="3"></textarea>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-success"><i class="fa-solid fa-floppy-disk me-1"></i> Guardar Cambios</button>
-          </div>
-        </form>
-      </div>
     </div>
   </div>
 
