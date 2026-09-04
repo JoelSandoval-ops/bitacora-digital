@@ -3,46 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Club Buena Vista - Redirigiendo...</title>
-  
+  <title>Club Buena Vista - Panel Administrativo</title>
   <script>
-    (function () {
-      try {
-        // Soporta tanto sessionStorage como localStorage para evitar deslogueos indeseados
-        const sesionGuardada = sessionStorage.getItem('sesion_bitacora') || localStorage.getItem('user_bv');
-        
-        if (sesionGuardada) {
-          const usuario = JSON.parse(sesionGuardada);
-          const rol = (usuario && usuario.rol ? usuario.rol : '').toString().toUpperCase().trim();
-
-          switch (rol) {
-            case 'ADMIN':
-            case 'ADMINISTRADOR':
-              window.location.replace('./public/administrador.html');
-              return;
-            case 'SUPERVISOR':
-              window.location.replace('./public/supervisor.html');
-              return;
-            case 'GUARDIA':
-              window.location.replace('./public/guardia.html');
-              return;
-          }
-        }
-      } catch (e) {
-        console.error('Error al leer sesión:', e);
-        sessionStorage.removeItem('sesion_bitacora');
-        localStorage.removeItem('user_bv');
-      }
-      
-      // Si no hay sesión válida, envía a login
-      window.location.replace('./public/login.html');
-    })();
+    // Redirección directa e inmediata a la página de Administrador
+    window.location.replace('./public/administrador.html');
   </script>
 </head>
 <body style="background:#0F3822; color:#D4AF37; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; font-family:sans-serif; margin:0;">
   <div style="text-align:center;">
     <h2 style="margin-bottom:8px; font-family:serif;">CLUB BUENA VISTA</h2>
-    <p style="color:#ffffff; opacity:0.8; font-size:14px;">Cargando módulo de control de accesos...</p>
+    <p style="color:#ffffff; opacity:0.8; font-size:14px;">Cargando Panel de Administración...</p>
   </div>
 </body>
 </html>

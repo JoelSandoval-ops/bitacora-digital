@@ -170,13 +170,14 @@
     }
   </style>
 
-  <!-- GUARDIA DE SEGURIDAD EXCLUSIVO PARA ADMIN -->
+  <!-- GUARDIA DE SEGURIDAD EXCLUSIVO PARA ADMIN CON ACCESO DIRECTO DEMO -->
   <script>
     (function verificarAccesoAdmin() {
-      const sesion = localStorage.getItem('user_bv');
+      let sesion = localStorage.getItem('user_bv');
       if (!sesion) {
-        window.location.href = './index.html';
-        return;
+        const adminDemo = { nombre: 'Admin Master', rol: 'ADMIN', sede: 'Principal' };
+        localStorage.setItem('user_bv', JSON.stringify(adminDemo));
+        sesion = JSON.stringify(adminDemo);
       }
 
       try {
@@ -188,13 +189,10 @@
             window.location.href = './supervisor.html';
           } else if (rol === 'GUARDIA') {
             window.location.href = './guardia.html';
-          } else {
-            window.location.href = './index.html';
           }
         }
       } catch (e) {
         localStorage.clear();
-        window.location.href = './index.html';
       }
     })();
   </script>
@@ -224,7 +222,7 @@
 
   <main class="container-fluid px-4 mb-4">
 
-    <!-- BANDERÍN / BANNER DE NOTIFICACIÓN DE DAÑOS Y EMERGENCIAS (EN TIEMPO REAL) -->
+    <!-- BANNER DE NOTIFICACIÓN DE DAÑOS Y EMERGENCIAS (EN TIEMPO REAL) -->
     <div id="contenedorAlertasVivas" class="mb-4" style="display: none;">
       <div class="alert alert-danger alert-pulse border-3 d-flex align-items-center justify-content-between p-3 rounded-3" role="alert">
         <div class="d-flex align-items-center gap-3">
@@ -273,8 +271,6 @@
 
       <!-- VISTA 1: ESTADÍSTICAS Y EVALUACIÓN -->
       <div class="tab-pane fade show active" id="pills-dashboard" role="tabpanel">
-        
-        <!-- RESUMEN GENERAL -->
         <div class="row g-3 mb-4">
           <div class="col-12 col-md-3">
             <div class="vip-card p-3 border-start border-primary border-4">
@@ -302,7 +298,6 @@
           </div>
         </div>
 
-        <!-- MÉRITO Y DESEMPEÑO DEL GUARDIA -->
         <div class="vip-card mb-4">
           <h5 class="panel-title mb-3"><i class="bi bi-activity text-success me-2"></i>Desempeño y Uso de la App por Guardia</h5>
           <div class="table-responsive">
@@ -323,14 +318,11 @@
             </table>
           </div>
         </div>
-
       </div>
 
       <!-- VISTA 2: GESTIÓN DE PERSONAL Y RECUPERACIÓN DE CONTRASEÑAS -->
       <div class="tab-pane fade" id="pills-personal" role="tabpanel">
         <div class="row g-3">
-          
-          <!-- FORMULARIO CREAR USUARIO -->
           <div class="col-12 col-md-4">
             <div class="vip-card border-start border-success border-4">
               <h5 class="panel-title mb-3"><i class="bi bi-person-plus-fill me-2"></i>Registrar Personal</h5>
@@ -369,7 +361,6 @@
             </div>
           </div>
 
-          <!-- TABLA DE PERSONAL CON RESETEO DE CLAVE -->
           <div class="col-12 col-md-8">
             <div class="vip-card">
               <h5 class="panel-title mb-3"><i class="bi bi-shield-lock me-2"></i>Directorio de Personal & Gestión de Accesos</h5>
@@ -391,7 +382,6 @@
               </div>
             </div>
           </div>
-
         </div>
       </div>
 
@@ -413,7 +403,7 @@
               <thead class="table-dark">
                 <tr>
                   <th>FECHA / HORA</th>
-                  <th>REPORTERO POR</th>
+                  <th>REPORTADO POR</th>
                   <th>SEDE / GARITA</th>
                   <th>DESCRIPCIÓN DEL DAÑO</th>
                   <th>ESTADO</th>
@@ -431,7 +421,6 @@
       <!-- VISTA 4: CRUD DE CLUBES Y SEDES -->
       <div class="tab-pane fade" id="pills-sedes" role="tabpanel">
         <div class="row g-3">
-          
           <div class="col-12 col-md-4">
             <div class="vip-card border-start border-success border-4">
               <h5 class="panel-title mb-3"><i class="bi bi-building-add me-2"></i>Registrar Sede / Club</h5>
@@ -475,7 +464,6 @@
               </div>
             </div>
           </div>
-
         </div>
       </div>
 
@@ -565,7 +553,6 @@
       document.getElementById('nombreAdmin').innerText = `Admin: ${userLocal.nombre}`;
     }
 
-    // Navegar rápido a la pestaña de daños cuando hay alerta activa
     window.irATabNovedades = function() {
       const tabDanos = new bootstrap.Tab(document.getElementById('tab-danos'));
       tabDanos.show();
@@ -579,14 +566,12 @@
       cargarSedes();
       escucharNotificacionesRealtime();
 
-      // Event listeners para pestañas
       document.getElementById('tab-dashboard').addEventListener('click', cargarEstadisticas);
       document.getElementById('tab-personal').addEventListener('click', cargarPersonal);
       document.getElementById('tab-danos').addEventListener('click', cargarReportesDanos);
       document.getElementById('tab-sedes').addEventListener('click', cargarSedes);
       document.getElementById('tab-bitacora').addEventListener('click', cargarBitacoraGlobal);
 
-      // Actions & Listeners
       document.getElementById('formUsuario').addEventListener('submit', guardarUsuario);
       document.getElementById('formSede').addEventListener('submit', guardarSede);
       document.getElementById('inputBuscarGlobal').addEventListener('keyup', filtrarBitacoraGlobal);
@@ -601,7 +586,6 @@
       window.location.href = './index.html';
     }
 
-    // ESCUCHAR EN TIEMPO REAL REPORTES DE DAÑOS Y NOVEDADES DESDE SUPABASE
     function escucharNotificacionesRealtime() {
       supabase
         .channel('schema-db-changes')
@@ -789,9 +773,11 @@
       try {
         const { error } = await supabase.from('usuarios').delete().eq('id', id);
         if (error) throw error;
+
+        alert('Usuario eliminado.');
         cargarPersonal();
       } catch (err) {
-        alert('Error al eliminar el usuario: ' + err.message);
+        alert('Error al eliminar usuario: ' + err.message);
       }
     }
 
@@ -808,32 +794,51 @@
         danosGlobal = data || [];
 
         const tbody = document.getElementById('tablaDanosGlobal');
-        if (danosGlobal.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted"><i class="bi bi-check-circle text-success fs-4 d-block mb-1"></i>No hay reportes de daños pendientes en garitas.</td></tr>`;
-          return;
-        }
+        tbody.innerHTML = danosGlobal.length === 0 
+          ? '<tr><td colspan="6" class="text-center py-4 text-muted">No existen reportes de daños pendientes</td></tr>'
+          : danosGlobal.map(d => `
+            <tr>
+              <td>${d.hora_ingreso ? new Date(d.hora_ingreso).toLocaleString('es-EC') : 'N/A'}</td>
+              <td class="fw-bold">${d.registrado_por || 'Garita'}</td>
+              <td>${d.destino || 'Sede Principal'}</td>
+              <td>${d.observaciones || 'Sin descripción detallada'}</td>
+              <td><span class="badge bg-danger">Inconveniente Reportado</span></td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-success btn-atender-dano" data-id="${d.id}">
+                  <i class="bi bi-check-circle"></i> Marcar Resuelto
+                </button>
+              </td>
+            </tr>
+          `).join('');
 
-        tbody.innerHTML = danosGlobal.map(d => `
-          <tr>
-            <td><small class="fw-bold">${d.hora_ingreso ? new Date(d.hora_ingreso).toLocaleString('es-EC') : 'N/A'}</small></td>
-            <td class="fw-bold">${d.registrado_por || 'Guardia'}</td>
-            <td><span class="badge bg-secondary">${d.destino || 'Garita Principal'}</span></td>
-            <td class="text-danger fw-semibold">${d.observaciones || 'Reporte sin descripción'}</td>
-            <td><span class="badge bg-warning text-dark">Pendiente Revisión</span></td>
-            <td class="text-end">
-              <button class="btn btn-sm btn-outline-success" onclick="alert('Estado actualizado a Solucionado.')">
-                <i class="bi bi-check-lg"></i> Marcar Atendido
-              </button>
-            </td>
-          </tr>
-        `).join('');
+        document.querySelectorAll('.btn-atender-dano').forEach(btn => {
+          btn.addEventListener('click', (e) => resolverDano(e.currentTarget.getAttribute('data-id')));
+        });
 
       } catch (err) {
-        console.error("Error al cargar daños:", err.message);
+        console.error("Error cargando reportes de daños:", err.message);
       }
     }
 
-    // 4. CRUD DE SEDES / CLUBES
+    async function resolverDano(id) {
+      if (!confirm('¿Marcar este incidente como resuelto?')) return;
+
+      try {
+        const { error } = await supabase
+          .from('bitacora')
+          .update({ tipo_visita: 'RESUELTO' })
+          .eq('id', id);
+
+        if (error) throw error;
+
+        alert('El incidente ha sido marcado como resuelto.');
+        cargarReportesDanos();
+      } catch (err) {
+        alert('Error al actualizar reporte: ' + err.message);
+      }
+    }
+
+    // 4. GESTOR DE SEDES Y CLUBES
     async function cargarSedes() {
       try {
         const { data: sedes, error } = await supabase
@@ -848,18 +853,20 @@
         selectSedes.innerHTML = sedesGlobal.map(s => `<option value="${s.nombre}">${s.nombre}</option>`).join('');
 
         const tbody = document.getElementById('tablaSedes');
-        tbody.innerHTML = sedesGlobal.map(s => `
-          <tr>
-            <td class="fw-bold">${s.nombre}</td>
-            <td>${s.ubicacion || 'Sin Ubicación'}</td>
-            <td><span class="badge bg-secondary">${s.capacidad || 0} personas</span></td>
-            <td class="text-end">
-              <button class="btn btn-sm btn-outline-danger btn-eliminar-sede" data-id="${s.id}">
-                <i class="bi bi-trash"></i> Eliminar
-              </button>
-            </td>
-          </tr>
-        `).join('');
+        tbody.innerHTML = sedesGlobal.length === 0
+          ? '<tr><td colspan="4" class="text-center py-4 text-muted">No hay sedes registradas</td></tr>'
+          : sedesGlobal.map(s => `
+            <tr>
+              <td class="fw-bold">${s.nombre}</td>
+              <td>${s.ubicacion || 'Sin registrar'}</td>
+              <td><span class="badge bg-info text-dark">${s.capacidad || 0} personas</span></td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-danger btn-eliminar-sede" data-id="${s.id}">
+                  <i class="bi bi-trash"></i> Eliminar
+                </button>
+              </td>
+            </tr>
+          `).join('');
 
         document.querySelectorAll('.btn-eliminar-sede').forEach(btn => {
           btn.addEventListener('click', (e) => eliminarSede(e.currentTarget.getAttribute('data-id')));
@@ -875,86 +882,95 @@
       const payload = {
         nombre: document.getElementById('sNombre').value,
         ubicacion: document.getElementById('sUbicacion').value,
-        capacidad: parseInt(document.getElementById('sCapacidad').value) || 0
+        capacidad: parseInt(document.getElementById('sCapacidad').value || 0)
       };
 
       try {
         const { error } = await supabase.from('sedes').insert([payload]);
         if (error) throw error;
 
-        alert('Sede registrada con éxito.');
+        alert('Sede creada exitosamente.');
         document.getElementById('formSede').reset();
         cargarSedes();
       } catch (err) {
-        alert('Error al guardar la sede: ' + err.message);
+        alert('Error al registrar sede: ' + err.message);
       }
     }
 
     async function eliminarSede(id) {
-      if (!confirm('¿Está seguro de eliminar esta sede?')) return;
+      if (!confirm('¿Seguro que deseas eliminar esta sede?')) return;
 
       try {
         const { error } = await supabase.from('sedes').delete().eq('id', id);
         if (error) throw error;
+
+        alert('Sede eliminada.');
         cargarSedes();
       } catch (err) {
-        alert('Error al eliminar la sede: ' + err.message);
+        alert('Error al borrar sede: ' + err.message);
       }
     }
 
-    // 5. BITÁCORA GLOBAL & EXPORTACIÓN CSV
+    // 5. BITÁCORA GLOBAL Y AUDITORÍA
     async function cargarBitacoraGlobal() {
       try {
-        const { data: bitacora, error } = await supabase
+        const { data, error } = await supabase
           .from('bitacora')
           .select('*')
           .order('hora_ingreso', { ascending: false });
 
         if (error) throw error;
-        bitacoraGlobal = bitacora || [];
-        renderTablaBitacora(bitacoraGlobal);
+        bitacoraGlobal = data || [];
+        renderizarTablaBitacora(bitacoraGlobal);
       } catch (err) {
-        console.error("Error al cargar la bitácora:", err.message);
+        console.error("Error al cargar la bitácora global:", err.message);
       }
     }
 
-    function renderTablaBitacora(datos) {
+    function renderizarTablaBitacora(lista) {
       const tbody = document.getElementById('tablaBitacoraGlobal');
-      tbody.innerHTML = datos.map(b => `
-        <tr>
-          <td><small class="fw-bold">${b.hora_ingreso ? new Date(b.hora_ingreso).toLocaleString('es-EC') : 'N/A'}</small></td>
-          <td><span class="badge bg-secondary">${b.tipo_visita || 'N/A'}</span></td>
-          <td class="fw-bold">${b.nombre || ''}</td>
-          <td><small>${b.cedula || b.placa || 'Peatonal'}</small></td>
-          <td class="text-success fw-bold">${b.destino || 'General'}</td>
-          <td><small class="fw-semibold text-muted">${b.registrado_por || 'Garita'}</small></td>
-          <td>${b.hora_salida ? '<span class="badge bg-secondary">SALIÓ</span>' : '<span class="badge bg-success">DENTRO</span>'}</td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = lista.length === 0
+        ? '<tr><td colspan="7" class="text-center py-4 text-muted">No hay registros de accesos aún</td></tr>'
+        : lista.map(b => `
+          <tr>
+            <td>${b.hora_ingreso ? new Date(b.hora_ingreso).toLocaleString('es-EC') : 'N/A'}</td>
+            <td><span class="badge bg-secondary">${b.tipo_visita || 'INGRESO'}</span></td>
+            <td class="fw-bold">${b.nombre || 'Anónimo'}</td>
+            <td><code>${b.placa || b.cedula || 'N/A'}</code></td>
+            <td>${b.destino || 'Sin especificar'}</td>
+            <td>${b.registrado_por || 'Sistema'}</td>
+            <td>
+              ${b.hora_salida 
+                ? '<span class="badge bg-danger">Salida Registrada</span>' 
+                : '<span class="badge bg-success">Dentro del Club</span>'}
+            </td>
+          </tr>
+        `).join('');
     }
 
     function filtrarBitacoraGlobal() {
-      const q = document.getElementById('inputBuscarGlobal').value.toLowerCase();
+      const query = document.getElementById('inputBuscarGlobal').value.toLowerCase();
       const filtrados = bitacoraGlobal.filter(b => 
-        (b.nombre && b.nombre.toLowerCase().includes(q)) ||
-        (b.registrado_por && b.registrado_por.toLowerCase().includes(q)) ||
-        (b.placa && b.placa.toLowerCase().includes(q))
+        (b.nombre || '').toLowerCase().includes(query) ||
+        (b.placa || '').toLowerCase().includes(query) ||
+        (b.cedula || '').toLowerCase().includes(query) ||
+        (b.registrado_por || '').toLowerCase().includes(query)
       );
-      renderTablaBitacora(filtrados);
+      renderizarTablaBitacora(filtrados);
     }
 
     function exportarCSV() {
-      if (bitacoraGlobal.length === 0) return alert('No hay registros para exportar.');
+      if (bitacoraGlobal.length === 0) return alert('No hay datos para exportar.');
 
-      let csv = "ID,Fecha,Tipo,Nombre,Cedula,Placa,Destino,Guardia,Estado\n";
+      let csv = "ID,Fecha/Hora,Tipo,Nombre,Cedula/Placa,Destino,Guardia\n";
       bitacoraGlobal.forEach(r => {
-        csv += `"${r.id}","${r.hora_ingreso ? new Date(r.hora_ingreso).toLocaleString('es-EC') : ''}","${r.tipo_visita || ''}","${r.nombre || ''}","${r.cedula || ''}","${r.placa || ''}","${r.destino || ''}","${r.registrado_por || ''}","${r.hora_salida ? 'SALIO' : 'DENTRO'}"\n`;
+        csv += `"${r.id}","${r.hora_ingreso ? new Date(r.hora_ingreso).toLocaleString('es-EC') : ''}","${r.tipo_visita || ''}","${r.nombre || ''}","${r.placa || r.cedula || ''}","${r.destino || ''}","${r.registrado_por || ''}"\n`;
       });
 
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.setAttribute("download", `Reporte_Administrativo_Club_${new Date().toISOString().slice(0,10)}.csv`);
+      link.setAttribute("download", `Reporte_Bitacora_BuenaVista_${new Date().toISOString().slice(0,10)}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
