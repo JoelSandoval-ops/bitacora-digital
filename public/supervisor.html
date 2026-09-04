@@ -3,348 +3,270 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Supervisión Multi-Club - Bitácora Inteligente</title>
+  <title>CLUB BUENA VISTA - Panel de Supervisión</title>
   
-  <!-- Tipografía Poppins (Igual a la del guardia) -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <!-- Bootstrap 5 CSS -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- FontAwesome Icons -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   
-  <!-- Librerías Externas -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root {
-      --bg-dark: #0f172a;
-      --card-dark: #1e293b;
-      --card-border: #334155;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --accent-blue: #38bdf8;
-      --accent-green: #22c55e;
-      --accent-warning: #f59e0b;
-      --accent-danger: #ef4444;
-      --accent-purple: #a855f7;
+      --bv-green-dark: #004d2e;
+      --bv-gold: #c8963e;
+      --bv-gold-hover: #b3822d;
+      --bv-bg: #f4f6f8;
+      --bv-red-badge: #ff1f3d;
     }
 
     body {
-      background-color: var(--bg-dark);
-      color: var(--text-main);
+      background-color: var(--bv-bg);
+      color: #1e293b;
       font-family: 'Poppins', sans-serif;
-      letter-spacing: 0.2px;
     }
 
-    /* Navbar Estilo Guardia */
-    .navbar-custom {
-      background-color: #0b1120;
-      border-bottom: 1px solid var(--card-border);
+    .header-buenavista {
+      background: linear-gradient(180deg, #005a36 0%, #004026 100%);
+      border-bottom: 3px solid var(--bv-gold);
+      padding: 12px 24px;
     }
 
-    /* Tarjetas y Contenedores */
-    .card-dark-custom {
-      background-color: var(--card-dark);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      color: var(--text-main);
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    .logo-container {
+      width: 52px;
+      height: 52px;
+      background-color: #ffffff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--bv-gold);
     }
 
-    /* Tarjetas KPI Neón */
-    .kpi-card {
-      border-radius: 12px;
-      border: 1px solid var(--card-border);
-      background: linear-gradient(145deg, #1e293b, #0f172a);
-      transition: all 0.3s ease;
+    .brand-title {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      color: #ffffff;
+      font-size: 1.35rem;
+      margin-bottom: 0;
     }
 
-    .kpi-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    .brand-subtitle {
+      color: var(--bv-gold);
+      font-size: 0.75rem;
+      font-weight: 700;
     }
 
-    .kpi-total { border-left: 4px solid var(--accent-blue); }
-    .kpi-dentro { border-left: 4px solid var(--accent-green); }
-    .kpi-salidas { border-left: 4px solid var(--accent-purple); }
-    .kpi-novedades { border-left: 4px solid var(--accent-warning); }
-
-    /* Estilos de Controles de Formulario */
-    .form-control-dark, .form-select-dark {
-      background-color: #0f172a;
-      border: 1px solid var(--card-border);
-      color: var(--text-main);
-      border-radius: 8px;
+    .nav-tabs-buenavista {
+      border: 1.5px solid var(--bv-gold);
+      border-radius: 10px;
+      background: #ffffff;
+      padding: 6px;
+      gap: 6px;
     }
 
-    .form-control-dark:focus, .form-select-dark:focus {
-      background-color: #0f172a;
-      border-color: var(--accent-blue);
-      color: var(--text-main);
-      box-shadow: 0 0 0 0.25rem rgba(56, 189, 248, 0.25);
-    }
-
-    /* Pestañas (Tabs) estilo moderno */
-    .nav-tabs {
-      border-bottom: 1px solid var(--card-border);
-    }
-
-    .nav-tabs .nav-link {
-      color: var(--text-muted);
-      font-weight: 500;
+    .nav-tabs-buenavista .nav-link {
       border: none;
-      border-bottom: 3px solid transparent;
-      padding: 0.8rem 1.2rem;
-      transition: all 0.2s ease;
-    }
-
-    .nav-tabs .nav-link:hover {
-      color: var(--text-main);
-    }
-
-    .nav-tabs .nav-link.active {
-      color: var(--accent-blue);
-      border-bottom: 3px solid var(--accent-blue);
-      background: transparent;
+      color: #475569;
       font-weight: 600;
+      font-size: 0.9rem;
+      border-radius: 6px;
+      padding: 10px 18px;
     }
 
-    /* Tabla Oscura Elegante */
-    .table-dark-custom {
-      color: var(--text-main);
+    .nav-tabs-buenavista .nav-link.active {
+      background-color: var(--bv-gold);
+      color: #ffffff !important;
+      font-weight: 700;
     }
 
-    .table-dark-custom thead {
-      background-color: #0b1120;
-      color: var(--text-muted);
+    .bv-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    /* Estilo Cuadriculado Exacto */
+    .bv-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .bv-table thead th {
+      background-color: #212529;
+      color: #ffffff;
       font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      font-weight: 700;
+      padding: 10px;
+      border: 1px solid #343a40;
     }
 
-    .table-dark-custom th, .table-dark-custom td {
-      border-bottom: 1px solid var(--card-border);
-      padding: 1rem 0.75rem;
+    .bv-table tbody td {
+      padding: 10px;
+      font-size: 0.85rem;
+      border: 1px solid #cbd5e1; /* Rejilla marcada */
       vertical-align: middle;
+      background-color: #ffffff;
     }
 
-    .table-dark-custom tbody tr:hover {
-      background-color: rgba(255, 255, 255, 0.03);
+    .bv-table tbody tr:nth-of-type(even) td {
+      background-color: #f8f9fa;
     }
 
-    /* Miniatura Evidencia Fotográfica */
-    .img-preview {
-      width: 48px;
-      height: 48px;
+    .badge-ubicacion {
+      background-color: var(--bv-red-badge);
+      color: #ffffff;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 12px;
+    }
+
+    .img-novedad-thumb {
+      width: 50px;
+      height: 40px;
       object-fit: cover;
-      border-radius: 8px;
-      cursor: pointer;
-      border: 1px solid var(--card-border);
-      transition: transform 0.2s ease;
-    }
-
-    .img-preview:hover {
-      transform: scale(1.1);
-      border-color: var(--accent-blue);
-    }
-
-    /* Modal Estilo Oscuro */
-    .modal-content-dark {
-      background-color: var(--card-dark);
-      border: 1px solid var(--card-border);
-      color: var(--text-main);
-    }
-
-    .modal-header-dark {
-      border-bottom: 1px solid var(--card-border);
-      background-color: #0b1120;
-    }
-
-    .modal-footer-dark {
-      border-top: 1px solid var(--card-border);
-    }
-
-    /* Scrollbar Personalizado */
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: var(--bg-dark);
-    }
-    ::-webkit-scrollbar-thumb {
-      background: var(--card-border);
       border-radius: 4px;
+      border: 1px solid var(--bv-gold);
+      cursor: pointer;
     }
-    ::-webkit-scrollbar-thumb:hover {
-      background: var(--text-muted);
+
+    .day-column {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      min-height: 320px;
+    }
+
+    .day-header {
+      background: var(--bv-green-dark);
+      color: #ffffff;
+      font-weight: 700;
+      padding: 8px;
+      text-align: center;
+      border-top-left-radius: 7px;
+      border-top-right-radius: 7px;
+      font-size: 0.85rem;
+    }
+
+    .socio-card {
+      background: #f8fafc;
+      border-left: 3.5px solid var(--bv-gold);
+      border-top: 1px solid #e2e8f0;
+      border-right: 1px solid #e2e8f0;
+      border-bottom: 1px solid #e2e8f0;
+      border-radius: 4px;
+      padding: 6px;
+      margin: 6px;
+      font-size: 0.78rem;
     }
   </style>
 </head>
 <body>
 
-  <!-- Barra de Navegación -->
-  <nav class="navbar navbar-expand-lg navbar-dark navbar-custom sticky-top">
-    <div class="container-fluid px-4">
-      <a class="navbar-brand fw-bold text-white d-flex align-items-center" href="#">
-        <i class="fa-solid fa-user-shield me-2 text-warning fs-4"></i>
-        <span>PANEL DE SUPERVISIÓN GENERAL</span>
-      </a>
-      <div class="d-flex align-items-center">
-        <span class="me-3 small text-muted"><i class="fa-solid fa-circle-user me-1 text-info"></i> <span id="usuarioNombre" class="text-white fw-medium">Supervisor</span></span>
-        <button class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="cerrarSesion()">
-          <i class="fa-solid fa-right-from-bracket me-1"></i>Salir
-        </button>
+  <header class="header-buenavista d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center gap-3">
+      <div class="logo-container">
+        <i class="fa-solid fa-shield-halved text-success fs-3"></i>
+      </div>
+      <div>
+        <h1 class="brand-title">CLUB BUENA VISTA</h1>
+        <div class="brand-subtitle"><i class="fa-solid fa-trophy me-1"></i>PANEL DE SUPERVISIÓN Y CONTROL</div>
       </div>
     </div>
-  </nav>
+    <button class="btn btn-outline-light btn-sm" onclick="cerrarSesion()">Cerrar Sesión</button>
+  </header>
 
   <div class="container-fluid px-4 py-4">
 
-    <!-- Filtros Globales -->
-    <div class="card card-dark-custom mb-4">
-      <div class="card-body">
-        <div class="row g-3 align-items-end">
-          <div class="col-md-3">
-            <label class="form-label fw-medium small text-muted">Sede / Club</label>
-            <select id="filtroSede" class="form-select form-select-dark form-select-sm" onchange="aplicarFiltros()">
-              <option value="TODAS">Todas las Sedes</option>
-            </select>
-          </div>
-          <div class="col-md-2">
-            <label class="form-label fw-medium small text-muted">Fecha Inicio</label>
-            <input type="date" id="filtroFechaInicio" class="form-control form-control-dark form-control-sm" onchange="aplicarFiltros()">
-          </div>
-          <div class="col-md-2">
-            <label class="form-label fw-medium small text-muted">Fecha Fin</label>
-            <input type="date" id="filtroFechaFin" class="form-control form-control-dark form-control-sm" onchange="aplicarFiltros()">
-          </div>
-          <div class="col-md-5 d-flex gap-2">
-            <button class="btn btn-sm btn-outline-secondary w-100 text-white" onclick="limpiarFiltros()">
-              <i class="fa-solid fa-rotate-left me-1"></i>Limpiar
-            </button>
-            <button class="btn btn-sm btn-success w-100 fw-semibold" onclick="exportarExcel()">
-              <i class="fa-solid fa-file-excel me-1"></i>Excel
-            </button>
-            <button class="btn btn-sm btn-danger w-100 fw-semibold" onclick="exportarPDF()">
-              <i class="fa-solid fa-file-pdf me-1"></i>PDF
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Métrica KPIs -->
-    <div class="row g-3 mb-4">
-      <div class="col-md-3">
-        <div class="card kpi-card kpi-total p-3">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <h6 class="text-muted small mb-1">Total Ingresos</h6>
-              <h2 class="mb-0 fw-bold text-white" id="kpiTotal">0</h2>
-            </div>
-            <i class="fa-solid fa-users fa-2x text-info"></i>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card kpi-card kpi-dentro p-3">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <h6 class="text-muted small mb-1">En Sede (Dentro)</h6>
-              <h2 class="mb-0 fw-bold text-white" id="kpiDentro">0</h2>
-            </div>
-            <i class="fa-solid fa-door-open fa-2x text-success"></i>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card kpi-card kpi-salidas p-3">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <h6 class="text-muted small mb-1">Salidas Registradas</h6>
-              <h2 class="mb-0 fw-bold text-white" id="kpiSalidas">0</h2>
-            </div>
-            <i class="fa-solid fa-door-closed fa-2x text-purple" style="color: var(--accent-purple);"></i>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card kpi-card kpi-novedades p-3">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <h6 class="text-muted small mb-1">Novedades Reportadas</h6>
-              <h2 class="mb-0 fw-bold text-white" id="kpiNovedades">0</h2>
-            </div>
-            <i class="fa-solid fa-triangle-exclamation fa-2x text-warning"></i>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Pestañas de Vista -->
-    <ul class="nav nav-tabs mb-4" id="mainTabs" role="tablist">
-      <li class="nav-item">
-        <button class="nav-link active" id="tab-asistencias-tab" data-bs-toggle="tab" data-bs-target="#tab-asistencias" type="button">
-          <i class="fa-solid fa-list-check me-2"></i>Bitácora General de Asistencia
+    <!-- Pestañas -->
+    <ul class="nav nav-tabs nav-tabs-buenavista mb-4" id="pestañas" role="tablist">
+      <li class="nav-item flex-fill text-center">
+        <button class="nav-link w-100 active" id="tab1" data-bs-toggle="tab" data-bs-target="#content1" type="button">
+          <i class="fa-solid fa-list-check me-2"></i>1. Bitácora de Asistencia
         </button>
       </li>
-      <li class="nav-item">
-        <button class="nav-link" id="tab-novedades-tab" data-bs-toggle="tab" data-bs-target="#tab-novedades" type="button">
-          <i class="fa-solid fa-shield-cat me-2"></i>Bitácora de Novedades
+      <li class="nav-item flex-fill text-center">
+        <button class="nav-link w-100" id="tab2" data-bs-toggle="tab" data-bs-target="#content2" type="button">
+          <i class="fa-solid fa-triangle-exclamation me-2"></i>2. Bitácora de Novedades
         </button>
       </li>
-      <li class="nav-item">
-        <button class="nav-link" id="tab-estadisticas-tab" data-bs-toggle="tab" data-bs-target="#tab-estadisticas" type="button">
-          <i class="fa-solid fa-chart-pie me-2"></i>Estadísticas y Análisis
+      <li class="nav-item flex-fill text-center">
+        <button class="nav-link w-100" id="tab3" data-bs-toggle="tab" data-bs-target="#content3" type="button">
+          <i class="fa-solid fa-calendar-week me-2"></i>3. Visitas Semanales de Socios (Lun - Dom)
         </button>
       </li>
     </ul>
 
-    <!-- Contenido de Pestañas -->
-    <div class="tab-content" id="reportArea">
-      
-      <!-- TAB 1: Bitácora General -->
-      <div class="tab-pane fade show active" id="tab-asistencias">
-        <div class="card card-dark-custom p-3">
-          <div class="table-responsive">
-            <table class="table table-dark-custom align-middle" id="tablaAsistencias">
+    <div class="tab-content">
+
+      <!-- PESTAÑA 1 -->
+      <div class="tab-pane fade show active" id="content1">
+        <div class="bv-card">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex align-items-center gap-3">
+              <h5 class="m-0 fw-bold text-success"><i class="fa-solid fa-users me-1"></i> Registros de Asistencia</h5>
+              <!-- Filtro de Día -->
+              <select id="filtroDiaAsistencia" class="form-select form-select-sm" style="width: 180px;" onchange="filtrarTablas()">
+                <option value="TODOS">Todos los días</option>
+                <option value="1">Lunes</option>
+                <option value="2">Martes</option>
+                <option value="3">Miércoles</option>
+                <option value="4">Jueves</option>
+                <option value="5">Viernes</option>
+                <option value="6">Sábado</option>
+                <option value="0">Domingo</option>
+              </select>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-success fw-bold" onclick="exportarExcel()"><i class="fa-solid fa-file-excel me-1"></i>Descargar Excel</button>
+              <button class="btn btn-sm btn-danger fw-bold" onclick="exportarPDF()"><i class="fa-solid fa-file-pdf me-1"></i>Descargar PDF Cuadriculado</button>
+            </div>
+          </div>
+
+          <div class="table-responsive" id="areaPDF">
+            <table class="table bv-table align-middle">
               <thead>
                 <tr>
-                  <th>Sede</th>
+                  <th>Día</th>
                   <th>Fecha/Hora Ingreso</th>
                   <th>Fecha/Hora Salida</th>
-                  <th>Persona</th>
-                  <th>Cédula / ID</th>
-                  <th>Tipo</th>
+                  <th>Nombre y Apellidos</th>
+                  <th>Cédula</th>
+                  <th>Tipo Persona</th>
                   <th>Estado</th>
                   <th>Guardia</th>
-                  <th>Foto</th>
                 </tr>
               </thead>
-              <tbody id="tbodyAsistencias"></tbody>
+              <tbody id="tbodyAsistencia"></tbody>
             </table>
           </div>
         </div>
       </div>
 
-      <!-- TAB 2: Bitácora de Novedades -->
-      <div class="tab-pane fade" id="tab-novedades">
-        <div class="card card-dark-custom p-3">
+      <!-- PESTAÑA 2 -->
+      <div class="tab-pane fade" id="content2">
+        <div class="bv-card">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="m-0 fw-bold text-success"><i class="fa-solid fa-shield-cat me-1"></i> Novedades Registradas por Guardias</h5>
+            <button class="btn btn-sm btn-outline-success" onclick="cargarBitacora()"><i class="fa-solid fa-rotate me-1"></i>Actualizar</button>
+          </div>
+
           <div class="table-responsive">
-            <table class="table table-dark-custom align-middle" id="tablaNovedades">
+            <table class="table bv-table align-middle">
               <thead>
                 <tr>
-                  <th>Fecha y Hora</th>
-                  <th>Ubicación / Sector</th>
-                  <th>Asunto / Novedad</th>
-                  <th>Detalle / Observación</th>
-                  <th>Imagen</th>
-                  <th>Estado Gestión</th>
-                  <th>Fecha Atención</th>
+                  <th>Día</th>
+                  <th>Fecha/Hora</th>
+                  <th>Ubicación</th>
+                  <th>Asunto</th>
+                  <th>Detalle / Observación Guardia</th>
+                  <th>Imagen Evidencia</th>
+                  <th>Estado Respuesta</th>
+                  <th>Observación Supervisor</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -354,22 +276,18 @@
         </div>
       </div>
 
-      <!-- TAB 3: Estadísticas -->
-      <div class="tab-pane fade" id="tab-estadisticas">
-        <div class="row g-4">
-          <div class="col-md-6">
-            <div class="card card-dark-custom p-4">
-              <h6 class="fw-bold mb-3 text-info"><i class="fa-solid fa-chart-donut me-2"></i>Distribución por Tipo de Persona</h6>
-              <div style="max-height: 280px; position: relative;">
-                <canvas id="chartTipos"></canvas>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="card card-dark-custom p-4">
-              <h6 class="fw-bold mb-3 text-info"><i class="fa-solid fa-ranking-star me-2"></i>Ranking de Frecuencia (Top Visitas)</h6>
-              <ul class="list-group list-group-flush bg-transparent" id="listaFrecuentes"></ul>
-            </div>
+      <!-- PESTAÑA 3 -->
+      <div class="tab-pane fade" id="content3">
+        <div class="bv-card">
+          <h5 class="fw-bold text-success mb-3"><i class="fa-solid fa-clock-rotate-left me-1"></i> Visitas de Socios de Lunes a Domingo</h5>
+          <div class="row g-2">
+            <div class="col"><div class="day-column"><div class="day-header">LUNES</div><div id="socio-1" class="p-1"></div></div></div>
+            <div class="col"><div class="day-column"><div class="day-header">MARTES</div><div id="socio-2" class="p-1"></div></div></div>
+            <div class="col"><div class="day-column"><div class="day-header">MIÉRCOLES</div><div id="socio-3" class="p-1"></div></div></div>
+            <div class="col"><div class="day-column"><div class="day-header">JUEVES</div><div id="socio-4" class="p-1"></div></div></div>
+            <div class="col"><div class="day-column"><div class="day-header">VIERNES</div><div id="socio-5" class="p-1"></div></div></div>
+            <div class="col"><div class="day-column"><div class="day-header">SÁBADO</div><div id="socio-6" class="p-1"></div></div></div>
+            <div class="col"><div class="day-column"><div class="day-header">DOMINGO</div><div id="socio-0" class="p-1"></div></div></div>
           </div>
         </div>
       </div>
@@ -377,394 +295,207 @@
     </div>
   </div>
 
-  <!-- Modal Gestión de Novedad -->
-  <div class="modal fade" id="modalResolver" tabindex="-1" aria-hidden="true">
+  <!-- Modal de Gestión -->
+  <div class="modal fade" id="modalGestion" tabindex="-1">
     <div class="modal-dialog">
-      <div class="modal-content modal-content-dark">
-        <div class="modal-header modal-header-dark">
-          <h5 class="modal-title fw-bold text-warning"><i class="fa-solid fa-pen-to-square me-2"></i>Gestionar Novedad</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-content">
+        <div class="modal-header bg-dark text-white">
+          <h6 class="modal-title fw-bold">Gestionar Novedad</h6>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <input type="hidden" id="modalNovedadId">
+          <input type="hidden" id="modalId">
           <div class="mb-3">
-            <label class="form-label small fw-medium text-muted">Estado de la Gestión</label>
-            <select id="modalEstado" class="form-select form-select-dark">
-              <option value="PENDIENTE">PENDIENTE</option>
+            <label class="form-label small fw-bold">Estado de Atención</label>
+            <select id="modalEstado" class="form-select">
               <option value="EN PROCESO">EN PROCESO</option>
-              <option value="SOLUCIONADO">SOLUCIONADO / RESUELTO</option>
-              <option value="EN ESPERA">EN ESPERA</option>
+              <option value="SOLICITUD ACEPTADA">SOLICITUD ACEPTADA</option>
+              <option value="SOLICITUD RECHAZADA">SOLICITUD RECHAZADA</option>
             </select>
           </div>
           <div class="mb-3">
-            <label class="form-label small fw-medium text-muted">Observación del Supervisor</label>
-            <textarea id="modalObservacion" class="form-control form-control-dark" rows="3" placeholder="Escriba aquí los detalles o acciones tomadas..."></textarea>
+            <label class="form-label small fw-bold">Observación del Supervisor</label>
+            <textarea id="modalObs" class="form-control" rows="3" placeholder="Escriba la respuesta u observación..."></textarea>
           </div>
         </div>
-        <div class="modal-footer modal-footer-dark">
-          <button type="button" class="btn btn-sm btn-outline-secondary text-white" data-bs-dismiss="modal">Cancelar</button>
-          <button type="button" class="btn btn-sm btn-primary fw-semibold" onclick="guardarResolucionNovedad()">Guardar Registro</button>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-warning btn-sm fw-bold" onclick="guardarGestion()">Guardar</button>
         </div>
       </div>
     </div>
   </div>
-
-  <!-- Modal para Evidencia Fotográfica HD -->
-  <div class="modal fade" id="modalFoto" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content modal-content-dark">
-        <div class="modal-header modal-header-dark">
-          <h6 class="modal-title fw-bold text-white"><i class="fa-solid fa-image me-2 text-info"></i>Evidencia Fotográfica Capturada</h6>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body text-center p-2">
-          <img id="imgModalAmpliada" src="" class="img-fluid rounded shadow" alt="Evidencia">
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Bootstrap JS Bundle -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    // CONFIGURACIÓN DE SUPABASE
     const SUPABASE_URL = 'https://xyzcompany.supabase.co'; 
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let bitacoraGlobal = [];
-    let bitacoraFiltrada = [];
-    let chartTipos = null;
+    let datosGlobales = [];
+    const diasNombre = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
-    document.addEventListener("DOMContentLoaded", () => {
-      verificarAccesoSupervisor();
-      inicializarFechas();
-      cargarBitacoraGeneral();
-    });
+    document.addEventListener("DOMContentLoaded", cargarBitacora);
 
-    function verificarAccesoSupervisor() {
-      const sesion = JSON.parse(sessionStorage.getItem('sesion_bitacora') || '{}');
-      if (sesion.nombre) {
-        document.getElementById('usuarioNombre').innerText = sesion.nombre;
-      }
-    }
-
-    function cerrarSesion() {
-      sessionStorage.removeItem('sesion_bitacora');
-      window.location.href = 'index.html';
-    }
-
-    function inicializarFechas() {
-      const hoy = new Date().toISOString().split('T')[0];
-      document.getElementById('filtroFechaInicio').value = hoy;
-      document.getElementById('filtroFechaFin').value = hoy;
-    }
-
-    async function cargarBitacoraGeneral() {
+    async function cargarBitacora() {
       try {
-        const { data, error } = await _supabase
-          .from('bitacora')
-          .select('*')
-          .order('id', { ascending: false });
-
+        const { data, error } = await _supabase.from('bitacora').select('*').order('id', { ascending: false });
         if (error) throw error;
-        
-        bitacoraGlobal = data || [];
-        poblarSelectorSedes();
-        aplicarFiltros();
-      } catch (err) {
-        console.error("Error al cargar la bitácora:", err);
-      }
+        datosGlobales = data || [];
+        filtrarTablas();
+      } catch (e) { console.error("Error al cargar:", e); }
     }
 
-    function poblarSelectorSedes() {
-      const select = document.getElementById('filtroSede');
-      const sedesSet = new Set(bitacoraGlobal.map(item => item.club_id || item.sede).filter(Boolean));
+    function filtrarTablas() {
+      const filtro = document.getElementById('filtroDiaAsistencia').value;
       
-      select.innerHTML = '<option value="TODAS">Todas las Sedes</option>';
-      sedesSet.forEach(sede => {
-        const option = document.createElement('option');
-        option.value = sede;
-        option.textContent = sede;
-        select.appendChild(option);
-      });
+      let filtrados = datosGlobales;
+      if (filtro !== 'TODOS') {
+        filtrados = datosGlobales.filter(i => {
+          const f = new Date(i.fecha_hora_ingreso || i.fecha);
+          return f.getDay().toString() === filtro;
+        });
+      }
+
+      renderAsistencia(filtrados);
+      renderNovedades(filtrados);
+      renderHorarioSemanal();
     }
 
-    function aplicarFiltros() {
-      const sede = document.getElementById('filtroSede').value;
-      const fInicio = document.getElementById('filtroFechaInicio').value;
-      const fFin = document.getElementById('filtroFechaFin').value;
+    function renderAsistencia(lista) {
+      const tbody = document.getElementById('tbodyAsistencia');
+      tbody.innerHTML = '';
 
-      bitacoraFiltrada = bitacoraGlobal.filter(item => {
-        if (sede !== 'TODAS' && (item.club_id !== sede && item.sede !== sede)) {
-          return false;
-        }
+      lista.forEach(item => {
+        const f = new Date(item.fecha_hora_ingreso || item.fecha);
+        const diaNombre = isNaN(f.getTime()) ? '-' : diasNombre[f.getDay()];
 
-        const fechaRef = item.fecha_hora_ingreso || item.fecha;
-        if (fechaRef) {
-          const rawFecha = fechaRef.split('T')[0];
-          if (fInicio && rawFecha < fInicio) return false;
-          if (fFin && rawFecha > fFin) return false;
-        }
-
-        return true;
-      });
-
-      actualizarKPIs();
-      renderTablas();
-      renderizarGraficos();
-      renderFrecuentes();
-    }
-
-    function limpiarFiltros() {
-      document.getElementById('filtroSede').value = 'TODAS';
-      inicializarFechas();
-      aplicarFiltros();
-    }
-
-    function actualizarKPIs() {
-      const total = bitacoraFiltrada.length;
-      const dentro = bitacoraFiltrada.filter(i => !i.fecha_hora_salida).length;
-      const salidas = bitacoraFiltrada.filter(i => i.fecha_hora_salida).length;
-      const novedades = bitacoraFiltrada.filter(i => 
-        (i.asunto_novedad && i.asunto_novedad.trim() !== '') || 
-        (i.novedades && i.novedades.trim() !== '')
-      ).length;
-
-      document.getElementById('kpiTotal').innerText = total;
-      document.getElementById('kpiDentro').innerText = dentro;
-      document.getElementById('kpiSalidas').innerText = salidas;
-      document.getElementById('kpiNovedades').innerText = novedades;
-    }
-
-    function renderTablas() {
-      const tbodyA = document.getElementById('tbodyAsistencias');
-      const tbodyN = document.getElementById('tbodyNovedades');
-
-      tbodyA.innerHTML = '';
-      tbodyN.innerHTML = '';
-
-      bitacoraFiltrada.forEach(r => {
-        const asunto = r.asunto_novedad || r.novedades || r.novedad || '';
-        const detalle = r.detalle_observacion || 'Sin observaciones';
-        const ubicacion = r.ubicacion || r.club_id || r.sede || 'N/A';
-
-        // 1. Render Tab Asistencias
-        const trA = document.createElement('tr');
-        trA.innerHTML = `
-          <td><span class="badge bg-secondary">${r.club_id || r.sede || 'N/A'}</span></td>
-          <td>${formatearFechaHora(r.fecha_hora_ingreso || r.fecha)}</td>
-          <td>${r.fecha_hora_salida ? formatearFechaHora(r.fecha_hora_salida) : '<span class="badge bg-success-subtle text-success border border-success">EN SEDE</span>'}</td>
-          <td class="fw-medium">${r.nombre || 'N/A'}</td>
-          <td><code class="text-info">${r.cedula || 'N/A'}</code></td>
-          <td><span class="badge bg-dark border border-secondary text-light">${r.tipo_persona || 'VISITA'}</span></td>
-          <td>
-            <span class="badge ${r.fecha_hora_salida ? 'bg-secondary' : 'bg-success'}">
-              ${r.fecha_hora_salida ? 'FINALIZADO' : 'DENTRO'}
-            </span>
-          </td>
-          <td class="small text-muted">${r.guardia_ingreso || 'N/A'}</td>
-          <td>
-            ${r.foto_url ? `<img src="${r.foto_url}" class="img-preview" onclick="ampliarImagen('${r.foto_url}')">` : '<span class="text-muted small">-</span>'}
-          </td>
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${diaNombre}</strong></td>
+          <td>${formatearFechaHora(item.fecha_hora_ingreso || item.fecha)}</td>
+          <td>${item.fecha_hora_salida ? formatearFechaHora(item.fecha_hora_salida) : '<span class="badge bg-success">EN CLUB</span>'}</td>
+          <td class="fw-bold text-uppercase">${item.nombre || 'SIN REGISTRO'}</td>
+          <td><code>${item.cedula || 'N/A'}</code></td>
+          <td><span class="badge bg-secondary">${item.tipo_persona || 'SOCIO'}</span></td>
+          <td><span class="badge ${item.fecha_hora_salida ? 'bg-secondary' : 'bg-success'}">${item.fecha_hora_salida ? 'SALIDA' : 'DENTRO'}</span></td>
+          <td class="small text-muted">${item.guardia_ingreso || 'Guardia'}</td>
         `;
-        tbodyA.appendChild(trA);
+        tbody.appendChild(tr);
+      });
+    }
 
-        // 2. Render Tab Novedades
-        if (asunto.trim() !== '') {
-          const trN = document.createElement('tr');
-          const estadoRes = r.estado_resolucion || 'PENDIENTE';
-          
-          let badgeColor = 'bg-danger';
-          if (estadoRes === 'EN PROCESO') badgeColor = 'bg-warning text-dark';
-          if (estadoRes === 'SOLUCIONADO' || estadoRes === 'RESUELTO') badgeColor = 'bg-success';
-          if (estadoRes === 'EN ESPERA') badgeColor = 'bg-info text-dark';
+    function renderNovedades(lista) {
+      const tbody = document.getElementById('tbodyNovedades');
+      tbody.innerHTML = '';
 
-          trN.innerHTML = `
-            <td>${formatearFechaHora(r.fecha_hora_ingreso || r.fecha)}</td>
-            <td><span class="badge bg-danger-subtle text-danger border border-danger">${ubicacion}</span></td>
-            <td class="fw-semibold text-warning">${asunto}</td>
-            <td class="small text-muted text-wrap" style="max-width: 250px;">${detalle}</td>
-            <td>
-              ${r.foto_url ? `<img src="${r.foto_url}" class="img-preview" onclick="ampliarImagen('${r.foto_url}')">` : '<span class="text-muted small">-</span>'}
-            </td>
-            <td><span class="badge ${badgeColor}">${estadoRes}</span></td>
-            <td class="small text-muted">${r.fecha_resolucion ? formatearFechaHora(r.fecha_resolucion) : '<em>Pendiente</em>'}</td>
-            <td>
-              <button class="btn btn-sm btn-outline-info rounded-pill" onclick="prepararModalResolucion(${r.id})">
-                <i class="fa-solid fa-pen-to-square me-1"></i>Gestionar
-              </button>
-            </td>
+      const novedades = lista.filter(item => (item.asunto_novedad || item.novedades));
+
+      novedades.forEach(n => {
+        const f = new Date(n.fecha_hora_ingreso || n.fecha);
+        const diaNombre = isNaN(f.getTime()) ? '-' : diasNombre[f.getDay()];
+        const est = n.estado_resolucion || 'EN PROCESO';
+
+        let bg = 'bg-warning text-dark';
+        if (est === 'SOLICITUD ACEPTADA') bg = 'bg-success';
+        if (est === 'SOLICITUD RECHAZADA') bg = 'bg-danger';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${diaNombre}</strong></td>
+          <td>${formatearFechaHora(n.fecha_hora_ingreso || n.fecha)}</td>
+          <td><span class="badge-ubicacion">${n.ubicacion || 'Garita'}</span></td>
+          <td class="fw-bold">${n.asunto_novedad || n.novedades}</td>
+          <td class="small">${n.detalle_observacion || 'Sin detalle'}</td>
+          <td>${n.foto_url ? `<img src="${n.foto_url}" class="img-novedad-thumb" onclick="window.open('${n.foto_url}')">` : '- Sin Foto -'}</td>
+          <td><span class="badge ${bg}">${est}</span></td>
+          <td class="small text-muted">${n.observacion_supervisor || '<em>Pendiente</em>'}</td>
+          <td><button class="btn btn-sm btn-warning fw-bold" onclick="abrirModal(${n.id})">Atender</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderHorarioSemanal() {
+      [0,1,2,3,4,5,6].forEach(d => document.getElementById(`socio-${d}`).innerHTML = '');
+
+      datosGlobales.forEach(reg => {
+        const f = new Date(reg.fecha_hora_ingreso || reg.fecha);
+        if (isNaN(f.getTime())) return;
+
+        const contenedor = document.getElementById(`socio-${f.getDay()}`);
+        if (contenedor) {
+          const div = document.createElement('div');
+          div.className = 'socio-card';
+          div.innerHTML = `
+            <div class="fw-bold">${reg.nombre || 'SOCIO'}</div>
+            <div class="text-muted">${f.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
+            ${!reg.fecha_hora_salida ? '<span class="badge bg-success">DENTRO</span>' : '<span class="badge bg-light text-dark border">SALIÓ</span>'}
           `;
-          tbodyN.appendChild(trN);
+          contenedor.appendChild(div);
         }
       });
     }
 
-    function prepararModalResolucion(id) {
-      const registro = bitacoraGlobal.find(item => item.id === id);
-      if (!registro) return;
-
-      document.getElementById('modalNovedadId').value = registro.id;
-      document.getElementById('modalEstado').value = registro.estado_resolucion || 'PENDIENTE';
-      document.getElementById('modalObservacion').value = registro.observacion_supervisor || '';
-
-      const modal = new bootstrap.Modal(document.getElementById('modalResolver'));
-      modal.show();
+    function abrirModal(id) {
+      const reg = datosGlobales.find(i => i.id === id);
+      if (!reg) return;
+      document.getElementById('modalId').value = reg.id;
+      document.getElementById('modalEstado').value = reg.estado_resolucion || 'EN PROCESO';
+      document.getElementById('modalObs').value = reg.observacion_supervisor || '';
+      new bootstrap.Modal(document.getElementById('modalGestion')).show();
     }
 
-    async function guardarResolucionNovedad() {
-      const id = document.getElementById('modalNovedadId').value;
+    async function guardarGestion() {
+      const id = document.getElementById('modalId').value;
       const estado = document.getElementById('modalEstado').value;
-      const observacion = document.getElementById('modalObservacion').value;
-      const ahora = new Date().toISOString();
+      const obs = document.getElementById('modalObs').value;
 
-      try {
-        const { error } = await _supabase
-          .from('bitacora')
-          .update({
-            estado_resolucion: estado,
-            observacion_supervisor: observacion,
-            fecha_resolucion: ahora
-          })
-          .eq('id', id);
+      await _supabase.from('bitacora').update({
+        estado_resolucion: estado,
+        observacion_supervisor: obs,
+        fecha_resolucion: new Date().toISOString()
+      }).eq('id', id);
 
-        if (error) throw error;
-
-        const item = bitacoraGlobal.find(i => i.id == id);
-        if (item) {
-          item.estado_resolucion = estado;
-          item.observacion_supervisor = observacion;
-          item.fecha_resolucion = ahora;
-        }
-
-        aplicarFiltros();
-        bootstrap.Modal.getInstance(document.getElementById('modalResolver')).hide();
-      } catch (e) {
-        console.error('Error al actualizar novedad:', e);
-        alert('No se pudo guardar los cambios.');
-      }
+      cargarBitacora();
+      bootstrap.Modal.getInstance(document.getElementById('modalGestion')).hide();
     }
 
-    function renderizarGraficos() {
-      const ctx = document.getElementById('chartTipos').getContext('2d');
-      const conteo = {};
-      
-      bitacoraFiltrada.forEach(i => {
-        const tipo = i.tipo_persona || 'OTROS';
-        conteo[tipo] = (conteo[tipo] || 0) + 1;
-      });
-
-      if (chartTipos instanceof Chart) chartTipos.destroy();
-
-      chartTipos = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: Object.keys(conteo),
-          datasets: [{
-            data: Object.values(conteo),
-            backgroundColor: ['#38bdf8', '#22c55e', '#f59e0b', '#ef4444', '#a855f7'],
-            borderColor: '#1e293b',
-            borderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { 
-            legend: { 
-              position: 'bottom',
-              labels: { color: '#94a3b8', font: { family: 'Poppins' } }
-            } 
-          }
-        }
-      });
-    }
-
-    function renderFrecuentes() {
-      const ul = document.getElementById('listaFrecuentes');
-      ul.innerHTML = '';
-
-      const frecuencia = {};
-      bitacoraFiltrada.forEach(i => {
-        if (i.cedula) {
-          frecuencia[i.cedula] = frecuencia[i.cedula] || { nombre: i.nombre, accesos: 0, tipo: i.tipo_persona };
-          frecuencia[i.cedula].accesos += 1;
-        }
-      });
-
-      const ordenados = Object.values(frecuencia).sort((a, b) => b.accesos - a.accesos).slice(0, 5);
-
-      if (ordenados.length === 0) {
-        ul.innerHTML = '<li class="list-group-item bg-transparent text-muted small border-0">Sin datos registrados</li>';
-        return;
-      }
-
-      ordenados.forEach(item => {
-        const li = document.createElement('li');
-        li.className = 'list-group-item bg-transparent border-bottom border-secondary d-flex justify-content-between align-items-center text-white';
-        li.innerHTML = `
-          <div>
-            <span class="fw-medium d-block">${item.nombre}</span>
-            <span class="text-muted small">${item.tipo || 'VISITA'}</span>
-          </div>
-          <span class="badge bg-info text-dark rounded-pill fw-bold">${item.accesos} accesos</span>
-        `;
-        ul.appendChild(li);
-      });
-    }
-
-    function ampliarImagen(url) {
-      document.getElementById('imgModalAmpliada').src = url;
-      new bootstrap.Modal(document.getElementById('modalFoto')).show();
-    }
-
-    function formatearFechaHora(strFecha) {
-      if (!strFecha) return 'N/A';
-      const f = new Date(strFecha);
-      return isNaN(f.getTime()) ? strFecha : f.toLocaleString('es-EC', { dateStyle: 'short', timeStyle: 'medium' });
+    function formatearFechaHora(str) {
+      if (!str) return 'N/A';
+      const f = new Date(str);
+      return isNaN(f.getTime()) ? str : f.toLocaleString('es-EC');
     }
 
     function exportarExcel() {
-      if (bitacoraFiltrada.length === 0) {
-        alert("No hay datos para exportar.");
-        return;
-      }
-
-      const datosExcel = bitacoraFiltrada.map(item => ({
-        "Sede": item.ubicacion || item.club_id || item.sede || 'N/A',
-        "Fecha/Hora Ingreso": formatearFechaHora(item.fecha_hora_ingreso || item.fecha),
-        "Fecha/Hora Salida": item.fecha_hora_salida ? formatearFechaHora(item.fecha_hora_salida) : 'EN SEDE',
-        "Nombre": item.nombre || 'N/A',
-        "Cédula": item.cedula || 'N/A',
-        "Tipo": item.tipo_persona || 'VISITA',
-        "Guardia": item.guardia_ingreso || 'N/A',
-        "Asunto/Novedad": item.asunto_novedad || item.novedades || '',
-        "Detalle": item.detalle_observacion || '',
-        "Estado": item.estado_resolucion || 'PENDIENTE',
-        "Fecha Atención": item.fecha_resolucion ? formatearFechaHora(item.fecha_resolucion) : '',
-        "Observación Supervisor": item.observacion_supervisor || '',
-        "Foto Evidencia": item.foto_url || 'Sin Foto'
+      const data = datosGlobales.map(i => ({
+        "Día": diasNombre[new Date(i.fecha_hora_ingreso || i.fecha).getDay()] || '',
+        "Fecha Ingreso": formatearFechaHora(i.fecha_hora_ingreso || i.fecha),
+        "Fecha Salida": i.fecha_hora_salida ? formatearFechaHora(i.fecha_hora_salida) : 'EN SEDE',
+        "Socio / Visitante": i.nombre || 'N/A',
+        "Cédula": i.cedula || 'N/A',
+        "Tipo": i.tipo_persona || 'SOCIO',
+        "Guardia": i.guardia_ingreso || 'N/A'
       }));
 
-      const hoja = XLSX.utils.json_to_sheet(datosExcel);
+      const hoja = XLSX.utils.json_to_sheet(data);
       const libro = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(libro, hoja, "Bitacora");
-      XLSX.writeFile(libro, `Reporte_Supervision_${new Date().toISOString().split('T')[0]}.xlsx`);
+      XLSX.utils.book_append_sheet(libro, hoja, "Asistencias");
+      XLSX.writeFile(libro, `Bitacora_Asistencia_ClubBuenaVista.xlsx`);
     }
 
     function exportarPDF() {
-      const elemento = document.getElementById('reportArea');
-      const opciones = {
+      const elem = document.getElementById('areaPDF');
+      html2pdf().set({
         margin: 0.3,
-        filename: `Reporte_Supervision_${new Date().toISOString().split('T')[0]}.pdf`,
+        filename: 'Bitacora_Asistencia_Cuadriculada.pdf',
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2 },
         jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
-      };
-      html2pdf().set(opciones).from(elemento).save();
+      }).from(elem).save();
     }
+
+    function cerrarSesion() { window.location.href = 'index.html'; }
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
