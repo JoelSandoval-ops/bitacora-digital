@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CLUB BUENA VISTA - Panel de Supervisión</title>
   
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   
@@ -15,16 +15,14 @@
 
   <style>
     :root {
-      --bv-green-dark: #004d2e;
+      --bv-green: #004d2e;
       --bv-gold: #c8963e;
-      --bv-gold-hover: #b3822d;
       --bv-bg: #f4f6f8;
-      --bv-red-badge: #ff1f3d;
     }
 
     body {
       background-color: var(--bv-bg);
-      color: #1e293b;
+      color: #212529;
       font-family: 'Poppins', sans-serif;
     }
 
@@ -34,23 +32,12 @@
       padding: 12px 24px;
     }
 
-    .logo-container {
-      width: 52px;
-      height: 52px;
-      background-color: #ffffff;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 2px solid var(--bv-gold);
-    }
-
     .brand-title {
       font-family: 'Montserrat', sans-serif;
       font-weight: 800;
       color: #ffffff;
       font-size: 1.35rem;
-      margin-bottom: 0;
+      margin: 0;
     }
 
     .brand-subtitle {
@@ -63,8 +50,8 @@
       border: 1.5px solid var(--bv-gold);
       border-radius: 10px;
       background: #ffffff;
-      padding: 6px;
-      gap: 6px;
+      padding: 4px;
+      gap: 4px;
     }
 
     .nav-tabs-buenavista .nav-link {
@@ -87,18 +74,19 @@
       border: 1px solid #e2e8f0;
       border-radius: 12px;
       padding: 20px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
     }
 
-    /* Estilo Cuadriculado Exacto */
+    /* Tabla Cuadriculada Estilizada */
     .bv-table {
       width: 100%;
       border-collapse: collapse;
+      font-size: 0.85rem;
     }
 
     .bv-table thead th {
       background-color: #212529;
       color: #ffffff;
-      font-size: 0.85rem;
       font-weight: 700;
       padding: 10px;
       border: 1px solid #343a40;
@@ -106,8 +94,7 @@
 
     .bv-table tbody td {
       padding: 10px;
-      font-size: 0.85rem;
-      border: 1px solid #cbd5e1; /* Rejilla marcada */
+      border: 1px solid #cbd5e1;
       vertical-align: middle;
       background-color: #ffffff;
     }
@@ -116,52 +103,25 @@
       background-color: #f8f9fa;
     }
 
-    .badge-ubicacion {
-      background-color: var(--bv-red-badge);
-      color: #ffffff;
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 12px;
-    }
-
-    .img-novedad-thumb {
-      width: 50px;
-      height: 40px;
-      object-fit: cover;
-      border-radius: 4px;
-      border: 1px solid var(--bv-gold);
-      cursor: pointer;
-    }
-
-    .day-column {
-      background: #ffffff;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      min-height: 320px;
-    }
-
-    .day-header {
-      background: var(--bv-green-dark);
-      color: #ffffff;
+    .badge-estado-dentro {
+      background-color: #ffc107;
+      color: #000000;
       font-weight: 700;
-      padding: 8px;
-      text-align: center;
-      border-top-left-radius: 7px;
-      border-top-right-radius: 7px;
-      font-size: 0.85rem;
+      padding: 5px 10px;
+      border-radius: 6px;
     }
 
-    .socio-card {
-      background: #f8fafc;
-      border-left: 3.5px solid var(--bv-gold);
-      border-top: 1px solid #e2e8f0;
-      border-right: 1px solid #e2e8f0;
-      border-bottom: 1px solid #e2e8f0;
-      border-radius: 4px;
-      padding: 6px;
-      margin: 6px;
-      font-size: 0.78rem;
+    .badge-estado-salida {
+      background-color: #6c757d;
+      color: #ffffff;
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 6px;
+    }
+
+    .text-cedula {
+      color: #dc3545;
+      font-weight: 600;
     }
   </style>
 </head>
@@ -169,8 +129,8 @@
 
   <header class="header-buenavista d-flex justify-content-between align-items-center">
     <div class="d-flex align-items-center gap-3">
-      <div class="logo-container">
-        <i class="fa-solid fa-shield-halved text-success fs-3"></i>
+      <div style="width:48px; height:48px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid var(--bv-gold);">
+        <i class="fa-solid fa-shield-halved text-success fs-4"></i>
       </div>
       <div>
         <h1 class="brand-title">CLUB BUENA VISTA</h1>
@@ -182,7 +142,7 @@
 
   <div class="container-fluid px-4 py-4">
 
-    <!-- Pestañas -->
+    <!-- Navegación de Pestañas -->
     <ul class="nav nav-tabs nav-tabs-buenavista mb-4" id="pestañas" role="tablist">
       <li class="nav-item flex-fill text-center">
         <button class="nav-link w-100 active" id="tab1" data-bs-toggle="tab" data-bs-target="#content1" type="button">
@@ -194,23 +154,17 @@
           <i class="fa-solid fa-triangle-exclamation me-2"></i>2. Bitácora de Novedades
         </button>
       </li>
-      <li class="nav-item flex-fill text-center">
-        <button class="nav-link w-100" id="tab3" data-bs-toggle="tab" data-bs-target="#content3" type="button">
-          <i class="fa-solid fa-calendar-week me-2"></i>3. Visitas Semanales de Socios (Lun - Dom)
-        </button>
-      </li>
     </ul>
 
     <div class="tab-content">
 
-      <!-- PESTAÑA 1 -->
+      <!-- PESTAÑA 1: BITÁCORA DE ASISTENCIA -->
       <div class="tab-pane fade show active" id="content1">
         <div class="bv-card">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <div class="d-flex align-items-center gap-3">
-              <h5 class="m-0 fw-bold text-success"><i class="fa-solid fa-users me-1"></i> Registros de Asistencia</h5>
-              <!-- Filtro de Día -->
-              <select id="filtroDiaAsistencia" class="form-select form-select-sm" style="width: 180px;" onchange="filtrarTablas()">
+              <h5 class="m-0 fw-bold text-success"><i class="fa-solid fa-users me-2"></i>Registros de Asistencia</h5>
+              <select id="filtroDia" class="form-select form-select-sm" style="width: 170px;" onchange="filtrarYRenderizar()">
                 <option value="TODOS">Todos los días</option>
                 <option value="1">Lunes</option>
                 <option value="2">Martes</option>
@@ -228,17 +182,17 @@
           </div>
 
           <div class="table-responsive" id="areaPDF">
-            <table class="table bv-table align-middle">
+            <table class="table bv-table">
               <thead>
                 <tr>
                   <th>Día</th>
-                  <th>Fecha/Hora Ingreso</th>
-                  <th>Fecha/Hora Salida</th>
-                  <th>Nombre y Apellidos</th>
+                  <th>Fecha / Hora Entrada</th>
+                  <th>Fecha / Hora Salida</th>
+                  <th>Socio / Visitante</th>
                   <th>Cédula</th>
-                  <th>Tipo Persona</th>
+                  <th>Destino</th>
+                  <th>Observaciones</th>
                   <th>Estado</th>
-                  <th>Guardia</th>
                 </tr>
               </thead>
               <tbody id="tbodyAsistencia"></tbody>
@@ -247,27 +201,23 @@
         </div>
       </div>
 
-      <!-- PESTAÑA 2 -->
+      <!-- PESTAÑA 2: BITÁCORA DE NOVEDADES -->
       <div class="tab-pane fade" id="content2">
         <div class="bv-card">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="m-0 fw-bold text-success"><i class="fa-solid fa-shield-cat me-1"></i> Novedades Registradas por Guardias</h5>
-            <button class="btn btn-sm btn-outline-success" onclick="cargarBitacora()"><i class="fa-solid fa-rotate me-1"></i>Actualizar</button>
-          </div>
-
+          <h5 class="fw-bold text-success mb-3"><i class="fa-solid fa-shield-cat me-2"></i>Novedades e Incidencias</h5>
           <div class="table-responsive">
-            <table class="table bv-table align-middle">
+            <table class="table bv-table">
               <thead>
                 <tr>
                   <th>Día</th>
-                  <th>Fecha/Hora</th>
+                  <th>Fecha / Hora</th>
                   <th>Ubicación</th>
                   <th>Asunto</th>
-                  <th>Detalle / Observación Guardia</th>
-                  <th>Imagen Evidencia</th>
-                  <th>Estado Respuesta</th>
-                  <th>Observación Supervisor</th>
-                  <th>Acciones</th>
+                  <th>Observación Guardia</th>
+                  <th>Evidencia</th>
+                  <th>Estado</th>
+                  <th>Respuesta Supervisor</th>
+                  <th>Acción</th>
                 </tr>
               </thead>
               <tbody id="tbodyNovedades"></tbody>
@@ -276,53 +226,6 @@
         </div>
       </div>
 
-      <!-- PESTAÑA 3 -->
-      <div class="tab-pane fade" id="content3">
-        <div class="bv-card">
-          <h5 class="fw-bold text-success mb-3"><i class="fa-solid fa-clock-rotate-left me-1"></i> Visitas de Socios de Lunes a Domingo</h5>
-          <div class="row g-2">
-            <div class="col"><div class="day-column"><div class="day-header">LUNES</div><div id="socio-1" class="p-1"></div></div></div>
-            <div class="col"><div class="day-column"><div class="day-header">MARTES</div><div id="socio-2" class="p-1"></div></div></div>
-            <div class="col"><div class="day-column"><div class="day-header">MIÉRCOLES</div><div id="socio-3" class="p-1"></div></div></div>
-            <div class="col"><div class="day-column"><div class="day-header">JUEVES</div><div id="socio-4" class="p-1"></div></div></div>
-            <div class="col"><div class="day-column"><div class="day-header">VIERNES</div><div id="socio-5" class="p-1"></div></div></div>
-            <div class="col"><div class="day-column"><div class="day-header">SÁBADO</div><div id="socio-6" class="p-1"></div></div></div>
-            <div class="col"><div class="day-column"><div class="day-header">DOMINGO</div><div id="socio-0" class="p-1"></div></div></div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- Modal de Gestión -->
-  <div class="modal fade" id="modalGestion" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header bg-dark text-white">
-          <h6 class="modal-title fw-bold">Gestionar Novedad</h6>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <input type="hidden" id="modalId">
-          <div class="mb-3">
-            <label class="form-label small fw-bold">Estado de Atención</label>
-            <select id="modalEstado" class="form-select">
-              <option value="EN PROCESO">EN PROCESO</option>
-              <option value="SOLICITUD ACEPTADA">SOLICITUD ACEPTADA</option>
-              <option value="SOLICITUD RECHAZADA">SOLICITUD RECHAZADA</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label class="form-label small fw-bold">Observación del Supervisor</label>
-            <textarea id="modalObs" class="form-control" rows="3" placeholder="Escriba la respuesta u observación..."></textarea>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
-          <button type="button" class="btn btn-warning btn-sm fw-bold" onclick="guardarGestion()">Guardar</button>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -331,34 +234,36 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let datosGlobales = [];
-    const diasNombre = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    let registrosBase = [];
+    const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
-    document.addEventListener("DOMContentLoaded", cargarBitacora);
+    document.addEventListener("DOMContentLoaded", cargarDatos);
 
-    async function cargarBitacora() {
+    async function cargarDatos() {
       try {
         const { data, error } = await _supabase.from('bitacora').select('*').order('id', { ascending: false });
         if (error) throw error;
-        datosGlobales = data || [];
-        filtrarTablas();
-      } catch (e) { console.error("Error al cargar:", e); }
+        registrosBase = data || [];
+        filtrarYRenderizar();
+      } catch (err) {
+        console.error("Error cargando bitácora:", err);
+      }
     }
 
-    function filtrarTablas() {
-      const filtro = document.getElementById('filtroDiaAsistencia').value;
+    function filtrarYRenderizar() {
+      const filtro = document.getElementById('filtroDia').value;
       
-      let filtrados = datosGlobales;
+      let filtrados = registrosBase;
       if (filtro !== 'TODOS') {
-        filtrados = datosGlobales.filter(i => {
-          const f = new Date(i.fecha_hora_ingreso || i.fecha);
-          return f.getDay().toString() === filtro;
+        filtrados = registrosBase.filter(i => {
+          const fechaRef = i.fecha_entrada || i.fecha_hora_ingreso || i.fecha;
+          const d = new Date(fechaRef);
+          return d.getDay().toString() === filtro;
         });
       }
 
       renderAsistencia(filtrados);
       renderNovedades(filtrados);
-      renderHorarioSemanal();
     }
 
     function renderAsistencia(lista) {
@@ -366,19 +271,21 @@
       tbody.innerHTML = '';
 
       lista.forEach(item => {
-        const f = new Date(item.fecha_hora_ingreso || item.fecha);
-        const diaNombre = isNaN(f.getTime()) ? '-' : diasNombre[f.getDay()];
+        const strFechaEntrada = item.fecha_entrada || item.fecha_hora_ingreso || item.fecha;
+        const strFechaSalida = item.fecha_salida || item.fecha_hora_salida;
+        const d = new Date(strFechaEntrada);
+        const diaNombre = isNaN(d.getTime()) ? '-' : diasSemana[d.getDay()];
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td><strong>${diaNombre}</strong></td>
-          <td>${formatearFechaHora(item.fecha_hora_ingreso || item.fecha)}</td>
-          <td>${item.fecha_hora_salida ? formatearFechaHora(item.fecha_hora_salida) : '<span class="badge bg-success">EN CLUB</span>'}</td>
-          <td class="fw-bold text-uppercase">${item.nombre || 'SIN REGISTRO'}</td>
-          <td><code>${item.cedula || 'N/A'}</code></td>
-          <td><span class="badge bg-secondary">${item.tipo_persona || 'SOCIO'}</span></td>
-          <td><span class="badge ${item.fecha_hora_salida ? 'bg-secondary' : 'bg-success'}">${item.fecha_hora_salida ? 'SALIDA' : 'DENTRO'}</span></td>
-          <td class="small text-muted">${item.guardia_ingreso || 'Guardia'}</td>
+          <td>${strFechaEntrada || '-'}</td>
+          <td>${strFechaSalida ? `<span class="badge-estado-salida">${strFechaSalida}</span>` : '<span class="badge-estado-dentro">DENTRO DEL CLUB</span>'}</td>
+          <td class="fw-bold">${item.nombre || item.socio || 'SIN REGISTRO'}</td>
+          <td class="text-cedula">${item.cedula || 'N/A'}</td>
+          <td>${item.destino || 'Instalaciones'}</td>
+          <td class="small text-muted">${item.observaciones || item.detalle_observacion || '-'}</td>
+          <td>${strFechaSalida ? '<span class="badge bg-secondary">COMPLETADO</span>' : '<span class="badge bg-warning text-dark">ACTIVO</span>'}</td>
         `;
         tbody.appendChild(tr);
       });
@@ -388,110 +295,55 @@
       const tbody = document.getElementById('tbodyNovedades');
       tbody.innerHTML = '';
 
-      const novedades = lista.filter(item => (item.asunto_novedad || item.novedades));
+      const novedades = lista.filter(i => i.asunto_novedad || i.novedades);
 
       novedades.forEach(n => {
-        const f = new Date(n.fecha_hora_ingreso || n.fecha);
-        const diaNombre = isNaN(f.getTime()) ? '-' : diasNombre[f.getDay()];
-        const est = n.estado_resolucion || 'EN PROCESO';
-
-        let bg = 'bg-warning text-dark';
-        if (est === 'SOLICITUD ACEPTADA') bg = 'bg-success';
-        if (est === 'SOLICITUD RECHAZADA') bg = 'bg-danger';
+        const strFecha = n.fecha_entrada || n.fecha;
+        const d = new Date(strFecha);
+        const diaNombre = isNaN(d.getTime()) ? '-' : diasSemana[d.getDay()];
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td><strong>${diaNombre}</strong></td>
-          <td>${formatearFechaHora(n.fecha_hora_ingreso || n.fecha)}</td>
-          <td><span class="badge-ubicacion">${n.ubicacion || 'Garita'}</span></td>
+          <td>${strFecha || '-'}</td>
+          <td><span class="badge bg-danger">${n.ubicacion || 'Garita'}</span></td>
           <td class="fw-bold">${n.asunto_novedad || n.novedades}</td>
-          <td class="small">${n.detalle_observacion || 'Sin detalle'}</td>
-          <td>${n.foto_url ? `<img src="${n.foto_url}" class="img-novedad-thumb" onclick="window.open('${n.foto_url}')">` : '- Sin Foto -'}</td>
-          <td><span class="badge ${bg}">${est}</span></td>
-          <td class="small text-muted">${n.observacion_supervisor || '<em>Pendiente</em>'}</td>
-          <td><button class="btn btn-sm btn-warning fw-bold" onclick="abrirModal(${n.id})">Atender</button></td>
+          <td class="small">${n.detalle_observacion || n.observaciones || '-'}</td>
+          <td>${n.foto_url ? `<a href="${n.foto_url}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-image"></i> Ver</a>` : '-'}</td>
+          <td><span class="badge bg-warning text-dark">${n.estado_resolucion || 'EN PROCESO'}</span></td>
+          <td class="small">${n.observacion_supervisor || '<em>Pendiente</em>'}</td>
+          <td><button class="btn btn-sm btn-warning fw-bold">Atender</button></td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    function renderHorarioSemanal() {
-      [0,1,2,3,4,5,6].forEach(d => document.getElementById(`socio-${d}`).innerHTML = '');
-
-      datosGlobales.forEach(reg => {
-        const f = new Date(reg.fecha_hora_ingreso || reg.fecha);
-        if (isNaN(f.getTime())) return;
-
-        const contenedor = document.getElementById(`socio-${f.getDay()}`);
-        if (contenedor) {
-          const div = document.createElement('div');
-          div.className = 'socio-card';
-          div.innerHTML = `
-            <div class="fw-bold">${reg.nombre || 'SOCIO'}</div>
-            <div class="text-muted">${f.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
-            ${!reg.fecha_hora_salida ? '<span class="badge bg-success">DENTRO</span>' : '<span class="badge bg-light text-dark border">SALIÓ</span>'}
-          `;
-          contenedor.appendChild(div);
-        }
-      });
-    }
-
-    function abrirModal(id) {
-      const reg = datosGlobales.find(i => i.id === id);
-      if (!reg) return;
-      document.getElementById('modalId').value = reg.id;
-      document.getElementById('modalEstado').value = reg.estado_resolucion || 'EN PROCESO';
-      document.getElementById('modalObs').value = reg.observacion_supervisor || '';
-      new bootstrap.Modal(document.getElementById('modalGestion')).show();
-    }
-
-    async function guardarGestion() {
-      const id = document.getElementById('modalId').value;
-      const estado = document.getElementById('modalEstado').value;
-      const obs = document.getElementById('modalObs').value;
-
-      await _supabase.from('bitacora').update({
-        estado_resolucion: estado,
-        observacion_supervisor: obs,
-        fecha_resolucion: new Date().toISOString()
-      }).eq('id', id);
-
-      cargarBitacora();
-      bootstrap.Modal.getInstance(document.getElementById('modalGestion')).hide();
-    }
-
-    function formatearFechaHora(str) {
-      if (!str) return 'N/A';
-      const f = new Date(str);
-      return isNaN(f.getTime()) ? str : f.toLocaleString('es-EC');
-    }
-
     function exportarExcel() {
-      const data = datosGlobales.map(i => ({
-        "Día": diasNombre[new Date(i.fecha_hora_ingreso || i.fecha).getDay()] || '',
-        "Fecha Ingreso": formatearFechaHora(i.fecha_hora_ingreso || i.fecha),
-        "Fecha Salida": i.fecha_hora_salida ? formatearFechaHora(i.fecha_hora_salida) : 'EN SEDE',
-        "Socio / Visitante": i.nombre || 'N/A',
-        "Cédula": i.cedula || 'N/A',
-        "Tipo": i.tipo_persona || 'SOCIO',
-        "Guardia": i.guardia_ingreso || 'N/A'
+      const dataFormat = registrosBase.map(i => ({
+        "Día": diasSemana[new Date(i.fecha_entrada || i.fecha).getDay()] || '',
+        "Fecha Entrada": i.fecha_entrada || i.fecha_hora_ingreso || '',
+        "Fecha Salida": i.fecha_salida || i.fecha_hora_salida || 'DENTRO DEL CLUB',
+        "Socio / Visitante": i.nombre || i.socio || '',
+        "Cédula": i.cedula || '',
+        "Destino": i.destino || '',
+        "Observaciones": i.observaciones || ''
       }));
 
-      const hoja = XLSX.utils.json_to_sheet(data);
+      const hoja = XLSX.utils.json_to_sheet(dataFormat);
       const libro = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(libro, hoja, "Asistencias");
-      XLSX.writeFile(libro, `Bitacora_Asistencia_ClubBuenaVista.xlsx`);
+      XLSX.utils.book_append_sheet(libro, hoja, "Bitacora");
+      XLSX.writeFile(libro, "Bitacora_Asistencia_ClubBuenaVista.xlsx");
     }
 
     function exportarPDF() {
-      const elem = document.getElementById('areaPDF');
+      const elemento = document.getElementById('areaPDF');
       html2pdf().set({
         margin: 0.3,
         filename: 'Bitacora_Asistencia_Cuadriculada.pdf',
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2 },
         jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
-      }).from(elem).save();
+      }).from(elemento).save();
     }
 
     function cerrarSesion() { window.location.href = 'index.html'; }
