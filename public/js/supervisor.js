@@ -1,4 +1,5 @@
-import { supabase } from './supabase.js';
+import './supabase.js';
+const supabase = window.supabaseClient;
 
 let listaAsistencias = [];
 let listaNovedades = [];
