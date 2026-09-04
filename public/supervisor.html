@@ -102,26 +102,9 @@
       background-color: #f8f9fa;
     }
 
-    .badge-estado-dentro {
-      background-color: #ffc107;
-      color: #000000;
-      font-weight: 700;
-      padding: 4px 8px;
-      border-radius: 4px;
-    }
-
-    .badge-estado-salida {
-      background-color: #6c757d;
-      color: #ffffff;
-      font-weight: 600;
-      padding: 4px 8px;
-      border-radius: 4px;
-    }
-
-    .text-cedula {
-      color: #dc3545;
-      font-weight: 600;
-    }
+    .badge-estado-dentro { background-color: #ffc107; color: #000; font-weight: 700; padding: 4px 8px; border-radius: 4px; }
+    .badge-estado-salida { background-color: #6c757d; color: #fff; font-weight: 600; padding: 4px 8px; border-radius: 4px; }
+    .text-cedula { color: #dc3545; font-weight: 600; }
   </style>
 </head>
 <body>
@@ -166,22 +149,19 @@
             <div class="d-flex align-items-center gap-2">
               <h5 class="m-0 fw-bold text-success me-2"><i class="fa-solid fa-users me-1"></i>Registros de Asistencia</h5>
               
-              <!-- Seleccionar Fecha Completa -->
               <input type="date" id="filtroFecha" class="form-control form-control-sm" style="width: 160px;" onchange="filtrarYRenderizar()">
-              
-              <!-- Buscar por Nombre o Cédula -->
               <input type="text" id="filtroTexto" class="form-control form-control-sm" placeholder="Buscar por Nombre o Cédula..." style="width: 220px;" onkeyup="filtrarYRenderizar()">
-              
+              <button class="btn btn-sm btn-outline-secondary" onclick="limpiarFiltros()"><i class="fa-solid fa-xmark me-1"></i>Ver Todo</button>
               <button class="btn btn-sm btn-outline-success" onclick="cargarTodo()"><i class="fa-solid fa-rotate me-1"></i>Actualizar</button>
             </div>
             
             <div class="d-flex gap-2">
-              <button class="btn btn-sm btn-success fw-bold" onclick="exportarExcel()"><i class="fa-solid fa-file-excel me-1"></i>Descargar Excel</button>
-              <button class="btn btn-sm btn-danger fw-bold" onclick="exportarPDF()"><i class="fa-solid fa-file-pdf me-1"></i>Descargar PDF Cuadriculado</button>
+              <button class="btn btn-sm btn-success fw-bold" onclick="exportarExcelAsistencia()"><i class="fa-solid fa-file-excel me-1"></i>Descargar Excel</button>
+              <button class="btn btn-sm btn-danger fw-bold" onclick="exportarPDFAsistencia()"><i class="fa-solid fa-file-pdf me-1"></i>Descargar PDF Cuadriculado</button>
             </div>
           </div>
 
-          <div class="table-responsive" id="areaPDF">
+          <div class="table-responsive" id="areaPDFAsistencia">
             <table class="table bv-table">
               <thead>
                 <tr>
@@ -204,11 +184,17 @@
       <!-- PESTAÑA 2: NOVEDADES -->
       <div class="tab-pane fade" id="content2">
         <div class="bv-card">
-          <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
             <h5 class="fw-bold text-success mb-0"><i class="fa-solid fa-shield-cat me-2"></i>Novedades e Incidencias</h5>
-            <button class="btn btn-sm btn-outline-success" onclick="cargarTodo()"><i class="fa-solid fa-rotate me-1"></i>Actualizar Novedades</button>
+            
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-outline-success" onclick="cargarTodo()"><i class="fa-solid fa-rotate me-1"></i>Actualizar Novedades</button>
+              <button class="btn btn-sm btn-success fw-bold" onclick="exportarExcelNovedades()"><i class="fa-solid fa-file-excel me-1"></i>Descargar Excel</button>
+              <button class="btn btn-sm btn-danger fw-bold" onclick="exportarPDFNovedades()"><i class="fa-solid fa-file-pdf me-1"></i>Descargar PDF Cuadriculado</button>
+            </div>
           </div>
-          <div class="table-responsive">
+
+          <div class="table-responsive" id="areaPDFNovedades">
             <table class="table bv-table">
               <thead>
                 <tr>
@@ -232,7 +218,6 @@
   </div>
 
   <script>
-    // Configura con tus credenciales reales de Supabase
     const SUPABASE_URL = 'https://xyzcompany.supabase.co'; 
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -242,10 +227,6 @@
     const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
     document.addEventListener("DOMContentLoaded", () => {
-      // Establecer fecha actual por defecto
-      const hoy = new Date().toISOString().split('T')[0];
-      document.getElementById('filtroFecha').value = hoy;
-      
       cargarTodo();
       suscribirTiempoReal();
     });
@@ -275,30 +256,31 @@
       }
     }
 
-    // Suscripción en Tiempo Real
     function suscribirTiempoReal() {
-      _supabase.channel('cambios-bitacora')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora_asistencia' }, () => {
-          cargarTodo();
-        })
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora_novedades' }, () => {
-          cargarTodo();
-        })
+      _supabase.channel('cambios-bitacora-supervisor')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora_asistencia' }, () => cargarTodo())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora_novedades' }, () => cargarTodo())
         .subscribe();
+    }
+
+    function limpiarFiltros() {
+      document.getElementById('filtroFecha').value = '';
+      document.getElementById('filtroTexto').value = '';
+      filtrarYRenderizar();
     }
 
     function filtrarYRenderizar() {
       const fechaSel = document.getElementById('filtroFecha').value;
       const textoSel = document.getElementById('filtroTexto').value.toLowerCase().trim();
 
-      // Filtrar Asistencia por fecha completa y búsqueda
       const asistenciaFiltrada = datosAsistencia.filter(item => {
-        const strFecha = item.fecha_hora_entrada ? item.fecha_hora_entrada.split('T')[0] : '';
+        const fEntradaRaw = item.fecha_hora_entrada || item.created_at || '';
+        const strFecha = fEntradaRaw ? fEntradaRaw.split('T')[0] : '';
         const coincideFecha = !fechaSel || strFecha === fechaSel;
         
-        const socio = (item.nombre || '').toLowerCase();
-        const cedula = (item.cedula || '').toLowerCase();
-        const coincideTexto = !textoSel || socio.includes(textoSel) || cedula.includes(textoSel);
+        const nombreSocio = (item.nombre || item.socio || item.visitante || '').toLowerCase();
+        const numCedula = (item.cedula || item.documento || '').toLowerCase();
+        const coincideTexto = !textoSel || nombreSocio.includes(textoSel) || numCedula.includes(textoSel);
 
         return coincideFecha && coincideTexto;
       });
@@ -312,25 +294,31 @@
       tbody.innerHTML = '';
 
       if (lista.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">No se encontraron registros para la fecha/búsqueda seleccionada.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">No se encontraron registros en la bitácora de asistencia.</td></tr>`;
         return;
       }
 
       lista.forEach(item => {
-        const d = new Date(item.fecha_hora_entrada);
+        const rawFechaEntrada = item.fecha_hora_entrada || item.created_at;
+        const d = new Date(rawFechaEntrada);
         const diaNombre = isNaN(d.getTime()) ? '-' : diasSemana[d.getDay()];
-        const fEntrada = item.fecha_hora_entrada ? new Date(item.fecha_hora_entrada).toLocaleString('es-EC') : '-';
+        const fEntrada = rawFechaEntrada ? new Date(rawFechaEntrada).toLocaleString('es-EC') : '-';
         const fSalida = item.fecha_hora_salida ? new Date(item.fecha_hora_salida).toLocaleString('es-EC') : null;
+
+        const nombre = item.nombre || item.socio || item.visitante || '-';
+        const cedula = item.cedula || item.documento || '-';
+        const destino = item.destino || 'Instalaciones';
+        const observaciones = item.observaciones || item.observacion || '-';
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td><strong>${diaNombre}</strong></td>
           <td>${fEntrada}</td>
           <td>${fSalida ? `<span class="badge-estado-salida">${fSalida}</span>` : '<span class="badge-estado-dentro">DENTRO DEL CLUB</span>'}</td>
-          <td class="fw-bold">${item.nombre}</td>
-          <td class="text-cedula">${item.cedula}</td>
-          <td>${item.destino || 'Instalaciones'}</td>
-          <td class="small text-muted">${item.observaciones || '-'}</td>
+          <td class="fw-bold">${nombre}</td>
+          <td class="text-cedula">${cedula}</td>
+          <td>${destino}</td>
+          <td class="small text-muted">${observaciones}</td>
           <td>${fSalida ? '<span class="badge bg-secondary">COMPLETADO</span>' : '<span class="badge bg-warning text-dark">ACTIVO</span>'}</td>
         `;
         tbody.appendChild(tr);
@@ -347,51 +335,80 @@
       }
 
       lista.forEach(n => {
-        const d = new Date(n.fecha_hora);
+        const rawFecha = n.fecha_hora || n.created_at;
+        const d = new Date(rawFecha);
         const diaNombre = isNaN(d.getTime()) ? '-' : diasSemana[d.getDay()];
-        const fFecha = n.fecha_hora ? new Date(n.fecha_hora).toLocaleString('es-EC') : '-';
+        const fFecha = rawFecha ? new Date(rawFecha).toLocaleString('es-EC') : '-';
+
+        const asunto = n.asunto || n.titulo || 'Novedad Garita';
+        const obs = n.observacion_guardia || n.observaciones || n.descripcion || '-';
+        const foto = n.foto_url || n.imagen_url || null;
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td><strong>${diaNombre}</strong></td>
           <td>${fFecha}</td>
           <td><span class="badge bg-danger">${n.ubicacion || 'Garita'}</span></td>
-          <td class="fw-bold">${n.asunto}</td>
-          <td class="small">${n.observacion_guardia || '-'}</td>
-          <td>${n.foto_url ? `<a href="${n.foto_url}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-image"></i> Ver Foto</a>` : '-'}</td>
-          <td><span class="badge bg-warning text-dark">${n.estado || 'PENDIENTE'}</span></td>
-          <td><small class="text-muted">${n.guardia_registro || 'Guardia'}</small></td>
+          <td class="fw-bold">${asunto}</td>
+          <td class="small">${obs}</td>
+          <td>${foto ? `<a href="${foto}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-image"></i> Ver Foto</a>` : '-'}</td>
+          <td><span class="badge bg-warning text-dark">${n.estado || 'EN PROCESO'}</span></td>
+          <td><small class="text-muted">${n.guardia_registro || 'Guardia Garita'}</small></td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    function exportarExcel() {
+    function exportarExcelAsistencia() {
       const dataFormat = datosAsistencia.map(i => ({
-        "Día": diasSemana[new Date(i.fecha_hora_entrada).getDay()] || '',
-        "Fecha Entrada": i.fecha_hora_entrada ? new Date(i.fecha_hora_entrada).toLocaleString('es-EC') : '',
+        "Día": diasSemana[new Date(i.fecha_hora_entrada || i.created_at).getDay()] || '',
+        "Fecha Entrada": (i.fecha_hora_entrada || i.created_at) ? new Date(i.fecha_hora_entrada || i.created_at).toLocaleString('es-EC') : '',
         "Fecha Salida": i.fecha_hora_salida ? new Date(i.fecha_hora_salida).toLocaleString('es-EC') : 'DENTRO DEL CLUB',
-        "Socio / Visitante": i.nombre,
-        "Cédula": i.cedula,
-        "Destino": i.destino,
-        "Observaciones": i.observaciones
+        "Socio / Visitante": i.nombre || i.socio || i.visitante,
+        "Cédula": i.cedula || i.documento,
+        "Destino": i.destino || 'Instalaciones',
+        "Observaciones": i.observaciones || i.observacion || '-'
       }));
-
       const hoja = XLSX.utils.json_to_sheet(dataFormat);
       const libro = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(libro, hoja, "Asistencia");
-      XLSX.writeFile(libro, `Bitacora_Asistencia_${document.getElementById('filtroFecha').value}.xlsx`);
+      XLSX.writeFile(libro, `Bitacora_Asistencia.xlsx`);
     }
 
-    function exportarPDF() {
-      const elemento = document.getElementById('areaPDF');
+    function exportarPDFAsistencia() {
       html2pdf().set({
         margin: 0.3,
-        filename: `Bitacora_Asistencia_${document.getElementById('filtroFecha').value}.pdf`,
+        filename: `Bitacora_Asistencia.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2 },
         jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
-      }).from(elemento).save();
+      }).from(document.getElementById('areaPDFAsistencia')).save();
+    }
+
+    function exportarExcelNovedades() {
+      const dataFormat = datosNovedades.map(n => ({
+        "Día": diasSemana[new Date(n.fecha_hora || n.created_at).getDay()] || '',
+        "Fecha / Hora": (n.fecha_hora || n.created_at) ? new Date(n.fecha_hora || n.created_at).toLocaleString('es-EC') : '',
+        "Ubicación": n.ubicacion || 'Garita',
+        "Asunto": n.asunto || n.titulo,
+        "Observación Guardia": n.observacion_guardia || n.observaciones,
+        "Estado": n.estado || 'EN PROCESO',
+        "Guardia": n.guardia_registro || 'Guardia Garita'
+      }));
+      const hoja = XLSX.utils.json_to_sheet(dataFormat);
+      const libro = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(libro, hoja, "Novedades");
+      XLSX.writeFile(libro, `Bitacora_Novedades.xlsx`);
+    }
+
+    function exportarPDFNovedades() {
+      html2pdf().set({
+        margin: 0.3,
+        filename: `Bitacora_Novedades.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
+      }).from(document.getElementById('areaPDFNovedades')).save();
     }
 
     function cerrarSesion() { window.location.href = 'index.html'; }
