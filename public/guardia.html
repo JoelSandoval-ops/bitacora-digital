@@ -150,7 +150,6 @@
 
     .img-preview { max-width: 140px; max-height: 140px; border-radius: 8px; object-fit: cover; border: 2px solid var(--gold-logo); }
     
-    /* ESTILOS PARA MINIATURA COMPACTA EN FILA */
     .img-thumb-row {
       width: 50px;
       height: 40px;
@@ -504,14 +503,17 @@
         const ubicacion = document.getElementById('nov_ubicacion').value;
         const titulo = document.getElementById('nov_titulo').value;
         const detalle = document.getElementById('nov_detalle').value;
-        const fotoFinal = imagenBase64Global || 'Sin Foto';
+        const fotoFinal = imagenBase64Global || '';
 
+        // Se envía duplicado a múltiples columnas para sincronizar con la estructura de Supabase
         const payload = {
           tipo_visita: 'NOVEDAD',
           placa: ubicacion,
           nombre: titulo,
-          destino: fotoFinal,
-          observaciones: detalle
+          novedades: detalle,
+          observaciones: detalle,
+          foto_url: fotoFinal,
+          destino: fotoFinal
         };
 
         const { error } = await client.from('bitacora').insert([payload]);
@@ -521,6 +523,9 @@
         document.getElementById('formNovedad').reset();
         document.getElementById('previewWrapper').classList.add('d-none');
         imagenBase64Global = "";
+
+        // Refrescar automáticamente la tabla de supervisión
+        cargarBitacoraNovedades();
       } catch (err) {
         alert('Error al registrar novedad: ' + err.message);
       } finally {
@@ -607,7 +612,6 @@
       });
     }
 
-    // CARGAR NOVEDADES EN PESTAÑA 4 CON FOTO COMPACTA TAMAÑO FILA
     async function cargarBitacoraNovedades() {
       const tbody = document.getElementById('tablaNovedades');
       tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Cargando novedades...</td></tr>';
@@ -630,24 +634,30 @@
           return;
         }
 
-        tbody.innerHTML = novedades.map((r, i) => {
+        tbody.innerHTML = novedades.map((r) => {
           const fecha = new Date(r.created_at || r.fecha_ingreso || Date.now()).toLocaleString('es-EC');
           
+          // 1. Extraer imagen evaluando todas las columnas posibles
           let fotoUrl = null;
-          if (r.destino && r.destino.startsWith('data:image')) fotoUrl = r.destino;
+          if (r.foto_url && r.foto_url.startsWith('data:image')) fotoUrl = r.foto_url;
+          else if (r.destino && r.destino.startsWith('data:image')) fotoUrl = r.destino;
           else if (r.foto && r.foto.startsWith('data:image')) fotoUrl = r.foto;
-          else if (r.observaciones && r.observaciones.startsWith('data:image')) fotoUrl = r.observaciones;
+
+          // 2. Extraer el texto de la novedad omitiendo cadenas en Base64
+          let detalle = 'Sin detalle';
+          if (r.novedades && !r.novedades.startsWith('data:image')) detalle = r.novedades;
+          else if (r.observaciones && !r.observaciones.startsWith('data:image')) detalle = r.observaciones;
+          else if (r.observacion && !r.observacion.startsWith('data:image')) detalle = r.observacion;
 
           const sector = r.placa || r.cedula || 'Ubicación General';
           const titulo = r.nombre || 'Novedad sin título';
-          const detalle = r.observaciones || r.observacion || r.detalle || 'Sin detalle';
 
           return `
             <tr>
               <td><small class="fw-bold">${fecha}</small></td>
               <td><span class="badge bg-danger px-2 py-1">${sector}</span></td>
               <td><strong>${titulo}</strong></td>
-              <td><small>${detalle.startsWith('data:image') ? 'Evidencia adjunta' : detalle}</small></td>
+              <td><small>${detalle}</small></td>
               <td class="text-center">
                 ${fotoUrl ? `
                   <img src="${fotoUrl}" class="img-thumb-row" onclick="ampliarImagenModal('${fotoUrl}', '${titulo}')" title="Clic para ampliar foto">
@@ -661,7 +671,6 @@
       }
     }
 
-    // MOSTRAR FOTO AMPLIADA EN EL MODAL
     function ampliarImagenModal(url, titulo) {
       document.getElementById('modalFotoTitulo').innerText = titulo || 'Evidencia Fotográfica';
       document.getElementById('imgModalCompleta').src = url;
