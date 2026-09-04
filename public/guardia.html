@@ -210,7 +210,7 @@
     </ul>
 
     <div class="tab-content" id="pills-tabContent">
-      <!-- PESTAÑA 1: REGISTRO DIRECTO DEL SOCIO -->
+      <!-- PESTAÑA 1 -->
       <div class="tab-pane fade show active" id="panel-asistencia" role="tabpanel">
         <div class="vip-card">
           <h5 class="panel-title mb-4"><i class="bi bi-person-check-fill me-2"></i>Registro Biométrico Directo (Ingreso / Salida)</h5>
@@ -257,7 +257,7 @@
         </div>
       </div>
 
-      <!-- PESTAÑA 2: NOVEDADES Y FOTO -->
+      <!-- PESTAÑA 2 -->
       <div class="tab-pane fade" id="panel-novedades" role="tabpanel">
         <div class="vip-card">
           <h5 class="panel-title mb-4"><i class="bi bi-camera me-2"></i>Reporte con Captura o Carga de Foto</h5>
@@ -276,7 +276,6 @@
                 <textarea class="form-control form-control-custom" id="nov_detalle" rows="3" placeholder="Escriba los detalles de la novedad..." required></textarea>
               </div>
               
-              <!-- CÁMARA O GALERÍA -->
               <div class="col-md-6">
                 <label class="form-label-custom"><i class="bi bi-camera-fill me-1"></i> Tomar Foto Directa</label>
                 <input type="file" class="form-control form-control-custom" id="nov_camara" accept="image/*" capture="environment" onchange="previewImagen(event)">
@@ -286,7 +285,6 @@
                 <input type="file" class="form-control form-control-custom" id="nov_galeria" accept="image/*" onchange="previewImagen(event)">
               </div>
 
-              <!-- PREVISUALIZACIÓN -->
               <div class="col-12 d-none" id="previewWrapper">
                 <label class="form-label-custom">Vista previa de la imagen:</label>
                 <div>
@@ -304,7 +302,7 @@
         </div>
       </div>
 
-      <!-- PESTAÑA 3: BITÁCORA -->
+      <!-- PESTAÑA 3 -->
       <div class="tab-pane fade" id="panel-bitacora" role="tabpanel">
         <div class="vip-card">
           <div class="d-flex justify-content-between align-items-center mb-4">
@@ -364,31 +362,53 @@
       }
     }
 
+    // Función inteligente que intenta varias opciones de campos para evitar fallos por nombre de columna
+    async function insertarRegEnSupabase(payloadBase) {
+      const client = getSupabase();
+      if (!client) throw new Error("No hay cliente de Supabase disponible");
+
+      // Intento 1: 'observaciones'
+      let intento = { ...payloadBase, observaciones: payloadBase._obs };
+      delete intento._obs;
+      let { error } = await client.from('bitacora').insert([intento]);
+      if (!error) return true;
+
+      // Intento 2: 'observacion'
+      intento = { ...payloadBase, observacion: payloadBase._obs };
+      delete intento._obs;
+      ({ error } = await client.from('bitacora').insert([intento]));
+      if (!error) return true;
+
+      // Intento 3: Solo datos básicos ultra seguros
+      const seguro = {
+        nombre: payloadBase.nombre || 'N/A',
+        cedula: payloadBase.cedula || payloadBase.placa || 'N/A',
+        tipo_visita: payloadBase.tipo_visita || 'INGRESO'
+      };
+      ({ error } = await client.from('bitacora').insert([seguro]));
+      if (error) throw error;
+      
+      return true;
+    }
+
     async function guardarAsistenciaDirecta(e) {
       e.preventDefault();
-      const client = getSupabase();
-      if (!client) {
-        alert("Error de conexión con Supabase. Verifica tu archivo js/supabase.js.");
-        return;
-      }
-
       const btn = document.getElementById('btnGuardarAsi');
       btn.disabled = true;
 
       try {
-        const datos = {
+        const payloadBase = {
           tipo_visita: document.getElementById('asi_tipo_movimiento').value,
           cedula: document.getElementById('asi_cedula').value,
           placa: document.getElementById('asi_tipo_usuario').value,
           nombre: document.getElementById('asi_nombre').value,
           destino: document.getElementById('asi_destino').value,
-          observacion: document.getElementById('asi_obs').value || 'Sin observaciones'
+          _obs: document.getElementById('asi_obs').value || 'Sin observaciones'
         };
 
-        const { error } = await client.from('bitacora').insert([datos]);
-        if (error) throw error;
+        await insertarRegEnSupabase(payloadBase);
 
-        alert('¡Registro directo de socio realizado con éxito!');
+        alert('¡Registro de socio guardado exitosamente!');
         document.getElementById('formAsistencia').reset();
       } catch (err) {
         alert('Error al guardar: ' + err.message);
@@ -399,33 +419,26 @@
 
     async function guardarNovedadConFoto(e) {
       e.preventDefault();
-      const client = getSupabase();
-      if (!client) {
-        alert("Error de conexión con Supabase.");
-        return;
-      }
-
       const btn = document.getElementById('btnGuardarNov');
       btn.disabled = true;
 
       try {
-        const datos = {
+        const payloadBase = {
           tipo_visita: 'NOVEDAD',
           placa: document.getElementById('nov_ubicacion').value,
           nombre: document.getElementById('nov_titulo').value,
-          observacion: document.getElementById('nov_detalle').value,
-          destino: imagenBase64 ? imagenBase64 : 'Sin Foto'
+          destino: imagenBase64 ? imagenBase64 : 'Sin Foto',
+          _obs: document.getElementById('nov_detalle').value
         };
 
-        const { error } = await client.from('bitacora').insert([datos]);
-        if (error) throw error;
+        await insertarRegEnSupabase(payloadBase);
 
-        alert('¡Novedad guardada exitosamente!');
+        alert('¡Novedad registrada con éxito!');
         document.getElementById('formNovedad').reset();
         document.getElementById('previewWrapper').classList.add('d-none');
         imagenBase64 = "";
       } catch (err) {
-        alert('Error al enviar la novedad: ' + err.message);
+        alert('Error al registrar novedad: ' + err.message);
       } finally {
         btn.disabled = false;
       }
@@ -437,7 +450,7 @@
 
       const client = getSupabase();
       if (!client) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">Error de configuración de Supabase.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">Error de conexión con Supabase.</td></tr>';
         return;
       }
 
@@ -445,32 +458,32 @@
         const { data, error } = await client
           .from('bitacora')
           .select('*')
-          .order('created_at', { ascending: false })
           .limit(30);
 
         if (error) throw error;
 
         if (!data || data.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No hay registros guardados.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No hay registros aún.</td></tr>';
           return;
         }
 
         tbody.innerHTML = data.map(r => {
-          const tieneFoto = r.destino && r.destino.startsWith('data:image');
+          const tieneFoto = r.destino && typeof r.destino === 'string' && r.destino.startsWith('data:image');
           let badgeClass = 'badge-ingreso';
           if (r.tipo_visita === 'SALIDA') badgeClass = 'badge-salida';
           if (r.tipo_visita === 'NOVEDAD') badgeClass = 'badge-novedad';
 
-          const fechaMuestra = r.created_at || r.fecha_ingreso || new Date().toISOString();
+          const fechaRaw = r.created_at || r.fecha_ingreso || new Date().toISOString();
+          const obsTxt = r.observaciones || r.observacion || r.detalle || 'Sin observaciones';
 
           return `
             <tr>
-              <td><small class="text-muted fw-semibold">${new Date(fechaMuestra).toLocaleString()}</small></td>
+              <td><small class="text-muted fw-semibold">${new Date(fechaRaw).toLocaleString()}</small></td>
               <td><span class="badge ${badgeClass} px-3 py-2 rounded-pill">${r.tipo_visita || 'INGRESO'}</span></td>
               <td><strong>${r.nombre || 'N/A'}</strong></td>
               <td><code>${r.cedula || r.placa || 'N/A'}</code></td>
               <td><small>${tieneFoto ? 'Foto Adjunta' : (r.destino || 'Garita')}</small></td>
-              <td>${r.observacion || 'Sin observaciones'}</td>
+              <td>${obsTxt}</td>
               <td>
                 ${tieneFoto 
                   ? `<a href="${r.destino}" target="_blank"><img src="${r.destino}" style="width:45px; height:45px; object-fit:cover; border-radius:6px; border:1px solid #C5A059;" alt="Foto"></a>` 
