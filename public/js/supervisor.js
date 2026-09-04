@@ -1,14 +1,24 @@
 import './supabase.js';
-const supabase = window.supabaseClient;
 
 let listaAsistencias = [];
 let listaNovedades = [];
 
+// Función para esperar a que el cliente global de Supabase esté disponible
+async function obtenerClienteSupabase() {
+  let intentos = 0;
+  while (!window.supabaseClient && intentos < 50) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    intentos++;
+  }
+  return window.supabaseClient;
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   console.log("🔍 [SUPERVISOR] Iniciando script...");
+
   await cargarAsistencias();
   await cargarNovedades();
-  activarTiempoReal();
+  await activarTiempoReal();
   configurarEventos();
 });
 
@@ -66,6 +76,7 @@ function configurarEventos() {
   const btnSalir = document.getElementById('btnSalir');
   if (btnSalir) {
     btnSalir.addEventListener('click', async () => {
+      const supabase = await obtenerClienteSupabase();
       if (supabase && supabase.auth) {
         await supabase.auth.signOut();
       }
@@ -83,6 +94,8 @@ async function cargarAsistencias() {
   if (!tbody) return;
 
   console.log("📡 [SUPERVISOR] Consultando asistencias en Supabase...");
+
+  const supabase = await obtenerClienteSupabase();
 
   if (!supabase) {
     console.error("❌ Cliente de Supabase no encontrado.");
@@ -186,6 +199,8 @@ async function cargarNovedades() {
 
   console.log("📡 [SUPERVISOR] Consultando novedades...");
 
+  const supabase = await obtenerClienteSupabase();
+
   if (!supabase) {
     tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-3">Error: Cliente de Supabase no inicializado.</td></tr>`;
     return;
@@ -276,9 +291,10 @@ function aplicarFiltrosNovedades() {
 // REALTIME (TIEMPO REAL)
 // ==========================================
 
-function activarTiempoReal() {
+async function activarTiempoReal() {
+  const supabase = await obtenerClienteSupabase();
   if (!supabase) return;
-  
+
   supabase
     .channel('realtime-supervisor-v2')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora_asistencia' }, () => cargarAsistencias())
