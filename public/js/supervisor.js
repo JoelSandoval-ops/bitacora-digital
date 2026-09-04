@@ -6,40 +6,48 @@ const SUPABASE_ANON_KEY = 'sb_publishable_dHiFIWqRS9XAedJLYMdeew_XVQUYDvp';
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let listaAsistencias = [];
-let listaNovedades = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
-  console.log("🔍 [SUPERVISOR] Cargando Bitácora de Asistencia...");
   await cargarDatos();
   activarTiempoReal();
   configurarEventos();
 });
 
 function configurarEventos() {
+  // Actualizar datos
   document.querySelectorAll('.btn-actualizar').forEach(btn => {
     btn.addEventListener('click', () => cargarDatos());
   });
 
   // Filtros de Asistencia
-  const inputFechaAsis = document.getElementById('filtroFechaAsistencia');
-  const inputTextoAsis = document.getElementById('filtroTextoAsistencia');
-  const btnVerTodoAsis = document.getElementById('btnVerTodoAsistencia');
+  const inputFecha = document.getElementById('filtroFechaAsistencia');
+  const inputTexto = document.getElementById('filtroTextoAsistencia');
+  const btnVerTodo = document.getElementById('btnVerTodoAsistencia');
 
-  if (inputFechaAsis) inputFechaAsis.addEventListener('change', aplicarFiltrosAsistencia);
-  if (inputTextoAsis) inputTextoAsis.addEventListener('input', aplicarFiltrosAsistencia);
-  if (btnVerTodoAsis) {
-    btnVerTodoAsis.addEventListener('click', () => {
-      if (inputFechaAsis) inputFechaAsis.value = '';
-      if (inputTextoAsis) inputTextoAsis.value = '';
+  if (inputFecha) inputFecha.addEventListener('change', aplicarFiltrosAsistencia);
+  if (inputTexto) inputTexto.addEventListener('input', aplicarFiltrosAsistencia);
+  if (btnVerTodo) {
+    btnVerTodo.addEventListener('click', () => {
+      if (inputFecha) inputFecha.value = '';
+      if (inputTexto) inputTexto.value = '';
       renderTablaAsistencias(listaAsistencias);
     });
   }
 
-  // Exportar Asistencia
-  const btnExcelAsis = document.getElementById('btnExcelAsistencia');
-  const btnPDFAsis = document.getElementById('btnPDFAsistencia');
-  if (btnExcelAsis) btnExcelAsis.addEventListener('click', () => exportarExcel('areaPDFAsistencia', 'Asistencia_Club_Buena_Vista'));
-  if (btnPDFAsis) btnPDFAsis.addEventListener('click', () => exportarPDF('areaPDFAsistencia', 'Asistencia_Club_Buena_Vista.pdf'));
+  // Exportar Excel y PDF
+  const btnExcel = document.getElementById('btnExcelAsistencia');
+  const btnPDF = document.getElementById('btnPDFAsistencia');
+  if (btnExcel) btnExcel.addEventListener('click', () => exportarExcel('areaPDFAsistencia', 'Asistencia_Club_Buena_Vista'));
+  if (btnPDF) btnPDF.addEventListener('click', () => exportarPDF('areaPDFAsistencia', 'Asistencia_Club_Buena_Vista.pdf'));
+
+  // Guardar Cambios de Edición
+  const formEditar = document.getElementById('formEditarAsistencia');
+  if (formEditar) {
+    formEditar.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await guardarCambiosAsistencia();
+    });
+  }
 
   // Cerrar Sesión
   const btnSalir = document.getElementById('btnSalir');
@@ -52,7 +60,7 @@ function configurarEventos() {
 }
 
 // ==========================================
-// CONSULTA DE DATOS DESDE SUPABASE
+// CONSULTA DE DATOS
 // ==========================================
 
 async function cargarDatos() {
@@ -65,28 +73,27 @@ async function cargarDatos() {
 
   const registros = todos || [];
 
-  // FILTRO ESTRICTO PARA ASISTENCIA (Solo entradas/salidas de personas)
+  // Filtrado exclusivo de asistencias
   listaAsistencias = registros.filter(item => {
     const destinoStr = String(item.destino || '');
     const obsStr = String(item.observaciones || item.novedades || item.detalle || '');
     const fotoStr = String(item.imagen_url || item.foto_url || item.foto || '');
 
-    // Si contiene imagen o es un reporte técnico, NO va en asistencia
-    const esFotoONovedad = destinoStr.startsWith('data:image') || 
-                           obsStr.startsWith('data:image') || 
-                           fotoStr.startsWith('data:image') ||
-                           fotoStr.length > 50 ||
-                           item.ubicacion || 
-                           item.sector;
+    const esNovedad = destinoStr.startsWith('data:image') || 
+                      obsStr.startsWith('data:image') || 
+                      fotoStr.startsWith('data:image') ||
+                      fotoStr.length > 50 ||
+                      item.ubicacion || 
+                      item.sector;
 
-    return !esFotoONovedad;
+    return !esNovedad;
   });
 
   renderTablaAsistencias(listaAsistencias);
 }
 
 // ==========================================
-// RENDERIZADO DE LA TABLA DE ASISTENCIA
+// RENDERIZADO Y ACCIONES CRUD
 // ==========================================
 
 function renderTablaAsistencias(datos) {
@@ -94,16 +101,14 @@ function renderTablaAsistencias(datos) {
   if (!tbody) return;
 
   if (!datos || datos.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-warning fw-bold py-4">No hay asistencias registradas.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-warning fw-bold py-4">No hay asistencias registradas.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = datos.map(item => {
-    // 1. Hora de entrada
     const fEntrada = item.fecha_hora_entrada || item.hora_ingreso || item.created_at;
     const hEntrada = fEntrada ? new Date(fEntrada).toLocaleString('es-EC') : '---';
 
-    // 2. Hora de salida (Si no ha salido, muestra badge "DENTRO DEL CLUB")
     const fSalida = item.fecha_hora_salida || item.hora_salida;
     let hSalida = '---';
 
@@ -113,17 +118,11 @@ function renderTablaAsistencias(datos) {
       hSalida = `<span class="badge badge-estado-dentro"><i class="fa-solid fa-clock me-1"></i>DENTRO DEL CLUB</span>`;
     }
 
-    // 3. Socio / Visitante
     const nombre = item.socio_visitante || item.nombre || 'Sin Nombre';
-
-    // 4. Cédula
     const cedula = item.cedula || '---';
-
-    // 5. Destino
     let destino = item.destino || 'Instalaciones';
     if (String(destino).startsWith('data:image')) destino = 'Instalaciones';
 
-    // 6. Observación real del guardia
     let observacion = item.observaciones || item.observacion || item.detalle || 'Sin observaciones';
     if (String(observacion).startsWith('data:image')) observacion = 'Sin observaciones';
 
@@ -135,10 +134,83 @@ function renderTablaAsistencias(datos) {
         <td class="text-danger fw-bold">${cedula}</td>
         <td>${destino}</td>
         <td class="text-muted">${observacion}</td>
+        <td class="text-center no-export">
+          <button class="btn btn-warning btn-sm btn-editar py-0 px-2 me-1" data-id="${item.id}" title="Editar"><i class="fa-solid fa-pen-to-square"></i></button>
+          <button class="btn btn-danger btn-sm btn-eliminar py-0 px-2" data-id="${item.id}" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+        </td>
       </tr>
     `;
   }).join('');
+
+  // Vincular eventos de editar y eliminar
+  document.querySelectorAll('.btn-editar').forEach(btn => {
+    btn.addEventListener('click', (e) => abrirModalEditar(e.currentTarget.getAttribute('data-id')));
+  });
+
+  document.querySelectorAll('.btn-eliminar').forEach(btn => {
+    btn.addEventListener('click', (e) => eliminarRegistro(e.currentTarget.getAttribute('data-id')));
+  });
 }
+
+function abrirModalEditar(id) {
+  const reg = listaAsistencias.find(item => String(item.id) === String(id));
+  if (!reg) return;
+
+  document.getElementById('editId').value = reg.id;
+  document.getElementById('editNombre').value = reg.socio_visitante || reg.nombre || '';
+  document.getElementById('editCedula').value = reg.cedula || '';
+  document.getElementById('editDestino').value = reg.destino || '';
+  document.getElementById('editObservacion').value = reg.observaciones || reg.observacion || reg.detalle || '';
+
+  const modal = new bootstrap.Modal(document.getElementById('modalEditarAsistencia'));
+  modal.show();
+}
+
+async function guardarCambiosAsistencia() {
+  const id = document.getElementById('editId').value;
+  const nombre = document.getElementById('editNombre').value;
+  const cedula = document.getElementById('editCedula').value;
+  const destino = document.getElementById('editDestino').value;
+  const observaciones = document.getElementById('editObservacion').value;
+
+  const { error } = await supabase
+    .from('bitacora')
+    .update({
+      socio_visitante: nombre,
+      cedula: cedula,
+      destino: destino,
+      observaciones: observaciones
+    })
+    .eq('id', id);
+
+  if (error) {
+    alert('Error al guardar cambios: ' + error.message);
+  } else {
+    const modalEl = document.getElementById('modalEditarAsistencia');
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    if (modal) modal.hide();
+    await cargarDatos();
+  }
+}
+
+async function eliminarRegistro(id) {
+  if (!confirm('¿Está seguro de eliminar este registro de asistencia?')) return;
+
+  const { error } = await supabase
+    .from('bitacora')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    alert('Error al eliminar registro: ' + error.message);
+  } else {
+    await cargarDatos();
+  }
+}
+
+// ==========================================
+// FILTROS Y EXPORTACIONES
+// ==========================================
 
 function aplicarFiltrosAsistencia() {
   const fechaVal = document.getElementById('filtroFechaAsistencia')?.value;
@@ -166,21 +238,22 @@ function aplicarFiltrosAsistencia() {
 
 function activarTiempoReal() {
   supabase
-    .channel('realtime-supervisor-asis')
+    .channel('realtime-supervisor-crud')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora' }, () => cargarDatos())
     .subscribe();
 }
 
 function exportarExcel(elementId, nombreArchivo) {
-  const elemento = document.getElementById(elementId);
-  if (!elemento) return;
+  const elemento = document.getElementById(elementId).cloneNode(true);
+  elemento.querySelectorAll('.no-export').forEach(el => el.remove());
+  
   const wb = XLSX.utils.table_to_book(elemento, { sheet: "Asistencia" });
   XLSX.writeFile(wb, `${nombreArchivo}.xlsx`);
 }
 
 function exportarPDF(elementId, nombreArchivo) {
-  const elemento = document.getElementById(elementId);
-  if (!elemento) return;
+  const elemento = document.getElementById(elementId).cloneNode(true);
+  elemento.querySelectorAll('.no-export').forEach(el => el.remove());
 
   const opt = {
     margin:       0.3,
