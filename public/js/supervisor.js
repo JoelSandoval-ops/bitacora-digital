@@ -46,11 +46,11 @@ function configurarEventos() {
     });
   }
 
-  // Exportar Asistencia
+  // Exportaciones Asistencia
   document.getElementById('btnExcelAsistencia')?.addEventListener('click', () => exportarExcel('areaPDFAsistencia', 'Asistencia_Club_Buena_Vista'));
   document.getElementById('btnPDFAsistencia')?.addEventListener('click', () => exportarPDF('areaPDFAsistencia', 'Asistencia_Club_Buena_Vista.pdf'));
 
-  // Exportar Novedades
+  // Exportaciones Novedades
   document.getElementById('btnExcelNovedad')?.addEventListener('click', () => exportarExcel('areaPDFNovedad', 'Novedades_Club_Buena_Vista'));
   document.getElementById('btnPDFNovedad')?.addEventListener('click', () => exportarPDF('areaPDFNovedad', 'Novedades_Club_Buena_Vista.pdf'));
 
@@ -67,28 +67,27 @@ function configurarEventos() {
   });
 }
 
-// Helper para extraer la cadena base64 de cualquier campo
-function extraerImagenBase64(item) {
+// Extraer imagen Base64 o URL limpiamente
+function extraerImagen(item) {
   const campos = [item.imagen_url, item.foto_url, item.foto, item.destino, item.ubicacion, item.observaciones, item.detalle, item.novedades];
   for (let c of campos) {
-    if (typeof c === 'string' && (c.startsWith('data:image') || c.length > 200)) {
+    if (typeof c === 'string' && (c.startsWith('data:image') || c.startsWith('http') || c.length > 200)) {
       return c;
     }
   }
   return null;
 }
 
-// Helper para limpiar textos y no mostrar la cadena base64 en la tabla
+// Limpiar valores para que la cadena base64 no ensucie las columnas de texto
 function limpiarTexto(valor) {
   if (!valor) return '';
   const str = String(valor).trim();
-  if (str.startsWith('data:image') || str.length > 200) {
+  if (str.startsWith('data:image') || str.startsWith('http') || str.length > 200) {
     return '';
   }
   return str;
 }
 
-// Auxiliar para extraer 'YYYY-MM-DD' en hora local
 function obtenerFechaLocalYYYYMMDD(fechaStr) {
   if (!fechaStr) return '';
   const d = new Date(fechaStr);
@@ -100,7 +99,7 @@ function obtenerFechaLocalYYYYMMDD(fechaStr) {
 }
 
 // ==========================================
-// CONSULTA DE DATOS Y CLASIFICACIÓN
+// CONSULTA Y CLASIFICACIÓN DE DATOS
 // ==========================================
 
 async function cargarDatos() {
@@ -117,7 +116,7 @@ async function cargarDatos() {
   listaNovedades = [];
 
   registros.forEach(item => {
-    const foto = extraerImagenBase64(item);
+    const foto = extraerImagen(item);
     const esNovedad = foto !== null || item.ubicacion || item.sector || item.asunto;
 
     if (esNovedad) {
@@ -132,7 +131,7 @@ async function cargarDatos() {
 }
 
 // ==========================================
-// RENDERIZADO ASISTENCIA
+// RENDER ASISTENCIA
 // ==========================================
 
 function renderTablaAsistencias(datos) {
@@ -171,8 +170,8 @@ function renderTablaAsistencias(datos) {
         <td>${destino}</td>
         <td class="text-muted">${observacion}</td>
         <td class="text-center no-export">
-          <button class="btn btn-warning btn-sm btn-editar py-0 px-2 me-1" data-id="${item.id}"><i class="fa-solid fa-pen-to-square"></i></button>
-          <button class="btn btn-danger btn-sm btn-eliminar py-0 px-2" data-id="${item.id}"><i class="fa-solid fa-trash"></i></button>
+          <button class="btn btn-warning btn-sm btn-editar py-0 px-2 me-1" data-id="${item.id}" title="Editar"><i class="fa-solid fa-pen-to-square"></i></button>
+          <button class="btn btn-danger btn-sm btn-eliminar py-0 px-2" data-id="${item.id}" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
         </td>
       </tr>
     `;
@@ -188,7 +187,7 @@ function renderTablaAsistencias(datos) {
 }
 
 // ==========================================
-// RENDERIZADO NOVEDADES
+// RENDER NOVEDADES
 // ==========================================
 
 function renderTablaNovedades(datos) {
@@ -206,29 +205,26 @@ function renderTablaNovedades(datos) {
 
     const asunto = limpiarTexto(item.asunto || item.socio_visitante) || 'Novedad Reportada';
     
-    // Obtener la ubicación limpia sin la cadena base64
     let ubi = limpiarTexto(item.ubicacion || item.sector || item.destino);
-    if (!ubi) ubi = 'General';
+    if (!ubi) ubi = 'Cancha tres';
 
-    // Obtener detalle limpio
     let detalle = limpiarTexto(item.observaciones || item.detalle || item.novedades);
     if (!detalle) detalle = 'Sin detalle reportado';
 
-    // Extraer imagen
-    const foto = extraerImagenBase64(item);
+    const foto = extraerImagen(item);
     const imgHtml = foto 
-      ? `<img src="${foto}" class="img-preview btn-ver-img" data-src="${foto}" alt="Foto" style="width:70px; height:50px; object-fit:cover; border-radius:6px; cursor:pointer;">`
+      ? `<img src="${foto}" class="img-novedad-fila btn-ver-img" data-src="${foto}" alt="Foto Novedad">`
       : `<span class="badge bg-secondary">Sin Imagen</span>`;
 
     return `
       <tr>
         <td class="fw-semibold">${fStr}</td>
-        <td><strong>${asunto}</strong></td>
-        <td><span class="badge bg-danger">${ubi}</span></td>
-        <td>${detalle}</td>
-        <td class="text-center">${imgHtml}</td>
+        <td><strong style="font-size: 1.05rem;">${asunto}</strong></td>
+        <td><span class="badge bg-danger fs-6 px-3 py-2">${ubi}</span></td>
+        <td class="text-secondary">${detalle}</td>
+        <td class="text-center py-2">${imgHtml}</td>
         <td class="text-center no-export">
-          <button class="btn btn-danger btn-sm btn-eliminar-nov py-0 px-2" data-id="${item.id}"><i class="fa-solid fa-trash"></i></button>
+          <button class="btn btn-danger btn-sm btn-eliminar-nov py-0 px-2" data-id="${item.id}" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
         </td>
       </tr>
     `;
@@ -339,7 +335,7 @@ async function eliminarRegistro(id) {
 
 function activarTiempoReal() {
   supabase
-    .channel('realtime-supervisor-v4')
+    .channel('realtime-supervisor-v5')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora' }, () => cargarDatos())
     .subscribe();
 }
