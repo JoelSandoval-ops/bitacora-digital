@@ -9,7 +9,6 @@ let listaAsistencias = [];
 let listaNovedades = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
-  console.log("🔍 [SUPERVISOR] Cargando Bitácora de Asistencia...");
   await cargarDatos();
   activarTiempoReal();
   configurarEventos();
@@ -20,7 +19,7 @@ function configurarEventos() {
     btn.addEventListener('click', () => cargarDatos());
   });
 
-  // Filtros de Asistencia
+  // Filtros Asistencia
   const inputFechaAsis = document.getElementById('filtroFechaAsistencia');
   const inputTextoAsis = document.getElementById('filtroTextoAsistencia');
   const btnVerTodoAsis = document.getElementById('btnVerTodoAsistencia');
@@ -35,24 +34,41 @@ function configurarEventos() {
     });
   }
 
-  // Exportar Asistencia
-  const btnExcelAsis = document.getElementById('btnExcelAsistencia');
-  const btnPDFAsis = document.getElementById('btnPDFAsistencia');
-  if (btnExcelAsis) btnExcelAsis.addEventListener('click', () => exportarExcel('areaPDFAsistencia', 'Asistencia_Club_Buena_Vista'));
-  if (btnPDFAsis) btnPDFAsis.addEventListener('click', () => exportarPDF('areaPDFAsistencia', 'Asistencia_Club_Buena_Vista.pdf'));
+  // Filtros Novedades
+  const inputFechaNov = document.getElementById('filtroFechaNovedad');
+  const btnVerTodoNov = document.getElementById('btnVerTodoNovedad');
 
-  // Cerrar Sesión
-  const btnSalir = document.getElementById('btnSalir');
-  if (btnSalir) {
-    btnSalir.addEventListener('click', async () => {
-      await supabase.auth.signOut();
-      window.location.href = './login.html';
+  if (inputFechaNov) inputFechaNov.addEventListener('change', aplicarFiltrosNovedades);
+  if (btnVerTodoNov) {
+    btnVerTodoNov.addEventListener('click', () => {
+      if (inputFechaNov) inputFechaNov.value = '';
+      renderTablaNovedades(listaNovedades);
     });
   }
+
+  // Exportar Asistencia
+  document.getElementById('btnExcelAsistencia')?.addEventListener('click', () => exportarExcel('areaPDFAsistencia', 'Asistencia_Club_Buena_Vista'));
+  document.getElementById('btnPDFAsistencia')?.addEventListener('click', () => exportarPDF('areaPDFAsistencia', 'Asistencia_Club_Buena_Vista.pdf'));
+
+  // Exportar Novedades
+  document.getElementById('btnExcelNovedad')?.addEventListener('click', () => exportarExcel('areaPDFNovedad', 'Novedades_Club_Buena_Vista'));
+  document.getElementById('btnPDFNovedad')?.addEventListener('click', () => exportarPDF('areaPDFNovedad', 'Novedades_Club_Buena_Vista.pdf'));
+
+  // Guardar Cambios de Edición
+  document.getElementById('formEditarAsistencia')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    await guardarCambiosAsistencia();
+  });
+
+  // Cerrar Sesión
+  document.getElementById('btnSalir')?.addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    window.location.href = './login.html';
+  });
 }
 
 // ==========================================
-// CONSULTA DE DATOS DESDE SUPABASE
+// CONSULTA DE DATOS Y SEPARACIÓN ESTRICTA
 // ==========================================
 
 async function cargarDatos() {
@@ -65,28 +81,46 @@ async function cargarDatos() {
 
   const registros = todos || [];
 
-  // FILTRO ESTRICTO PARA ASISTENCIA (Solo entradas/salidas de personas)
-  listaAsistencias = registros.filter(item => {
+  listaAsistencias = [];
+  listaNovedades = [];
+
+  registros.forEach(item => {
     const destinoStr = String(item.destino || '');
     const obsStr = String(item.observaciones || item.novedades || item.detalle || '');
     const fotoStr = String(item.imagen_url || item.foto_url || item.foto || '');
 
-    // Si contiene imagen o es un reporte técnico, NO va en asistencia
-    const esFotoONovedad = destinoStr.startsWith('data:image') || 
-                           obsStr.startsWith('data:image') || 
-                           fotoStr.startsWith('data:image') ||
-                           fotoStr.length > 50 ||
-                           item.ubicacion || 
-                           item.sector;
+    const esNovedad = destinoStr.startsWith('data:image') || 
+                      obsStr.startsWith('data:image') || 
+                      fotoStr.startsWith('data:image') ||
+                      fotoStr.length > 50 ||
+                      item.ubicacion || 
+                      item.sector ||
+                      item.asunto;
 
-    return !esFotoONovedad;
+    if (esNovedad) {
+      listaNovedades.push(item);
+    } else {
+      listaAsistencias.push(item);
+    }
   });
 
   renderTablaAsistencias(listaAsistencias);
+  renderTablaNovedades(listaNovedades);
+}
+
+// Auxiliar para extraer 'YYYY-MM-DD' en hora local
+function obtenerFechaLocalYYYYMMDD(fechaStr) {
+  if (!fechaStr) return '';
+  const d = new Date(fechaStr);
+  if (isNaN(d.getTime())) return '';
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 // ==========================================
-// RENDERIZADO DE LA TABLA DE ASISTENCIA
+// RENDERIZADO ASISTENCIA
 // ==========================================
 
 function renderTablaAsistencias(datos) {
@@ -94,16 +128,14 @@ function renderTablaAsistencias(datos) {
   if (!tbody) return;
 
   if (!datos || datos.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-warning fw-bold py-4">No hay asistencias registradas.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-warning fw-bold py-4">No hay asistencias registradas.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = datos.map(item => {
-    // 1. Hora de entrada
     const fEntrada = item.fecha_hora_entrada || item.hora_ingreso || item.created_at;
     const hEntrada = fEntrada ? new Date(fEntrada).toLocaleString('es-EC') : '---';
 
-    // 2. Hora de salida (Si no ha salido, muestra badge "DENTRO DEL CLUB")
     const fSalida = item.fecha_hora_salida || item.hora_salida;
     let hSalida = '---';
 
@@ -113,19 +145,10 @@ function renderTablaAsistencias(datos) {
       hSalida = `<span class="badge badge-estado-dentro"><i class="fa-solid fa-clock me-1"></i>DENTRO DEL CLUB</span>`;
     }
 
-    // 3. Socio / Visitante
     const nombre = item.socio_visitante || item.nombre || 'Sin Nombre';
-
-    // 4. Cédula
     const cedula = item.cedula || '---';
-
-    // 5. Destino
     let destino = item.destino || 'Instalaciones';
-    if (String(destino).startsWith('data:image')) destino = 'Instalaciones';
-
-    // 6. Observación real del guardia
     let observacion = item.observaciones || item.observacion || item.detalle || 'Sin observaciones';
-    if (String(observacion).startsWith('data:image')) observacion = 'Sin observaciones';
 
     return `
       <tr>
@@ -135,10 +158,81 @@ function renderTablaAsistencias(datos) {
         <td class="text-danger fw-bold">${cedula}</td>
         <td>${destino}</td>
         <td class="text-muted">${observacion}</td>
+        <td class="text-center no-export">
+          <button class="btn btn-warning btn-sm btn-editar py-0 px-2 me-1" data-id="${item.id}"><i class="fa-solid fa-pen-to-square"></i></button>
+          <button class="btn btn-danger btn-sm btn-eliminar py-0 px-2" data-id="${item.id}"><i class="fa-solid fa-trash"></i></button>
+        </td>
       </tr>
     `;
   }).join('');
+
+  document.querySelectorAll('#tbodyAsistencia .btn-editar').forEach(btn => {
+    btn.addEventListener('click', (e) => abrirModalEditar(e.currentTarget.getAttribute('data-id')));
+  });
+
+  document.querySelectorAll('#tbodyAsistencia .btn-eliminar').forEach(btn => {
+    btn.addEventListener('click', (e) => eliminarRegistro(e.currentTarget.getAttribute('data-id')));
+  });
 }
+
+// ==========================================
+// RENDERIZADO NOVEDADES
+// ==========================================
+
+function renderTablaNovedades(datos) {
+  const tbody = document.getElementById('tbodyNovedades');
+  if (!tbody) return;
+
+  if (!datos || datos.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-warning fw-bold py-4">No hay novedades registradas.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = datos.map(item => {
+    const fecha = item.fecha_hora_entrada || item.created_at || item.fecha;
+    const fStr = fecha ? new Date(fecha).toLocaleString('es-EC') : '---';
+
+    const asunto = item.asunto || item.socio_visitante || 'Novedad Reportada';
+    const ubicacion = item.ubicacion || item.sector || item.destino || 'General';
+    const detalle = item.observaciones || item.detalle || item.novedades || 'Sin detalle';
+
+    const foto = item.imagen_url || item.foto_url || item.foto || item.destino || '';
+    const tieneFoto = foto && foto.length > 50;
+
+    const imgHtml = tieneFoto 
+      ? `<img src="${foto}" class="img-preview btn-ver-img" data-src="${foto}" alt="Foto">`
+      : `<span class="badge bg-secondary">Sin Imagen</span>`;
+
+    return `
+      <tr>
+        <td class="fw-semibold">${fStr}</td>
+        <td><strong>${asunto}</strong></td>
+        <td><span class="badge bg-danger">${ubicacion}</span></td>
+        <td>${detalle}</td>
+        <td class="text-center">${imgHtml}</td>
+        <td class="text-center no-export">
+          <button class="btn btn-danger btn-sm btn-eliminar-nov py-0 px-2" data-id="${item.id}"><i class="fa-solid fa-trash"></i></button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  document.querySelectorAll('.btn-ver-img').forEach(img => {
+    img.addEventListener('click', (e) => {
+      const src = e.currentTarget.getAttribute('data-src');
+      document.getElementById('imgModalSrc').src = src;
+      new bootstrap.Modal(document.getElementById('modalImagen')).show();
+    });
+  });
+
+  document.querySelectorAll('.btn-eliminar-nov').forEach(btn => {
+    btn.addEventListener('click', (e) => eliminarRegistro(e.currentTarget.getAttribute('data-id')));
+  });
+}
+
+// ==========================================
+// ACCIONES Y FILTROS EXACTOS POR FECHA
+// ==========================================
 
 function aplicarFiltrosAsistencia() {
   const fechaVal = document.getElementById('filtroFechaAsistencia')?.value;
@@ -149,7 +243,7 @@ function aplicarFiltrosAsistencia() {
   if (fechaVal) {
     resultado = resultado.filter(item => {
       const f = item.fecha_hora_entrada || item.hora_ingreso || item.created_at;
-      return f && f.startsWith(fechaVal);
+      return obtenerFechaLocalYYYYMMDD(f) === fechaVal;
     });
   }
 
@@ -164,23 +258,86 @@ function aplicarFiltrosAsistencia() {
   renderTablaAsistencias(resultado);
 }
 
+function aplicarFiltrosNovedades() {
+  const fechaVal = document.getElementById('filtroFechaNovedad')?.value;
+
+  let resultado = [...listaNovedades];
+
+  if (fechaVal) {
+    resultado = resultado.filter(item => {
+      const f = item.fecha_hora_entrada || item.created_at || item.fecha;
+      return obtenerFechaLocalYYYYMMDD(f) === fechaVal;
+    });
+  }
+
+  renderTablaNovedades(resultado);
+}
+
+function abrirModalEditar(id) {
+  const reg = listaAsistencias.find(item => String(item.id) === String(id));
+  if (!reg) return;
+
+  document.getElementById('editId').value = reg.id;
+  document.getElementById('editNombre').value = reg.socio_visitante || reg.nombre || '';
+  document.getElementById('editCedula').value = reg.cedula || '';
+  document.getElementById('editDestino').value = reg.destino || '';
+  document.getElementById('editObservacion').value = reg.observaciones || reg.observacion || reg.detalle || '';
+
+  new bootstrap.Modal(document.getElementById('modalEditarAsistencia')).show();
+}
+
+async function guardarCambiosAsistencia() {
+  const id = document.getElementById('editId').value;
+  const { error } = await supabase
+    .from('bitacora')
+    .update({
+      socio_visitante: document.getElementById('editNombre').value,
+      cedula: document.getElementById('editCedula').value,
+      destino: document.getElementById('editDestino').value,
+      observaciones: document.getElementById('editObservacion').value
+    })
+    .eq('id', id);
+
+  if (error) {
+    alert('Error al guardar cambios: ' + error.message);
+  } else {
+    const modalEl = document.getElementById('modalEditarAsistencia');
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    if (modal) modal.hide();
+    await cargarDatos();
+  }
+}
+
+async function eliminarRegistro(id) {
+  if (!confirm('¿Está seguro de eliminar este registro?')) return;
+
+  const { error } = await supabase.from('bitacora').delete().eq('id', id);
+
+  if (error) {
+    alert('Error al eliminar registro: ' + error.message);
+  } else {
+    await cargarDatos();
+  }
+}
+
 function activarTiempoReal() {
   supabase
-    .channel('realtime-supervisor-asis')
+    .channel('realtime-supervisor-v3')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora' }, () => cargarDatos())
     .subscribe();
 }
 
 function exportarExcel(elementId, nombreArchivo) {
-  const elemento = document.getElementById(elementId);
-  if (!elemento) return;
-  const wb = XLSX.utils.table_to_book(elemento, { sheet: "Asistencia" });
+  const elemento = document.getElementById(elementId).cloneNode(true);
+  elemento.querySelectorAll('.no-export').forEach(el => el.remove());
+  
+  const wb = XLSX.utils.table_to_book(elemento, { sheet: "Reporte" });
   XLSX.writeFile(wb, `${nombreArchivo}.xlsx`);
 }
 
 function exportarPDF(elementId, nombreArchivo) {
-  const elemento = document.getElementById(elementId);
-  if (!elemento) return;
+  const elemento = document.getElementById(elementId).cloneNode(true);
+  elemento.querySelectorAll('.no-export').forEach(el => el.remove());
 
   const opt = {
     margin:       0.3,

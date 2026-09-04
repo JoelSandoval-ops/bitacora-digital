@@ -10,52 +10,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
   <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background-color: #f4f6f9;
-      color: #333;
-    }
-    .header-bv {
-      background-color: #004d25;
-      color: white;
-      padding: 15px 20px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    .nav-tabs .nav-link {
-      color: #004d25;
-      font-weight: 600;
-      font-size: 1.1rem;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px 8px 0 0;
-      margin-right: 5px;
-      background-color: #ffffff;
-    }
-    .nav-tabs .nav-link.active {
-      background-color: #d99b38;
-      color: white;
-      border-color: #d99b38;
-    }
-    .table-dark-custom th {
-      background-color: #212529 !important;
-      color: white !important;
-      font-weight: 600;
-    }
-    .badge-estado-dentro {
-      background-color: #ffc107;
-      color: #000;
-      font-weight: bold;
-      padding: 5px 10px;
-      border-radius: 5px;
-      font-size: 0.8rem;
-    }
-    .badge-estado-salida {
-      background-color: #198754;
-      color: #fff;
-      font-weight: bold;
-      padding: 5px 10px;
-      border-radius: 5px;
-      font-size: 0.8rem;
-    }
+    body { font-family: 'Poppins', sans-serif; background-color: #f4f6f9; color: #333; }
+    .header-bv { background-color: #004d25; color: white; padding: 15px 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .nav-tabs .nav-link { color: #004d25; font-weight: 600; font-size: 1.1rem; border: 2px solid #e0e0e0; border-radius: 8px 8px 0 0; margin-right: 5px; background-color: #ffffff; }
+    .nav-tabs .nav-link.active { background-color: #d99b38; color: white; border-color: #d99b38; }
+    .table-dark-custom th { background-color: #212529 !important; color: white !important; font-weight: 600; }
+    .badge-estado-dentro { background-color: #ffc107; color: #000; font-weight: bold; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; }
+    .badge-estado-salida { background-color: #198754; color: #fff; font-weight: bold; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; }
+    .img-preview { width: 70px; height: 50px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 1px solid #ddd; }
   </style>
 </head>
 <body>
@@ -115,17 +77,18 @@
             <table class="table table-hover align-middle border">
               <thead class="table-dark-custom">
                 <tr>
-                  <th style="width: 16%;">Fecha / Hora Entrada</th>
-                  <th style="width: 16%;">Fecha / Hora Salida</th>
-                  <th style="width: 20%;">Socio / Visitante</th>
-                  <th style="width: 13%;">Cédula</th>
-                  <th style="width: 15%;">Destino</th>
-                  <th style="width: 20%; color: #dc3545;">OBSERVACION</th>
+                  <th style="width: 15%;">Fecha / Hora Entrada</th>
+                  <th style="width: 15%;">Fecha / Hora Salida</th>
+                  <th style="width: 18%;">Socio / Visitante</th>
+                  <th style="width: 12%;">Cédula</th>
+                  <th style="width: 14%;">Destino</th>
+                  <th style="width: 16%; color: #dc3545;">OBSERVACION</th>
+                  <th style="width: 10%; text-align: center;" class="no-export">Acciones</th>
                 </tr>
               </thead>
               <tbody id="tbodyAsistencia">
                 <tr>
-                  <td colspan="6" class="text-center py-4 text-muted"><i class="fa-solid fa-spinner fa-spin"></i> Cargando registros de asistencia...</td>
+                  <td colspan="7" class="text-center py-4 text-muted"><i class="fa-solid fa-spinner fa-spin"></i> Cargando registros de asistencia...</td>
                 </tr>
               </tbody>
             </table>
@@ -135,17 +98,94 @@
       </div>
 
       <!-- ========================================== -->
-      <!-- PESTAÑA 2: BITÁCORA DE NOVEDADES (MANTENIDA) -->
+      <!-- PESTAÑA 2: BITÁCORA DE NOVEDADES -->
       <!-- ========================================== -->
       <div class="tab-pane fade" id="sec-novedades" role="tabpanel">
         <div class="card p-3 shadow-sm border-0">
-          <h4 class="text-success fw-bold m-0 mb-3"><i class="fa-solid fa-shield-cat me-2"></i>Reportes de Novedades</h4>
-          <div id="contenedorNovedades" class="text-center py-4 text-muted">
-            Cargando novedades...
+          
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <h4 class="text-success fw-bold m-0"><i class="fa-solid fa-shield-cat me-2"></i>Reportes de Novedades</h4>
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+              <input type="date" id="filtroFechaNovedad" class="form-control form-control-sm" style="width: auto;">
+              <button id="btnVerTodoNovedad" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-xmark"></i> Ver Todo</button>
+              <button class="btn btn-outline-success btn-sm btn-actualizar"><i class="fa-solid fa-rotate"></i> Actualizar Novedades</button>
+              <button id="btnExcelNovedad" class="btn btn-success btn-sm"><i class="fa-solid fa-file-excel me-1"></i> Descargar Excel</button>
+              <button id="btnPDFNovedad" class="btn btn-danger btn-sm"><i class="fa-solid fa-file-pdf me-1"></i> Descargar PDF</button>
+            </div>
           </div>
+
+          <div class="table-responsive" id="areaPDFNovedad">
+            <table class="table table-hover align-middle border">
+              <thead class="table-dark-custom">
+                <tr>
+                  <th style="width: 18%;">Fecha y Hora</th>
+                  <th style="width: 20%;">Asunto / Novedad</th>
+                  <th style="width: 18%;">Ubicación / Sector</th>
+                  <th style="width: 25%;">Detalle / Observación</th>
+                  <th style="width: 10%; text-align: center;">Imagen</th>
+                  <th style="width: 9%; text-align: center;" class="no-export">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyNovedades">
+                <tr>
+                  <td colspan="6" class="text-center py-4 text-muted"><i class="fa-solid fa-spinner fa-spin"></i> Cargando reportes de novedades...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
         </div>
       </div>
 
+    </div>
+  </div>
+
+  <!-- Modal para Editar Asistencia -->
+  <div class="modal fade" id="modalEditarAsistencia" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-dark text-white">
+          <h5 class="modal-title"><i class="fa-solid fa-pen-to-square me-2"></i> Editar Registro de Asistencia</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <form id="formEditarAsistencia">
+          <div class="modal-body">
+            <input type="hidden" id="editId">
+            <div class="mb-3">
+              <label for="editNombre" class="form-label fw-bold">Socio / Visitante</label>
+              <input type="text" class="form-control" id="editNombre" required>
+            </div>
+            <div class="mb-3">
+              <label for="editCedula" class="form-label fw-bold">Cédula</label>
+              <input type="text" class="form-control" id="editCedula" required>
+            </div>
+            <div class="mb-3">
+              <label for="editDestino" class="form-label fw-bold">Destino</label>
+              <input type="text" class="form-control" id="editDestino" required>
+            </div>
+            <div class="mb-3">
+              <label for="editObservacion" class="form-label fw-bold">Observación</label>
+              <textarea class="form-control" id="editObservacion" rows="3"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-success"><i class="fa-solid fa-floppy-disk me-1"></i> Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para Ampliar Imagen -->
+  <div class="modal fade" id="modalImagen" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content bg-transparent border-0">
+        <div class="modal-body text-center position-relative">
+          <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal"></button>
+          <img id="imgModalSrc" src="" class="img-fluid rounded shadow" style="max-height: 80vh;">
+        </div>
+      </div>
     </div>
   </div>
 
