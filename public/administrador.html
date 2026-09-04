@@ -3,351 +3,962 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Administración Global - Club Buena Vista</title>
+  <title>Panel Administrativo - Club Buena Vista</title>
+  
+  <!-- Tipografías Originales -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Framework CSS y Iconos -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+
   <style>
-    :root { --club-navy: #0f1e36; --club-blue: #3b82f6; }
-    body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    .navbar-admin { background-color: var(--club-navy); border-bottom: 3px solid var(--club-blue); }
-    .card-custom { border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); background: #fff; }
-    .header-custom { background: var(--club-navy); color: #fff; border-radius: 12px 12px 0 0 !important; }
-    .btn-club { background: var(--club-navy); color: #fff; font-weight: 600; }
-    .btn-club:hover { background: #1a2a47; color: #fff; }
+    /* Variables de Paleta de Colores Club Buena Vista */
+    :root {
+      --gold-logo: #C5A059;
+      --gold-bright: #D4AF37;
+      --tennis-green: #15803D;
+      --brand-dark: #2B2F38;
+      --cream-bg: #F9F8F3;
+      --card-bg: #FFFFFF;
+      --admin-danger: #ef4444;
+    }
+
+    body {
+      background-color: var(--cream-bg);
+      font-family: 'Montserrat', sans-serif;
+      color: #1A1A1A;
+      min-height: 100vh;
+    }
+
+    /* Encabezado */
+    .brand-header {
+      background: linear-gradient(135deg, #0F3822 0%, #15803D 50%, #1E3A2B 100%);
+      border-bottom: 4px solid var(--gold-bright);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      padding: 0.75rem 1.5rem;
+    }
+
+    .logo-wrapper {
+      background-color: #FFFFFF;
+      padding: 4px 8px;
+      border-radius: 10px;
+      border: 2px solid var(--gold-bright);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 65px;
+      height: 65px;
+    }
+
+    .brand-title {
+      font-family: 'Cinzel', serif;
+      letter-spacing: 1.5px;
+      color: #FFFFFF;
+      font-size: 1.35rem;
+      font-weight: 800;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .brand-sub {
+      color: var(--gold-bright);
+      font-size: 0.78rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    /* Navegación y Pestañas */
+    .custom-tabs-nav {
+      background: #FFFFFF;
+      border-radius: 12px;
+      padding: 0.5rem;
+      border: 2px solid var(--gold-logo);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    .custom-tabs-nav .nav-link {
+      color: var(--brand-dark);
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 0.8rem 0.5rem;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .custom-tabs-nav .nav-link:hover {
+      background-color: #F0FDF4;
+      color: var(--tennis-green);
+    }
+
+    .custom-tabs-nav .nav-link.active {
+      background: linear-gradient(135deg, var(--gold-bright) 0%, var(--gold-logo) 100%);
+      color: #FFFFFF;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(197, 160, 89, 0.4);
+    }
+
+    /* Tarjeta Contenedora Principal */
+    .vip-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 1px solid #E5E7EB;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+      padding: 2rem;
+    }
+
+    .panel-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--tennis-green);
+      border-bottom: 2px solid var(--gold-logo);
+      padding-bottom: 0.5rem;
+    }
+
+    /* Formularios e Inputs */
+    .form-label-custom {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--brand-dark);
+      margin-bottom: 0.3rem;
+    }
+
+    .form-control-custom, .form-select-custom {
+      border: 1.5px solid #D1D5DB;
+      border-radius: 8px;
+      padding: 0.65rem 0.9rem;
+      background-color: #FAFAFA;
+    }
+
+    .form-control-custom:focus, .form-select-custom:focus {
+      border-color: var(--tennis-green);
+      box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.2);
+    }
+
+    /* Botones */
+    .btn-tennis-act {
+      background: linear-gradient(135deg, var(--tennis-green) 0%, #166534 100%);
+      color: #FFFFFF;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      padding: 0.8rem 2rem;
+      border-radius: 8px;
+      border: none;
+      box-shadow: 0 4px 12px rgba(21, 128, 61, 0.3);
+    }
+
+    .btn-tennis-act:hover {
+      background: linear-gradient(135deg, #166534 0%, #14532D 100%);
+      color: #FFFFFF;
+    }
+
+    .progress-sm { height: 8px; border-radius: 4px; }
+
+    /* Animación para alertas de daños activos */
+    .alert-pulse {
+      animation: pulse-border 1.5s infinite;
+    }
+    @keyframes pulse-border {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
+      70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
   </style>
+
+  <!-- GUARDIA DE SEGURIDAD EXCLUSIVO PARA ADMIN -->
+  <script>
+    (function verificarAccesoAdmin() {
+      const sesion = localStorage.getItem('user_bv');
+      if (!sesion) {
+        window.location.href = './index.html';
+        return;
+      }
+
+      try {
+        const usuario = JSON.parse(sesion);
+        const rol = (usuario.rol || '').toUpperCase();
+
+        if (rol !== 'ADMIN' && rol !== 'ADMINISTRADOR') {
+          if (rol === 'SUPERVISOR') {
+            window.location.href = './supervisor.html';
+          } else if (rol === 'GUARDIA') {
+            window.location.href = './guardia.html';
+          } else {
+            window.location.href = './index.html';
+          }
+        }
+      } catch (e) {
+        localStorage.clear();
+        window.location.href = './index.html';
+      }
+    })();
+  </script>
 </head>
 <body>
 
-  <!-- NAVEGACIÓN ADMINISTRADOR -->
-  <nav class="navbar navbar-dark navbar-admin px-3 py-2 mb-4">
-    <div class="container-fluid">
-      <span class="navbar-brand fw-bold d-flex align-items-center gap-2">
-        <i class="bi bi-gear-wide-connected text-primary fs-3"></i>
-        <span>PANEL ADMINISTRADOR <small class="fw-normal text-muted fs-6 d-none d-sm-inline">| Gestión Global</small></span>
-      </span>
-      <div class="d-flex align-items-center gap-3">
-        <span class="text-white small fw-semibold" id="nombreAdmin">Administrador</span>
-        <a href="/index.html" onclick="localStorage.clear()" class="btn btn-outline-light btn-sm rounded-pill px-3">
-          <i class="bi bi-box-arrow-right"></i> Salir
-        </a>
+  <!-- ENCABEZADO VIP -->
+  <header class="brand-header d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-3">
+      <div class="logo-wrapper">
+        <i class="bi bi-shield-shaded text-success fs-2"></i>
       </div>
-    </div>
-  </nav>
-
-  <div class="container-fluid px-4 py-2">
-
-    <!-- MÉTRICAS GENERALES -->
-    <div class="row g-3 mb-4">
-      <div class="col-12 col-md-4">
-        <div class="card card-custom p-3 border-start border-primary border-4">
-          <small class="text-muted fw-bold">SEDES REGISTRADAS</small>
-          <h3 class="fw-bold mb-0 text-dark" id="totalSedes">0</h3>
-        </div>
-      </div>
-      <div class="col-12 col-md-4">
-        <div class="card card-custom p-3 border-start border-success border-4">
-          <small class="text-muted fw-bold">USUARIOS ACTIVOS</small>
-          <h3 class="fw-bold mb-0 text-success" id="totalUsuarios">0</h3>
-        </div>
-      </div>
-      <div class="col-12 col-md-4">
-        <div class="card card-custom p-3 border-start border-warning border-4">
-          <small class="text-muted fw-bold">ESTADO DEL SISTEMA</small>
-          <h3 class="fw-bold mb-0 text-warning" id="estadoSistema">ÓPTIMO</h3>
-        </div>
+      <div>
+        <div class="brand-title">CLUB BUENA VISTA</div>
+        <div class="brand-sub"><i class="bi bi-shield-lock-fill me-1"></i> Panel de Administración Global</div>
       </div>
     </div>
 
-    <div class="row g-4">
-      <!-- FORMULARIOS -->
-      <div class="col-12 col-lg-5">
-        <!-- FORMULARIO: REGISTRAR NUEVA SEDE / CLUB -->
-        <div class="card card-custom mb-4">
-          <div class="card-header header-custom py-3">
-            <h6 class="fw-bold mb-0"><i class="bi bi-building me-2 text-primary"></i> Registrar Nueva Sede</h6>
+    <div class="d-flex align-items-center gap-3">
+      <span class="badge bg-success border border-light" id="badgeEstadoServer"><i class="bi bi-wifi me-1"></i> Servidor Online</span>
+      <span class="badge bg-light text-dark fw-bold px-3 py-2 fs-6" id="nombreAdmin">Admin Master</span>
+      <button id="btnCerrarSesion" class="btn btn-outline-light btn-sm px-3 rounded-2 fw-semibold">
+        <i class="bi bi-box-arrow-right me-1"></i> Salir
+      </button>
+    </div>
+  </header>
+
+  <main class="container-fluid px-4 mb-4">
+
+    <!-- BANDERÍN / BANNER DE NOTIFICACIÓN DE DAÑOS Y EMERGENCIAS (EN TIEMPO REAL) -->
+    <div id="contenedorAlertasVivas" class="mb-4" style="display: none;">
+      <div class="alert alert-danger alert-pulse border-3 d-flex align-items-center justify-content-between p-3 rounded-3" role="alert">
+        <div class="d-flex align-items-center gap-3">
+          <i class="bi bi-exclamation-triangle-fill fs-2 text-danger"></i>
+          <div>
+            <h6 class="fw-bold mb-1 text-danger">¡ALERTA RECIENTE DE DAÑO / NOVEDAD EN GARITA!</h6>
+            <span id="txtUltimaAlerta" class="small text-dark">Un guardia o supervisor ha reportado una falla en las instalaciones.</span>
           </div>
-          <div class="card-body p-4">
-            <form id="formSede">
-              <div class="mb-3">
-                <label class="form-label fw-semibold small text-secondary">NOMBRE DEL CLUB / SEDE</label>
-                <input type="text" id="nombreClub" class="form-control" placeholder="Ej. Club Buena Vista Cumbayá" required>
-              </div>
-              <div class="mb-3">
-                <label class="form-label fw-semibold small text-secondary">DIRECCIÓN EXACTA</label>
-                <input type="text" id="direccionClub" class="form-control" placeholder="Ej. Av. Interoceánica Km 12" required>
-              </div>
-              <button type="submit" id="btnGuardarSede" class="btn btn-club w-100 py-2">
-                <i class="bi bi-plus-circle me-1"></i> GUARDAR SEDE
-              </button>
-            </form>
+        </div>
+        <button class="btn btn-danger btn-sm fw-bold px-3" onclick="irATabNovedades()">
+          <i class="bi bi-eye-fill me-1"></i> Ver Reportes
+        </button>
+      </div>
+    </div>
+
+    <!-- MENÚ DE NAVEGACIÓN PRINCIPAL -->
+    <ul class="nav nav-pills custom-tabs-nav mb-4 nav-justified" id="pills-tab" role="tablist">
+      <li class="nav-item">
+        <button class="nav-link active" id="tab-dashboard" data-bs-toggle="pill" data-bs-target="#pills-dashboard" type="button">
+          <i class="bi bi-bar-chart-line-fill me-2"></i> 1. Estadísticas & Eficiencia
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" id="tab-personal" data-bs-toggle="pill" data-bs-target="#pills-personal" type="button">
+          <i class="bi bi-people-fill me-2"></i> 2. Control de Personal & Claves
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" id="tab-danos" data-bs-toggle="pill" data-bs-target="#pills-danos" type="button">
+          <i class="bi bi-tools me-2"></i> 3. Reportes de Daños <span class="badge bg-danger ms-1" id="badgeCantDanos">0</span>
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" id="tab-sedes" data-bs-toggle="pill" data-bs-target="#pills-sedes" type="button">
+          <i class="bi bi-building-fill me-2"></i> 4. Gestor de Sedes
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" id="tab-bitacora" data-bs-toggle="pill" data-bs-target="#pills-bitacora" type="button">
+          <i class="bi bi-journal-text me-2"></i> 5. Bitácora & Auditoría
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content" id="pills-tabContent">
+
+      <!-- VISTA 1: ESTADÍSTICAS Y EVALUACIÓN -->
+      <div class="tab-pane fade show active" id="pills-dashboard" role="tabpanel">
+        
+        <!-- RESUMEN GENERAL -->
+        <div class="row g-3 mb-4">
+          <div class="col-12 col-md-3">
+            <div class="vip-card p-3 border-start border-primary border-4">
+              <small class="text-muted fw-bold">TOTAL ACCESOS HOY</small>
+              <h3 class="fw-bold text-dark mb-0" id="kpiTotalAccesos">0</h3>
+            </div>
+          </div>
+          <div class="col-12 col-md-3">
+            <div class="vip-card p-3 border-start border-success border-4">
+              <small class="text-muted fw-bold">EFICIENCIA PROMEDIO GARITA</small>
+              <h3 class="fw-bold text-success mb-0" id="kpiEficiencia">0%</h3>
+            </div>
+          </div>
+          <div class="col-12 col-md-3">
+            <div class="vip-card p-3 border-start border-warning border-4">
+              <small class="text-muted fw-bold">GUARDIAS INACTIVOS</small>
+              <h3 class="fw-bold text-warning mb-0" id="kpiInactivos">0</h3>
+            </div>
+          </div>
+          <div class="col-12 col-md-3">
+            <div class="vip-card p-3 border-start border-danger border-4">
+              <small class="text-muted fw-bold">DAÑOS / FALLAS REPORTADAS</small>
+              <h3 class="fw-bold text-danger mb-0" id="kpiIncidentes">0</h3>
+            </div>
           </div>
         </div>
 
-        <!-- FORMULARIO: REGISTRAR USUARIO -->
-        <div class="card card-custom">
-          <div class="card-header header-custom py-3">
-            <h6 class="fw-bold mb-0"><i class="bi bi-person-plus me-2 text-primary"></i> Registrar Usuario (Guardia / Supervisor)</h6>
+        <!-- MÉRITO Y DESEMPEÑO DEL GUARDIA -->
+        <div class="vip-card mb-4">
+          <h5 class="panel-title mb-3"><i class="bi bi-activity text-success me-2"></i>Desempeño y Uso de la App por Guardia</h5>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-dark">
+                <tr>
+                  <th>NOMBRE DEL GUARDIA</th>
+                  <th>SEDE ASIGNADA</th>
+                  <th>REGISTROS REALIZADOS</th>
+                  <th>TIEMPO ESTIMADO EN APP</th>
+                  <th>CUMPLIMIENTO</th>
+                  <th>ESTADO DE USO</th>
+                </tr>
+              </thead>
+              <tbody id="tablaEficienciaGuardias">
+                <tr><td colspan="6" class="text-center py-4 text-muted">Cargando métricas de rendimiento...</td></tr>
+              </tbody>
+            </table>
           </div>
-          <div class="card-body p-4">
-            <form id="formUsuario">
-              <div class="mb-3">
-                <label class="form-label fw-semibold small text-secondary">NOMBRE COMPLETO</label>
-                <input type="text" id="usrNombre" class="form-control" placeholder="Ej. Carlos Mendoza" required>
-              </div>
-              <div class="mb-3">
-                <label class="form-label fw-semibold small text-secondary">CORREO INSTITUCIONAL</label>
-                <input type="email" id="usrCorreo" class="form-control" placeholder="usuario@buenavista.com" required>
-              </div>
-              <div class="mb-3">
-                <label class="form-label fw-semibold small text-secondary">CONTRASEÑA</label>
-                <input type="password" id="usrPass" class="form-control" placeholder="••••••••" minlength="6" required>
-              </div>
-              <div class="row g-2 mb-3">
-                <div class="col-6">
-                  <label class="form-label fw-semibold small text-secondary">ROL</label>
-                  <select id="usrRol" class="form-select" required>
+        </div>
+
+      </div>
+
+      <!-- VISTA 2: GESTIÓN DE PERSONAL Y RECUPERACIÓN DE CONTRASEÑAS -->
+      <div class="tab-pane fade" id="pills-personal" role="tabpanel">
+        <div class="row g-3">
+          
+          <!-- FORMULARIO CREAR USUARIO -->
+          <div class="col-12 col-md-4">
+            <div class="vip-card border-start border-success border-4">
+              <h5 class="panel-title mb-3"><i class="bi bi-person-plus-fill me-2"></i>Registrar Personal</h5>
+              <form id="formUsuario">
+                <input type="hidden" id="userId">
+                <div class="mb-3">
+                  <label class="form-label-custom">Nombre Completo</label>
+                  <input type="text" id="uNombre" class="form-control form-control-custom" placeholder="Ej: Juan Pérez" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label-custom">Usuario / Correo</label>
+                  <input type="text" id="uUsuario" class="form-control form-control-custom" placeholder="jperez" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label-custom">Contraseña Contrapaso</label>
+                  <input type="password" id="uPassword" class="form-control form-control-custom" placeholder="******" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label-custom">Rol de Acceso</label>
+                  <select id="uRol" class="form-select form-select-custom fw-semibold" required>
                     <option value="GUARDIA">GUARDIA</option>
                     <option value="SUPERVISOR">SUPERVISOR</option>
                     <option value="ADMIN">ADMINISTRADOR</option>
                   </select>
                 </div>
-                <div class="col-6">
-                  <label class="form-label fw-semibold small text-secondary">SEDE ASIGNADA</label>
-                  <select id="usrClub" class="form-select" required>
-                    <option value="" disabled selected>Cargando sedes...</option>
+                <div class="mb-3">
+                  <label class="form-label-custom">Sede Asignada</label>
+                  <select id="uSede" class="form-select form-select-custom" required>
+                    <!-- Carga dinámica de Sedes -->
                   </select>
                 </div>
+                <button type="submit" class="btn btn-tennis-act w-100 py-2">
+                  <i class="bi bi-save me-1"></i> Guardar Usuario
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- TABLA DE PERSONAL CON RESETEO DE CLAVE -->
+          <div class="col-12 col-md-8">
+            <div class="vip-card">
+              <h5 class="panel-title mb-3"><i class="bi bi-shield-lock me-2"></i>Directorio de Personal & Gestión de Accesos</h5>
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="table-dark">
+                    <tr>
+                      <th>NOMBRE</th>
+                      <th>USUARIO</th>
+                      <th>ROL</th>
+                      <th>SEDE</th>
+                      <th class="text-end">ACCIONES / RECUPERACIÓN</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tablaUsuarios">
+                    <tr><td colspan="5" class="text-center py-4 text-muted">Cargando usuarios...</td></tr>
+                  </tbody>
+                </table>
               </div>
-              <button type="submit" id="btnGuardarUsr" class="btn btn-success w-100 py-2 fw-semibold">
-                <i class="bi bi-person-check me-1"></i> CREAR CUENTA DE USUARIO
-              </button>
-            </form>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- VISTA 3: NOTIFICACIÓN DE DAÑOS Y FALLAS EN GARITAS -->
+      <div class="tab-pane fade" id="pills-danos" role="tabpanel">
+        <div class="vip-card border-start border-danger border-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h5 class="panel-title mb-0 text-danger"><i class="bi bi-exclamation-octagon-fill me-2"></i>Reportes de Daños y Fallas de Infraestructura</h5>
+              <p class="text-muted small mb-0">Lista de incidencias, plumas averiadas, cámaras o equipos con problemas informados desde garita.</p>
+            </div>
+            <button id="btnRefrescarDanos" class="btn btn-outline-danger btn-sm fw-bold">
+              <i class="bi bi-arrow-clockwise"></i> Actualizar Listado
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-dark">
+                <tr>
+                  <th>FECHA / HORA</th>
+                  <th>REPORTERO POR</th>
+                  <th>SEDE / GARITA</th>
+                  <th>DESCRIPCIÓN DEL DAÑO</th>
+                  <th>ESTADO</th>
+                  <th class="text-end">GESTIÓN</th>
+                </tr>
+              </thead>
+              <tbody id="tablaDanosGlobal">
+                <tr><td colspan="6" class="text-center py-4 text-muted">Cargando reportes de daños...</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
 
-      <!-- TABLA DE CONTROL GLOBAL DE USUARIOS -->
-      <div class="col-12 col-lg-7">
-        <div class="card card-custom">
-          <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-            <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-people-fill text-primary me-2"></i> Directorio de Usuarios Global</h6>
-            <button onclick="cargarDatosSistema()" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
-              <i class="bi bi-arrow-clockwise"></i> Actualizar
-            </button>
-          </div>
-          <div class="card-body p-0">
-            <div class="table-responsive">
-              <table class="table table-hover align-middle mb-0">
-                <thead class="table-light small">
-                  <tr>
-                    <th>NOMBRE</th>
-                    <th>CORREO</th>
-                    <th>ROL</th>
-                    <th>SEDE</th>
-                    <th class="text-center">ACCIONES</th>
-                  </tr>
-                </thead>
-                <tbody id="tablaUsuarios">
-                  <tr>
-                    <td colspan="5" class="text-center py-4 text-muted">Cargando directorio de usuarios...</td>
-                  </tr>
-                </tbody>
-              </table>
+      <!-- VISTA 4: CRUD DE CLUBES Y SEDES -->
+      <div class="tab-pane fade" id="pills-sedes" role="tabpanel">
+        <div class="row g-3">
+          
+          <div class="col-12 col-md-4">
+            <div class="vip-card border-start border-success border-4">
+              <h5 class="panel-title mb-3"><i class="bi bi-building-add me-2"></i>Registrar Sede / Club</h5>
+              <form id="formSede">
+                <div class="mb-3">
+                  <label class="form-label-custom">Nombre de la Sede</label>
+                  <input type="text" id="sNombre" class="form-control form-control-custom" placeholder="Ej: Buena Vista Cumbayá" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label-custom">Ubicación / Sector</label>
+                  <input type="text" id="sUbicacion" class="form-control form-control-custom" placeholder="Ej: Av. Interoceánica Km 12" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label-custom">Aforo Máximo</label>
+                  <input type="number" id="sCapacidad" class="form-control form-control-custom" placeholder="500" required>
+                </div>
+                <button type="submit" class="btn btn-tennis-act w-100 py-2">
+                  <i class="bi bi-plus-circle me-1"></i> Crear Sede
+                </button>
+              </form>
             </div>
           </div>
+
+          <div class="col-12 col-md-8">
+            <div class="vip-card">
+              <h5 class="panel-title mb-3"><i class="bi bi-houses me-2"></i>Sedes Operativas</h5>
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="table-dark">
+                    <tr>
+                      <th>CLUB / SEDE</th>
+                      <th>UBICACIÓN</th>
+                      <th>AFORO MÁXIMO</th>
+                      <th class="text-end">ACCIONES CRUD</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tablaSedes">
+                    <tr><td colspan="4" class="text-center py-4 text-muted">Cargando sedes...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- VISTA 5: BITÁCORA GLOBAL Y AUDITORÍA HISTÓRICA -->
+      <div class="tab-pane fade" id="pills-bitacora" role="tabpanel">
+        <div class="vip-card">
+          <div class="row align-items-center mb-3 g-2">
+            <div class="col-12 col-md-6">
+              <h5 class="panel-title mb-0"><i class="bi bi-journal-check me-2"></i>Histórico General de Garita</h5>
+            </div>
+            <div class="col-12 col-md-6 d-flex gap-2">
+              <input type="text" id="inputBuscarGlobal" class="form-control form-control-custom" placeholder="Filtrar por Guardia, Socio o Placa...">
+              <button id="btnExportar" class="btn btn-tennis-act text-nowrap">
+                <i class="bi bi-file-earmark-excel-fill me-1"></i> Exportar CSV
+              </button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-dark">
+                <tr>
+                  <th>FECHA/HORA</th>
+                  <th>TIPO</th>
+                  <th>SOCIO / VISITANTE</th>
+                  <th>PLACA / CI</th>
+                  <th>DESTINO</th>
+                  <th>GUARDIA</th>
+                  <th>ESTADO</th>
+                </tr>
+              </thead>
+              <tbody id="tablaBitacoraGlobal">
+                <tr><td colspan="7" class="text-center py-4 text-muted">Cargando bitácora global...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- MODAL PARA CAMBIO DIRECTO DE CONTRASEÑA -->
+  <div class="modal fade" id="modalResetPassword" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="border-radius: 12px; overflow: hidden;">
+        <div class="modal-header brand-header text-white">
+          <h5 class="brand-title fs-5 mb-0"><i class="bi bi-key-fill text-warning me-2"></i>Restablecer Clave</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <p class="small text-muted mb-3">Asigne una nueva contraseña para el usuario seleccionado:</p>
+          <input type="hidden" id="resetUserId">
+          <div class="mb-3">
+            <label class="form-label-custom">Usuario</label>
+            <input type="text" id="resetUserNombre" class="form-control-plaintext fw-bold text-dark" readonly value="Cargando...">
+          </div>
+          <div class="mb-3">
+            <label class="form-label-custom">Nueva Contraseña</label>
+            <input type="password" id="resetNuevaClave" class="form-control form-control-custom" placeholder="Escriba la nueva contraseña" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-tennis-act btn-sm" id="btnConfirmarResetClave">Guardar Nueva Clave</button>
         </div>
       </div>
     </div>
-
   </div>
 
-  <script>
-    // Inicializar datos de usuario
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- LÓGICA CONEXIÓN CON SUPABASE -->
+  <script type="module">
+    import { supabase } from './js/supabase.js';
+
+    let usuariosGlobal = [];
+    let sedesGlobal = [];
+    let bitacoraGlobal = [];
+    let danosGlobal = [];
+    let modalReset = null;
+
+    // Cargar Nombre de Sesión
     const userLocal = JSON.parse(localStorage.getItem('user_bv') || '{}');
     if (userLocal.nombre) {
-      document.getElementById('nombreAdmin').innerText = userLocal.nombre;
+      document.getElementById('nombreAdmin').innerText = `Admin: ${userLocal.nombre}`;
     }
 
-    // Helper para escapar HTML (Prevención de XSS)
-    function escapeHTML(str) {
-      return (str || '').toString().replace(/[&<>"']/g, match => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-      }[match]));
+    // Navegar rápido a la pestaña de daños cuando hay alerta activa
+    window.irATabNovedades = function() {
+      const tabDanos = new bootstrap.Tab(document.getElementById('tab-danos'));
+      tabDanos.show();
+      cargarReportesDanos();
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      modalReset = new bootstrap.Modal(document.getElementById('modalResetPassword'));
+
+      cargarEstadisticas();
+      cargarSedes();
+      escucharNotificacionesRealtime();
+
+      // Event listeners para pestañas
+      document.getElementById('tab-dashboard').addEventListener('click', cargarEstadisticas);
+      document.getElementById('tab-personal').addEventListener('click', cargarPersonal);
+      document.getElementById('tab-danos').addEventListener('click', cargarReportesDanos);
+      document.getElementById('tab-sedes').addEventListener('click', cargarSedes);
+      document.getElementById('tab-bitacora').addEventListener('click', cargarBitacoraGlobal);
+
+      // Actions & Listeners
+      document.getElementById('formUsuario').addEventListener('submit', guardarUsuario);
+      document.getElementById('formSede').addEventListener('submit', guardarSede);
+      document.getElementById('inputBuscarGlobal').addEventListener('keyup', filtrarBitacoraGlobal);
+      document.getElementById('btnExportar').addEventListener('click', exportarCSV);
+      document.getElementById('btnRefrescarDanos').addEventListener('click', cargarReportesDanos);
+      document.getElementById('btnConfirmarResetClave').addEventListener('click', procesarResetClave);
+      document.getElementById('btnCerrarSesion').addEventListener('click', cerrarSesion);
+    });
+
+    function cerrarSesion() {
+      localStorage.clear();
+      window.location.href = './index.html';
     }
 
-    // CARGAR SEDES DESDE LA API
-    async function cargarSedes() {
-      const selectClub = document.getElementById('usrClub');
+    // ESCUCHAR EN TIEMPO REAL REPORTES DE DAÑOS Y NOVEDADES DESDE SUPABASE
+    function escucharNotificacionesRealtime() {
+      supabase
+        .channel('schema-db-changes')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'bitacora' }, payload => {
+          const nuevoRegistro = payload.new;
+          if (nuevoRegistro.tipo_visita === 'DAÑO' || nuevoRegistro.tipo_visita === 'NOVEDAD' || (nuevoRegistro.observaciones || '').toUpperCase().includes('DAÑO')) {
+            mostrarNotificacionAlerta(nuevoRegistro);
+          }
+        })
+        .subscribe();
+    }
+
+    function mostrarNotificacionAlerta(registro) {
+      const banner = document.getElementById('contenedorAlertasVivas');
+      const txt = document.getElementById('txtUltimaAlerta');
+      txt.innerHTML = `<strong>${registro.registrado_por || 'Garita'}:</strong> ${registro.observaciones || 'Reporte de novedad o daño en instalación'}`;
+      banner.style.display = 'block';
+      
+      const badge = document.getElementById('badgeCantDanos');
+      badge.innerText = parseInt(badge.innerText || 0) + 1;
+    }
+
+    // 1. ESTADÍSTICAS Y RENDIMIENTO
+    async function cargarEstadisticas() {
       try {
-        const res = await fetch('/api/clubes');
-        if (!res.ok) throw new Error('Error al obtener sedes');
-        
-        const data = await res.json();
-        const sedes = Array.isArray(data) ? data : (data.data || []);
+        const { data: bitacora, error: errBita } = await supabase
+          .from('bitacora')
+          .select('*')
+          .order('hora_ingreso', { ascending: false });
 
-        document.getElementById('totalSedes').innerText = sedes.length;
+        if (errBita) throw errBita;
+        bitacoraGlobal = bitacora || [];
 
-        if (sedes.length === 0) {
-          selectClub.innerHTML = '<option value="" disabled selected>No hay sedes registradas</option>';
-          return [];
-        }
+        const { data: usuarios, error: errUser } = await supabase
+          .from('usuarios')
+          .select('*');
 
-        selectClub.innerHTML = sedes.map(s => `
-          <option value="${s.id}">${escapeHTML(s.nombre)}</option>
-        `).join('');
+        if (errUser) throw errUser;
+        usuariosGlobal = usuarios || [];
 
-        return sedes;
+        const guardias = usuariosGlobal.filter(u => (u.rol || '').toUpperCase() === 'GUARDIA');
+
+        const danosContador = bitacoraGlobal.filter(b => b.tipo_visita === 'DAÑO' || (b.observaciones || '').toLowerCase().includes('daño')).length;
+        document.getElementById('kpiTotalAccesos').innerText = bitacoraGlobal.length;
+        document.getElementById('kpiIncidentes').innerText = danosContador;
+        document.getElementById('badgeCantDanos').innerText = danosContador;
+
+        let inactivosCount = 0;
+        const htmlTabla = guardias.map(g => {
+          const registrosGuardia = bitacoraGlobal.filter(b => b.registrado_por === g.nombre);
+          const cantidad = registrosGuardia.length;
+          let porcentaje = Math.min(cantidad * 10, 100);
+          let estadoBadge = '<span class="badge bg-success">Excelente Uso</span>';
+
+          if (porcentaje < 30) {
+            inactivosCount++;
+            estadoBadge = '<span class="badge bg-danger">Inactivo / No usa App</span>';
+          } else if (porcentaje < 70) {
+            estadoBadge = '<span class="badge bg-warning text-dark">Uso Moderado</span>';
+          }
+
+          return `
+            <tr>
+              <td class="fw-bold">${g.nombre}</td>
+              <td>${g.sede || 'Sede Principal'}</td>
+              <td><span class="fw-bold text-success">${cantidad}</span> registros</td>
+              <td>${cantidad > 0 ? (cantidad * 12) + ' min' : '0 min'}</td>
+              <td style="width: 200px;">
+                <div class="progress progress-sm mb-1">
+                  <div class="progress-bar ${porcentaje < 30 ? 'bg-danger' : 'bg-success'}" style="width: ${porcentaje}%"></div>
+                </div>
+                <small class="text-muted">${porcentaje}% del turno activo</small>
+              </td>
+              <td>${estadoBadge}</td>
+            </tr>
+          `;
+        }).join('');
+
+        document.getElementById('tablaEficienciaGuardias').innerHTML = htmlTabla || '<tr><td colspan="6" class="text-center py-3">No hay guardias registrados</td></tr>';
+        document.getElementById('kpiInactivos').innerText = inactivosCount;
+        document.getElementById('kpiEficiencia').innerText = guardias.length > 0 ? Math.round(((guardias.length - inactivosCount) / guardias.length) * 100) + '%' : '100%';
+
       } catch (err) {
-        console.error('Error en cargarSedes:', err);
-        selectClub.innerHTML = '<option value="" disabled selected>Error al cargar sedes</option>';
-        return [];
+        console.error("Error al cargar estadísticas Supabase:", err.message);
+        document.getElementById('badgeEstadoServer').className = "badge bg-danger";
+        document.getElementById('badgeEstadoServer').innerHTML = `<i class="bi bi-exclamation-triangle"></i> Error de conexión`;
       }
     }
 
-    // CARGAR DIRECTORIO DE USUARIOS
-    async function cargarUsuarios() {
-      const tbody = document.getElementById('tablaUsuarios');
+    // 2. GESTIÓN DE PERSONAL Y CAMBIO DE CLAVES
+    async function cargarPersonal() {
       try {
-        const res = await fetch('/api/usuarios');
-        if (!res.ok) throw new Error('Error al obtener usuarios');
+        const { data: usuarios, error } = await supabase
+          .from('usuarios')
+          .select('*')
+          .order('id', { ascending: true });
 
-        const data = await res.json();
-        const usuarios = Array.isArray(data) ? data : (data.data || []);
+        if (error) throw error;
+        usuariosGlobal = usuarios || [];
 
-        document.getElementById('totalUsuarios').innerText = usuarios.length;
-
-        if (usuarios.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">No hay usuarios registrados</td></tr>';
-          return;
-        }
-
-        tbody.innerHTML = usuarios.map(u => `
+        const tbody = document.getElementById('tablaUsuarios');
+        tbody.innerHTML = usuariosGlobal.map(u => `
           <tr>
-            <td class="fw-bold text-dark">${escapeHTML(u.nombre)}</td>
-            <td><small class="text-muted">${escapeHTML(u.correo)}</small></td>
-            <td>
-              <span class="badge ${u.rol === 'ADMIN' ? 'bg-danger' : u.rol === 'SUPERVISOR' ? 'bg-warning text-dark' : 'bg-primary'}">
-                ${escapeHTML(u.rol)}
-              </span>
-            </td>
-            <td><small class="fw-semibold">${escapeHTML(u.club_nombre || 'Sin Sede')}</small></td>
-            <td class="text-center">
-              <button onclick="eliminarUsuario(${u.id})" class="btn btn-sm btn-outline-danger">
-                <i class="bi bi-person-x"></i> Dar de Baja
+            <td class="fw-bold">${u.nombre}</td>
+            <td><code>${u.usuario}</code></td>
+            <td><span class="badge ${u.rol === 'SUPERVISOR' ? 'bg-warning text-dark' : (u.rol === 'ADMIN' ? 'bg-danger' : 'bg-success')}">${u.rol}</span></td>
+            <td>${u.sede || 'Sin Asignar'}</td>
+            <td class="text-end">
+              <button class="btn btn-sm btn-outline-warning btn-reset-pass me-1" data-id="${u.id}" data-nombre="${u.nombre}">
+                <i class="bi bi-key"></i> Clave
+              </button>
+              <button class="btn btn-sm btn-outline-danger btn-eliminar-usr" data-id="${u.id}">
+                <i class="bi bi-trash"></i>
               </button>
             </td>
           </tr>
         `).join('');
+
+        document.querySelectorAll('.btn-eliminar-usr').forEach(btn => {
+          btn.addEventListener('click', (e) => eliminarUsuario(e.currentTarget.getAttribute('data-id')));
+        });
+
+        document.querySelectorAll('.btn-reset-pass').forEach(btn => {
+          btn.addEventListener('click', (e) => abrirModalReset(e.currentTarget.getAttribute('data-id'), e.currentTarget.getAttribute('data-nombre')));
+        });
+
       } catch (err) {
-        console.error('Error en cargarUsuarios:', err);
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-danger">Error de conexión con el servidor</td></tr>';
+        console.error("Error al cargar personal:", err.message);
       }
     }
 
-    // CARGAR TODO
-    async function cargarDatosSistema() {
-      document.getElementById('estadoSistema').innerText = "ACTUALIZANDO...";
-      document.getElementById('estadoSistema').className = "fw-bold mb-0 text-muted";
-      
-      await Promise.all([cargarSedes(), cargarUsuarios()]);
-      
-      document.getElementById('estadoSistema').innerText = "ÓPTIMO";
-      document.getElementById('estadoSistema').className = "fw-bold mb-0 text-warning";
+    function abrirModalReset(id, nombre) {
+      document.getElementById('resetUserId').value = id;
+      document.getElementById('resetUserNombre').value = nombre;
+      document.getElementById('resetNuevaClave').value = '';
+      modalReset.show();
     }
 
-    // REGISTRAR NUEVA SEDE
-    document.getElementById('formSede').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('btnGuardarSede');
-      btn.disabled = true;
+    async function procesarResetClave() {
+      const id = document.getElementById('resetUserId').value;
+      const nuevaClave = document.getElementById('resetNuevaClave').value.trim();
+
+      if (!nuevaClave) return alert('Por favor ingrese la nueva contraseña.');
 
       try {
-        const res = await fetch('/api/clubes', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            nombre: document.getElementById('nombreClub').value.trim(),
-            direccion: document.getElementById('direccionClub').value.trim()
-          })
-        });
+        const { error } = await supabase
+          .from('usuarios')
+          .update({ password: nuevaClave })
+          .eq('id', id);
 
-        if (res.ok) {
-          alert('Sede guardada con éxito');
-          document.getElementById('formSede').reset();
-          await cargarSedes(); // Actualiza el selector dinámicamente
-        } else {
-          const errData = await res.json();
-          alert(`Error: ${errData.mensaje || 'No se pudo guardar la sede'}`);
-        }
+        if (error) throw error;
+
+        alert('¡Contraseña actualizada con éxito!');
+        modalReset.hide();
       } catch (err) {
-        console.error(err);
-        alert('Error crítico de red al guardar la sede');
-      } finally {
-        btn.disabled = false;
+        alert('Error al actualizar contraseña: ' + err.message);
       }
-    });
+    }
 
-    // REGISTRAR NUEVO USUARIO
-    document.getElementById('formUsuario').addEventListener('submit', async (e) => {
+    async function guardarUsuario(e) {
       e.preventDefault();
-      const btn = document.getElementById('btnGuardarUsr');
-      const clubId = document.getElementById('usrClub').value;
-
-      if (!clubId) {
-        alert('Por favor selecciona una sede válida.');
-        return;
-      }
-
-      btn.disabled = true;
+      const payload = {
+        nombre: document.getElementById('uNombre').value,
+        usuario: document.getElementById('uUsuario').value,
+        password: document.getElementById('uPassword').value,
+        rol: document.getElementById('uRol').value,
+        sede: document.getElementById('uSede').value
+      };
 
       try {
-        const res = await fetch('/api/usuarios', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            nombre: document.getElementById('usrNombre').value.trim(),
-            correo: document.getElementById('usrCorreo').value.trim(),
-            password: document.getElementById('usrPass').value,
-            rol: document.getElementById('usrRol').value,
-            club_id: clubId
-          })
-        });
+        const { error } = await supabase.from('usuarios').insert([payload]);
+        if (error) throw error;
 
-        if (res.ok) {
-          alert('Usuario creado con éxito');
-          document.getElementById('formUsuario').reset();
-          await cargarUsuarios();
-        } else {
-          const errData = await res.json();
-          alert(`Error: ${errData.mensaje || 'No se pudo registrar el usuario'}`);
-        }
+        alert('Usuario registrado con éxito.');
+        document.getElementById('formUsuario').reset();
+        cargarPersonal();
       } catch (err) {
-        console.error(err);
-        alert('Error de red al crear la cuenta de usuario');
-      } finally {
-        btn.disabled = false;
+        alert('Error al guardar el usuario: ' + err.message);
       }
-    });
+    }
 
-    // DAR DE BAJA USUARIO
     async function eliminarUsuario(id) {
-      if (!confirm('¿Seguro que deseas dar de baja a este usuario?')) return;
-      
+      if (!confirm('¿Desea eliminar este usuario de la plataforma de manera permanente?')) return;
+
       try {
-        const res = await fetch(`/api/usuarios/${id}`, { method: 'DELETE' });
-        if (res.ok) {
-          await cargarUsuarios();
-        } else {
-          alert('No se pudo eliminar el usuario.');
-        }
+        const { error } = await supabase.from('usuarios').delete().eq('id', id);
+        if (error) throw error;
+        cargarPersonal();
       } catch (err) {
-        console.error(err);
-        alert('Error al conectar con el servidor.');
+        alert('Error al eliminar el usuario: ' + err.message);
       }
     }
 
-    // Carga inicial
-    cargarDatosSistema();
+    // 3. REPORTES DE DAÑOS Y NOVEDADES
+    async function cargarReportesDanos() {
+      try {
+        const { data, error } = await supabase
+          .from('bitacora')
+          .select('*')
+          .or('tipo_visita.eq.DAÑO,tipo_visita.eq.NOVEDAD,observaciones.ilike.%daño%')
+          .order('hora_ingreso', { ascending: false });
+
+        if (error) throw error;
+        danosGlobal = data || [];
+
+        const tbody = document.getElementById('tablaDanosGlobal');
+        if (danosGlobal.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted"><i class="bi bi-check-circle text-success fs-4 d-block mb-1"></i>No hay reportes de daños pendientes en garitas.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = danosGlobal.map(d => `
+          <tr>
+            <td><small class="fw-bold">${d.hora_ingreso ? new Date(d.hora_ingreso).toLocaleString('es-EC') : 'N/A'}</small></td>
+            <td class="fw-bold">${d.registrado_por || 'Guardia'}</td>
+            <td><span class="badge bg-secondary">${d.destino || 'Garita Principal'}</span></td>
+            <td class="text-danger fw-semibold">${d.observaciones || 'Reporte sin descripción'}</td>
+            <td><span class="badge bg-warning text-dark">Pendiente Revisión</span></td>
+            <td class="text-end">
+              <button class="btn btn-sm btn-outline-success" onclick="alert('Estado actualizado a Solucionado.')">
+                <i class="bi bi-check-lg"></i> Marcar Atendido
+              </button>
+            </td>
+          </tr>
+        `).join('');
+
+      } catch (err) {
+        console.error("Error al cargar daños:", err.message);
+      }
+    }
+
+    // 4. CRUD DE SEDES / CLUBES
+    async function cargarSedes() {
+      try {
+        const { data: sedes, error } = await supabase
+          .from('sedes')
+          .select('*')
+          .order('nombre', { ascending: true });
+
+        if (error) throw error;
+        sedesGlobal = sedes || [];
+
+        const selectSedes = document.getElementById('uSede');
+        selectSedes.innerHTML = sedesGlobal.map(s => `<option value="${s.nombre}">${s.nombre}</option>`).join('');
+
+        const tbody = document.getElementById('tablaSedes');
+        tbody.innerHTML = sedesGlobal.map(s => `
+          <tr>
+            <td class="fw-bold">${s.nombre}</td>
+            <td>${s.ubicacion || 'Sin Ubicación'}</td>
+            <td><span class="badge bg-secondary">${s.capacidad || 0} personas</span></td>
+            <td class="text-end">
+              <button class="btn btn-sm btn-outline-danger btn-eliminar-sede" data-id="${s.id}">
+                <i class="bi bi-trash"></i> Eliminar
+              </button>
+            </td>
+          </tr>
+        `).join('');
+
+        document.querySelectorAll('.btn-eliminar-sede').forEach(btn => {
+          btn.addEventListener('click', (e) => eliminarSede(e.currentTarget.getAttribute('data-id')));
+        });
+
+      } catch (err) {
+        console.error("Error al cargar sedes:", err.message);
+      }
+    }
+
+    async function guardarSede(e) {
+      e.preventDefault();
+      const payload = {
+        nombre: document.getElementById('sNombre').value,
+        ubicacion: document.getElementById('sUbicacion').value,
+        capacidad: parseInt(document.getElementById('sCapacidad').value) || 0
+      };
+
+      try {
+        const { error } = await supabase.from('sedes').insert([payload]);
+        if (error) throw error;
+
+        alert('Sede registrada con éxito.');
+        document.getElementById('formSede').reset();
+        cargarSedes();
+      } catch (err) {
+        alert('Error al guardar la sede: ' + err.message);
+      }
+    }
+
+    async function eliminarSede(id) {
+      if (!confirm('¿Está seguro de eliminar esta sede?')) return;
+
+      try {
+        const { error } = await supabase.from('sedes').delete().eq('id', id);
+        if (error) throw error;
+        cargarSedes();
+      } catch (err) {
+        alert('Error al eliminar la sede: ' + err.message);
+      }
+    }
+
+    // 5. BITÁCORA GLOBAL & EXPORTACIÓN CSV
+    async function cargarBitacoraGlobal() {
+      try {
+        const { data: bitacora, error } = await supabase
+          .from('bitacora')
+          .select('*')
+          .order('hora_ingreso', { ascending: false });
+
+        if (error) throw error;
+        bitacoraGlobal = bitacora || [];
+        renderTablaBitacora(bitacoraGlobal);
+      } catch (err) {
+        console.error("Error al cargar la bitácora:", err.message);
+      }
+    }
+
+    function renderTablaBitacora(datos) {
+      const tbody = document.getElementById('tablaBitacoraGlobal');
+      tbody.innerHTML = datos.map(b => `
+        <tr>
+          <td><small class="fw-bold">${b.hora_ingreso ? new Date(b.hora_ingreso).toLocaleString('es-EC') : 'N/A'}</small></td>
+          <td><span class="badge bg-secondary">${b.tipo_visita || 'N/A'}</span></td>
+          <td class="fw-bold">${b.nombre || ''}</td>
+          <td><small>${b.cedula || b.placa || 'Peatonal'}</small></td>
+          <td class="text-success fw-bold">${b.destino || 'General'}</td>
+          <td><small class="fw-semibold text-muted">${b.registrado_por || 'Garita'}</small></td>
+          <td>${b.hora_salida ? '<span class="badge bg-secondary">SALIÓ</span>' : '<span class="badge bg-success">DENTRO</span>'}</td>
+        </tr>
+      `).join('');
+    }
+
+    function filtrarBitacoraGlobal() {
+      const q = document.getElementById('inputBuscarGlobal').value.toLowerCase();
+      const filtrados = bitacoraGlobal.filter(b => 
+        (b.nombre && b.nombre.toLowerCase().includes(q)) ||
+        (b.registrado_por && b.registrado_por.toLowerCase().includes(q)) ||
+        (b.placa && b.placa.toLowerCase().includes(q))
+      );
+      renderTablaBitacora(filtrados);
+    }
+
+    function exportarCSV() {
+      if (bitacoraGlobal.length === 0) return alert('No hay registros para exportar.');
+
+      let csv = "ID,Fecha,Tipo,Nombre,Cedula,Placa,Destino,Guardia,Estado\n";
+      bitacoraGlobal.forEach(r => {
+        csv += `"${r.id}","${r.hora_ingreso ? new Date(r.hora_ingreso).toLocaleString('es-EC') : ''}","${r.tipo_visita || ''}","${r.nombre || ''}","${r.cedula || ''}","${r.placa || ''}","${r.destino || ''}","${r.registrado_por || ''}","${r.hora_salida ? 'SALIO' : 'DENTRO'}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute("download", `Reporte_Administrativo_Club_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   </script>
 </body>
 </html>
