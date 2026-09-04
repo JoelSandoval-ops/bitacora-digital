@@ -210,7 +210,7 @@
     </ul>
 
     <div class="tab-content" id="pills-tabContent">
-      <!-- PESTAÑA 1: REGISTRO DIRECTO SIN PLACA -->
+      <!-- PESTAÑA 1: REGISTRO DIRECTO DEL SOCIO -->
       <div class="tab-pane fade show active" id="panel-asistencia" role="tabpanel">
         <div class="vip-card">
           <h5 class="panel-title mb-4"><i class="bi bi-person-check-fill me-2"></i>Registro Biométrico Directo (Ingreso / Salida)</h5>
@@ -257,7 +257,7 @@
         </div>
       </div>
 
-      <!-- PESTAÑA 2: NOVEDAD CON TOMAR FOTO O SUBIR DE GALERÍA -->
+      <!-- PESTAÑA 2: NOVEDADES Y FOTO -->
       <div class="tab-pane fade" id="panel-novedades" role="tabpanel">
         <div class="vip-card">
           <h5 class="panel-title mb-4"><i class="bi bi-camera me-2"></i>Reporte con Captura o Carga de Foto</h5>
@@ -276,7 +276,7 @@
                 <textarea class="form-control form-control-custom" id="nov_detalle" rows="3" placeholder="Escriba los detalles de la novedad..." required></textarea>
               </div>
               
-              <!-- FOTO: CÁMARA O GALERÍA -->
+              <!-- CÁMARA O GALERÍA -->
               <div class="col-md-6">
                 <label class="form-label-custom"><i class="bi bi-camera-fill me-1"></i> Tomar Foto Directa</label>
                 <input type="file" class="form-control form-control-custom" id="nov_camara" accept="image/*" capture="environment" onchange="previewImagen(event)">
@@ -342,7 +342,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- RUTA CORREGIDA HACIA LA CARPETA JS -->
   <script src="js/supabase.js"></script>
 
   <script>
@@ -383,8 +382,7 @@
           placa: document.getElementById('asi_tipo_usuario').value,
           nombre: document.getElementById('asi_nombre').value,
           destino: document.getElementById('asi_destino').value,
-          observacion: document.getElementById('asi_obs').value || 'Sin observaciones',
-          fecha_ingreso: new Date().toISOString()
+          observacion: document.getElementById('asi_obs').value || 'Sin observaciones'
         };
 
         const { error } = await client.from('bitacora').insert([datos]);
@@ -416,8 +414,7 @@
           placa: document.getElementById('nov_ubicacion').value,
           nombre: document.getElementById('nov_titulo').value,
           observacion: document.getElementById('nov_detalle').value,
-          destino: imagenBase64 ? imagenBase64 : 'Sin Foto',
-          fecha_ingreso: new Date().toISOString()
+          destino: imagenBase64 ? imagenBase64 : 'Sin Foto'
         };
 
         const { error } = await client.from('bitacora').insert([datos]);
@@ -448,7 +445,7 @@
         const { data, error } = await client
           .from('bitacora')
           .select('*')
-          .order('fecha_ingreso', { ascending: false })
+          .order('created_at', { ascending: false })
           .limit(30);
 
         if (error) throw error;
@@ -464,9 +461,11 @@
           if (r.tipo_visita === 'SALIDA') badgeClass = 'badge-salida';
           if (r.tipo_visita === 'NOVEDAD') badgeClass = 'badge-novedad';
 
+          const fechaMuestra = r.created_at || r.fecha_ingreso || new Date().toISOString();
+
           return `
             <tr>
-              <td><small class="text-muted fw-semibold">${new Date(r.fecha_ingreso || r.created_at).toLocaleString()}</small></td>
+              <td><small class="text-muted fw-semibold">${new Date(fechaMuestra).toLocaleString()}</small></td>
               <td><span class="badge ${badgeClass} px-3 py-2 rounded-pill">${r.tipo_visita || 'INGRESO'}</span></td>
               <td><strong>${r.nombre || 'N/A'}</strong></td>
               <td><code>${r.cedula || r.placa || 'N/A'}</code></td>
