@@ -5,9 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CLUB BUENA VISTA - Panel de Supervisión</title>
   
+  <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- FontAwesome Icons -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Fuentes Institucionales: Cinzel (Títulos/Logo) y Poppins (Cuerpo/Tablas) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
   <style>
     body {
@@ -16,39 +22,44 @@
       color: #333;
     }
 
-    /* Header superior exacto a la imagen */
+    /* Header superior exacto */
     .header-bv {
       background-color: #004d25;
       color: white;
-      padding: 10px 20px;
+      padding: 12px 24px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.15);
     }
 
     .header-title {
-      font-weight: 800;
-      font-size: 1.3rem;
-      letter-spacing: 0.5px;
+      font-family: 'Cinzel', serif;
+      font-weight: 700;
+      font-size: 1.45rem;
+      letter-spacing: 1px;
       line-height: 1.1;
+      color: #ffffff;
     }
 
     .header-sub {
-      color: #e5a93b;
+      font-family: 'Poppins', sans-serif;
+      color: #e09b2d;
       font-size: 0.75rem;
       font-weight: 700;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.8px;
     }
 
-    /* Pestañas */
+    /* Pestañas de navegación superiores */
     .nav-tabs {
       border-bottom: none;
     }
     .nav-tabs .nav-link {
       border: 1px solid #ddd;
       border-bottom: none;
-      border-radius: 6px 6px 0 0;
+      border-radius: 8px 8px 0 0;
       font-weight: 700;
       color: #004d25;
-      padding: 10px 20px;
+      padding: 12px 20px;
       background-color: #f1f1f1;
+      transition: all 0.2s ease-in-out;
     }
     .nav-tabs .nav-link.active {
       background-color: #e09b2d;
@@ -56,7 +67,7 @@
       border-color: #e09b2d;
     }
 
-    /* Tablas estilo exacto */
+    /* Tablas estilo profesional */
     .table-dark-custom th {
       background-color: #212529 !important;
       color: white !important;
@@ -72,7 +83,7 @@
       font-size: 1.25rem;
     }
 
-    /* Tarjeta de imagen con borde amarillo/dorado */
+    /* Frame de imagen con borde dorado de la tarjeta */
     .img-card-frame {
       width: 140px;
       height: 85px;
@@ -87,7 +98,7 @@
       transform: scale(1.05);
     }
 
-    /* Badges */
+    /* Etiquetas/Badges de Ubicación */
     .badge-ubicacion {
       background-color: #dc3545;
       color: white;
@@ -97,12 +108,14 @@
       font-size: 0.8rem;
     }
 
+    /* Botón personalizado de eliminación */
     .btn-delete-custom {
       background-color: #dc3545;
       color: white;
       border: none;
       border-radius: 6px;
       padding: 6px 10px;
+      transition: background-color 0.2s;
     }
     .btn-delete-custom:hover {
       background-color: #bb2d3b;
@@ -111,15 +124,40 @@
 </head>
 <body>
 
-  <!-- Encabezado Principal -->
+  <!-- Encabezado Principal con Logotipo Oficial SVG con Raquetas -->
   <header class="header-bv d-flex justify-content-between align-items-center">
-    <div class="d-flex align-items-center gap-2">
-      <div class="bg-warning text-dark p-2 rounded-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
-        <i class="fa-solid fa-shield-halved fs-5"></i>
+    <div class="d-flex align-items-center gap-3">
+      
+      <!-- LOGOTIPO CLUB BUENA VISTA (Raquetas Cruzadas) -->
+      <div style="width: 52px; height: 52px; border-radius: 50%; background-color: #003816; border: 2px solid #e09b2d; padding: 2px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3); flex-shrink: 0;">
+        <svg viewBox="0 0 100 100" width="100%" height="100%">
+          <circle cx="50" cy="50" r="46" fill="#003816" stroke="#e09b2d" stroke-width="2"/>
+          <!-- Raqueta 1 -->
+          <g transform="rotate(-30 50 50)" stroke="#e09b2d" stroke-width="2.5" fill="none">
+            <ellipse cx="50" cy="35" rx="14" ry="18" />
+            <line x1="50" y1="53" x2="50" y2="82" stroke-width="3" />
+            <line x1="45" y1="82" x2="55" y2="82" stroke-width="3" />
+            <line x1="42" y1="35" x2="58" y2="35" stroke="#e09b2d" stroke-width="1" />
+            <line x1="44" y1="27" x2="56" y2="27" stroke="#e09b2d" stroke-width="1" />
+            <line x1="44" y1="43" x2="56" y2="43" stroke="#e09b2d" stroke-width="1" />
+            <line x1="50" y1="18" x2="50" y2="51" stroke="#e09b2d" stroke-width="1" />
+          </g>
+          <!-- Raqueta 2 -->
+          <g transform="rotate(30 50 50)" stroke="#e09b2d" stroke-width="2.5" fill="none">
+            <ellipse cx="50" cy="35" rx="14" ry="18" />
+            <line x1="50" y1="53" x2="50" y2="82" stroke-width="3" />
+            <line x1="45" y1="82" x2="55" y2="82" stroke-width="3" />
+            <line x1="42" y1="35" x2="58" y2="35" stroke="#e09b2d" stroke-width="1" />
+            <line x1="44" y1="27" x2="56" y2="27" stroke="#e09b2d" stroke-width="1" />
+            <line x1="44" y1="43" x2="56" y2="43" stroke="#e09b2d" stroke-width="1" />
+            <line x1="50" y1="18" x2="50" y2="51" stroke="#e09b2d" stroke-width="1" />
+          </g>
+        </svg>
       </div>
+
       <div>
         <div class="header-title">CLUB BUENA VISTA</div>
-        <div class="header-sub"><i class="fa-solid fa-trophy me-1"></i> PANEL DE SUPERVISIÓN Y CONTROL</div>
+        <div class="header-sub"><i class="fa-solid fa-trophy me-1"></i> CONTROL DE ACCESO Y ASISTENCIA</div>
       </div>
     </div>
 
@@ -220,7 +258,7 @@
     </div>
   </div>
 
-  <!-- Modal Editar -->
+  <!-- Modal Editar Registro -->
   <div class="modal fade" id="modalEditarAsistencia" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
@@ -272,6 +310,7 @@
     </div>
   </div>
 
+  <!-- JavaScript Dependencies -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
