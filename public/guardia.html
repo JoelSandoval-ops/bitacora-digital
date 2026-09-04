@@ -3,181 +3,386 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Garita de Control - Club Buena Vista</title>
+  <title>Módulo Guardia - Club Buena Vista</title>
+  
+  <!-- Fuentes e Iconos -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+
   <style>
-    .btn-touch { padding: 12px; font-weight: bold; font-size: 1.1rem; }
-  </style>
-</head>
-<body class="bg-light">
-
-  <!-- Navegación Responsiva -->
-  <nav class="navbar navbar-dark bg-primary shadow-sm px-3 mb-3">
-    <div class="container-fluid">
-      <span class="navbar-brand fw-bold">
-        <i class="bi bi-shield-lock-fill"></i> Garita Principal
-      </span>
-      <div class="d-flex align-items-center gap-2">
-        <span class="text-white small d-none d-sm-inline" id="userNombre">Guardia Turno</span>
-        <a href="/login.html" onclick="localStorage.clear()" class="btn btn-outline-light btn-sm">
-          <i class="bi bi-box-arrow-right"></i> Salir
-        </a>
-      </div>
-    </div>
-  </nav>
-
-  <div class="container-fluid px-3 px-md-4">
-    <div class="row g-4">
-      
-      <!-- Columna Formulario Ingreso (Móvil/PC) -->
-      <div class="col-12 col-lg-5">
-        <div class="card border-0 shadow-sm rounded-3">
-          <div class="card-header bg-dark text-white py-3">
-            <h5 class="fw-bold mb-0"><i class="bi bi-person-plus"></i> Registrar Nuevo Ingreso</h5>
-          </div>
-          <div class="card-body p-3 p-md-4">
-            <form id="formIngreso">
-              <div class="row g-3">
-                <div class="col-12 col-sm-6">
-                  <label class="form-label fw-semibold">Tipo de Visita</label>
-                  <select class="form-select form-select-lg" id="tipo_visita" required>
-                    <option value="Socio">Socio</option>
-                    <option value="Invitado">Invitado</option>
-                    <option value="Proveedor">Proveedor</option>
-                    <option value="Servicios">Servicios / Deliveries</option>
-                  </select>
-                </div>
-                <div class="col-12 col-sm-6">
-                  <label class="form-label fw-semibold">Placa / Vehículo</label>
-                  <input type="text" class="form-control form-control-lg text-uppercase" id="placa" placeholder="Ej. ABC-1234">
-                </div>
-                <div class="col-12">
-                  <label class="form-label fw-semibold">Nombre Completo</label>
-                  <input type="text" class="form-control form-control-lg" id="nombre" placeholder="Ej. Juan Carlos Pérez" required>
-                </div>
-                <div class="col-12 col-sm-6">
-                  <label class="form-label fw-semibold">Cédula / Pasaporte</label>
-                  <input type="text" class="form-control form-control-lg" id="cedula" placeholder="Ej. 1712345678" required>
-                </div>
-                <div class="col-12 col-sm-6">
-                  <label class="form-label fw-semibold">Destino / Áreas</label>
-                  <input type="text" class="form-control form-control-lg" id="destino" placeholder="Ej. Casa Villa 12 / Tenis" required>
-                </div>
-                <div class="col-12">
-                  <label class="form-label fw-semibold">Novedades / Observaciones</label>
-                  <textarea class="form-control" id="novedades" rows="2" placeholder="Ej. Ingresa con material de construcción / Sin novedad"></textarea>
-                </div>
-                <div class="col-12">
-                  <label class="form-label fw-semibold"><i class="bi bi-camera"></i> Fotografía del Vehículo/Identificación</label>
-                  <input type="file" class="form-control" id="foto" accept="image/*" capture="environment">
-                </div>
-              </div>
-              <button type="submit" class="btn btn-success btn-touch w-100 mt-4">
-                <i class="bi bi-check-lg"></i> Guardar e Ingresar
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <!-- Columna Tabla Ultimos Movimientos -->
-      <div class="col-12 col-lg-7">
-        <div class="card border-0 shadow-sm rounded-3">
-          <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-            <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-clock-history"></i> Movimientos Recientes del Turno</h5>
-            <button onclick="cargarRegistros()" class="btn btn-outline-primary btn-sm"><i class="bi bi-arrow-clockwise"></i> Actualizar</button>
-          </div>
-          <div class="card-body p-0">
-            <div class="table-responsive">
-              <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                  <tr>
-                    <th>Hora</th>
-                    <th>Tipo</th>
-                    <th>Nombre / Cédula</th>
-                    <th>Placa</th>
-                    <th>Destino</th>
-                    <th>Novedades</th>
-                  </tr>
-                </thead>
-                <tbody id="tablaBitacora"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <script>
-    // Verificar Sesión
-    const userLocal = JSON.parse(localStorage.getItem('user_bv') || '{}');
-    if (userLocal.nombre) {
-      document.getElementById('userNombre').innerText = userLocal.nombre;
+    :root {
+      --bg-main: #0b1329;
+      --card-bg: #ffffff;
+      --accent-blue: #2563eb;
+      --accent-green: #10b981;
+      --accent-amber: #f59e0b;
+      --text-dark: #1e293b;
     }
 
-    const API_URL = '/api/bitacora';
+    body {
+      background-color: #f1f5f9;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--text-dark);
+    }
 
-    async function cargarRegistros() {
+    /* Header superior */
+    .top-header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #ffffff;
+      padding: 1.25rem 2rem;
+      border-bottom: 3px solid var(--accent-blue);
+    }
+
+    /* Pestañas de navegación estilo cápsula */
+    .nav-pills-custom {
+      background: #ffffff;
+      padding: 0.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      gap: 0.5rem;
+    }
+
+    .nav-pills-custom .nav-link {
+      color: #64748b;
+      font-weight: 600;
+      border-radius: 8px;
+      padding: 0.75rem 1.25rem;
+      transition: all 0.25s ease;
+    }
+
+    .nav-pills-custom .nav-link.active {
+      background-color: var(--accent-blue);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    }
+
+    .nav-pills-custom .nav-link:hover:not(.active) {
+      background-color: #f8fafc;
+      color: #1e293b;
+    }
+
+    /* Tarjetas de contenido */
+    .card-custom {
+      background: #ffffff;
+      border: none;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+      padding: 2rem;
+    }
+
+    .form-label {
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: #334155;
+    }
+
+    .form-control, .form-select {
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      padding: 0.65rem 1rem;
+      font-size: 0.95rem;
+    }
+
+    .form-control:focus, .form-select:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+
+    .btn-action {
+      border-radius: 10px;
+      font-weight: 600;
+      padding: 0.75rem 1.75rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-green {
+      background-color: var(--accent-green);
+      color: white;
+    }
+    .btn-green:hover { background-color: #059669; color: white; }
+
+    .btn-amber {
+      background-color: var(--accent-amber);
+      color: white;
+    }
+    .btn-amber:hover { background-color: #d97706; color: white; }
+
+    /* Estilo de tabla */
+    .table-custom {
+      border-collapse: separate;
+      border-spacing: 0 8px;
+    }
+    .table-custom tbody tr {
+      background: #ffffff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+      border-radius: 8px;
+    }
+    .table-custom td, .table-custom th {
+      padding: 1rem;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Encabezado del Módulo -->
+  <header class="top-header d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center gap-3">
+      <div class="bg-primary p-2 rounded-3 text-white">
+        <i class="bi bi-shield-lock-fill fs-4"></i>
+      </div>
+      <div>
+        <h5 class="mb-0 fw-bold">GARITA DE CONTROL Y SEGURIDAD</h5>
+        <small class="text-white-50">Club Buena Vista — Puesto de Control Operativo</small>
+      </div>
+    </div>
+    <button class="btn btn-outline-light btn-sm rounded-3 px-3" onclick="cerrarSesion()">
+      <i class="bi bi-box-arrow-right me-1"></i> Cerrar Sesión
+    </button>
+  </header>
+
+  <main class="container my-4">
+    
+    <!-- Pestañas Desplegables -->
+    <ul class="nav nav-pills nav-pills-custom mb-4 nav-justified" id="pills-tab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="pills-asistencia-tab" data-bs-toggle="pill" data-bs-target="#pills-asistencia" type="button">
+          <i class="bi bi-person-vcard me-2"></i>1. Registro de Asistencia
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="pills-novedades-tab" data-bs-toggle="pill" data-bs-target="#pills-novedades" type="button">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>2. Novedades e Imágenes
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="pills-bitacora-tab" data-bs-toggle="pill" data-bs-target="#pills-bitacora" type="button" onclick="cargarBitacora()">
+          <i class="bi bi-journal-check me-2"></i>3. Visualización de Bitácora
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content" id="pills-tabContent">
+      
+      <!-- PESTAÑA 1: REGISTRO DE ASISTENCIA DE SOCIOS -->
+      <div class="tab-pane fade show active" id="pills-asistencia" role="tabpanel">
+        <div class="card-custom">
+          <div class="d-flex align-items-center mb-4">
+            <i class="bi bi-person-plus-fill fs-3 text-primary me-3"></i>
+            <div>
+              <h5 class="fw-bold mb-0">Registro de Ingreso de Socios y Visitas</h5>
+              <small class="text-muted">Complete los datos para autorizar el ingreso al club</small>
+            </div>
+          </div>
+
+          <form id="formAsistencia" onsubmit="guardarAsistencia(event)">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label">Tipo de Visita</label>
+                <select class="form-select" id="asi_tipo" required>
+                  <option value="Socio">Socio</option>
+                  <option value="Invitado">Invitado</option>
+                  <option value="Proveedor">Proveedor</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Placa / Vehículo</label>
+                <input type="text" class="form-control" id="asi_placa" placeholder="Ej: JHY-5677" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Cédula / Pasaporte</label>
+                <input type="text" class="form-control" id="asi_cedula" placeholder="1722731898" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Nombre Completo</label>
+                <input type="text" class="form-control" id="asi_nombre" placeholder="Nombre de socio o visitante" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Destino / Área del Club</label>
+                <input type="text" class="form-control" id="asi_destino" placeholder="Ej: Cancha de Tennis N3" required>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Observaciones de Ingreso</label>
+                <textarea class="form-control" id="asi_obs" rows="2" placeholder="Detalle adicional sobre el ingreso..."></textarea>
+              </div>
+              <div class="col-12 text-end mt-4">
+                <button type="submit" class="btn btn-action btn-green">
+                  <i class="bi bi-check-circle-fill me-2"></i>Guardar e Registrar Ingreso
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- PESTAÑA 2: NOVEDADES E IMÁGENES -->
+      <div class="tab-pane fade" id="pills-novedades" role="tabpanel">
+        <div class="card-custom">
+          <div class="d-flex align-items-center mb-4">
+            <i class="bi bi-camera-fill fs-3 text-warning me-3"></i>
+            <div>
+              <h5 class="fw-bold mb-0">Reporte de Novedades e Infraestructura</h5>
+              <small class="text-muted">Registre daños, incidentes o mantenimiento pendiente</small>
+            </div>
+          </div>
+
+          <form id="formNovedad" onsubmit="guardarNovedad(event)">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Ubicación / Sector</label>
+                <input type="text" class="form-control" id="nov_ubicacion" placeholder="Ej: En el patio 3" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Título de la Novedad</label>
+                <input type="text" class="form-control" id="nov_titulo" placeholder="Ej: Lámpara dañada" required>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Comentario Directo y Detalle</label>
+                <textarea class="form-control" id="nov_detalle" rows="3" placeholder="Ej: Se dañó la lámpara, necesita una lámpara nueva, no existe iluminación en el sector..." required></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Fotografía / Evidencia (Nombre del archivo o descripción)</label>
+                <input type="text" class="form-control" id="nov_foto" placeholder="Ej: Foto_Lampara_Patio3.jpg">
+              </div>
+              <div class="col-12 text-end mt-4">
+                <button type="submit" class="btn btn-action btn-amber">
+                  <i class="bi bi-send-fill me-2"></i>Enviar Reporte de Novedad
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- PESTAÑA 3: VISUALIZACIÓN DE BITÁCORA -->
+      <div class="tab-pane fade" id="pills-bitacora" role="tabpanel">
+        <div class="card-custom">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h5 class="fw-bold mb-0">Historial General de la Bitácora</h5>
+              <small class="text-muted">Listado actualizado de registros de control y novedades</small>
+            </div>
+            <button class="btn btn-outline-primary btn-sm rounded-3" onclick="cargarBitacora()">
+              <i class="bi bi-arrow-clockwise me-1"></i> Actualizar
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-custom align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>Fecha/Hora</th>
+                  <th>Tipo</th>
+                  <th>Nombre / Asunto</th>
+                  <th>Placa / Ubicación</th>
+                  <th>Detalle / Novedades</th>
+                </tr>
+              </thead>
+              <tbody id="tablaBitacora">
+                <tr><td colspan="5" class="text-center text-muted">Cargando bitácora...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../supabase.js"></script>
+
+  <script>
+    // 1. Guardar Registro de Asistencia
+    async function guardarAsistencia(e) {
+      e.preventDefault();
       try {
-        const res = await fetch(API_URL);
-        const data = await res.json();
-        const tbody = document.getElementById('tablaBitacora');
-        
+        const datos = {
+          tipo_visita: document.getElementById('asi_tipo').value,
+          placa: document.getElementById('asi_placa').value,
+          cedula: document.getElementById('asi_cedula').value,
+          nombre: document.getElementById('asi_nombre').value,
+          destino: document.getElementById('asi_destino').value,
+          observacion: document.getElementById('asi_obs').value,
+          fecha_ingreso: new Date().toISOString()
+        };
+
+        const { error } = await window.supabaseClient.from('bitacora').insert([datos]);
+        if (error) throw error;
+
+        alert('¡Ingreso registrado exitosamente!');
+        document.getElementById('formAsistencia').reset();
+      } catch (err) {
+        alert('Error al guardar: ' + (err.message || 'Verifique la conexión con Supabase.'));
+      }
+    }
+
+    // 2. Guardar Novedades e Infraestructura
+    async function guardarNovedad(e) {
+      e.preventDefault();
+      try {
+        const datos = {
+          tipo_visita: 'NOVEDAD',
+          placa: document.getElementById('nov_ubicacion').value,
+          nombre: document.getElementById('nov_titulo').value,
+          observacion: document.getElementById('nov_detalle').value,
+          destino: document.getElementById('nov_foto').value || 'Sin Evidencia',
+          fecha_ingreso: new Date().toISOString()
+        };
+
+        const { error } = await window.supabaseClient.from('bitacora').insert([datos]);
+        if (error) throw error;
+
+        alert('¡Novedad registrada exitosamente!');
+        document.getElementById('formNovedad').reset();
+      } catch (err) {
+        alert('Error al registrar novedad: ' + (err.message || 'Error de conexión.'));
+      }
+    }
+
+    // 3. Cargar Bitácora en Vivo
+    async function cargarBitacora() {
+      const tbody = document.getElementById('tablaBitacora');
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Cargando información...</td></tr>';
+      
+      try {
+        const { data, error } = await window.supabaseClient
+          .from('bitacora')
+          .select('*')
+          .order('fecha_ingreso', { ascending: false })
+          .limit(20);
+
+        if (error) throw error;
+
         if (!data || data.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">No hay registros en este turno</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No hay registros guardados.</td></tr>';
           return;
         }
 
         tbody.innerHTML = data.map(r => `
           <tr>
-            <td><small class="fw-bold">${new Date(r.hora_ingreso).toLocaleTimeString('es-EC', {hour: '2-digit', minute:'2-digit'})}</small></td>
-            <td><span class="badge ${r.tipo_visita === 'Socio' ? 'bg-success' : 'bg-primary'}">${r.tipo_visita}</span></td>
+            <td><span class="text-muted small">${new Date(r.fecha_ingreso || r.created_at).toLocaleString()}</span></td>
             <td>
-              <div class="fw-semibold">${r.nombre}</div>
-              <small class="text-muted">${r.cedula}</small>
+              <span class="badge ${r.tipo_visita === 'NOVEDAD' ? 'bg-warning text-dark' : 'bg-success'} rounded-pill px-3 py-2">
+                ${r.tipo_visita || 'Ingreso'}
+              </span>
             </td>
-            <td><span class="badge bg-secondary">${r.placa || 'Peatonal'}</span></td>
-            <td>${r.destino}</td>
-            <td><small class="text-muted">${r.novedades || 'Sin novedad'}</small></td>
+            <td><strong>${r.nombre || 'N/A'}</strong></td>
+            <td><code class="bg-light text-dark px-2 py-1 rounded">${r.placa || 'N/A'}</code></td>
+            <td>${r.observacion || 'Sin observaciones'}</td>
           </tr>
         `).join('');
       } catch (err) {
-        console.error("Error cargando registros:", err);
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Error al cargar datos: ${err.message}</td></tr>`;
       }
     }
 
-    document.getElementById('formIngreso').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const nuevoIngreso = {
-        tipo_visita: document.getElementById('tipo_visita').value,
-        nombre: document.getElementById('nombre').value,
-        cedula: document.getElementById('cedula').value,
-        placa: document.getElementById('placa').value,
-        destino: document.getElementById('destino').value,
-        novedades: document.getElementById('novedades').value,
-        registrado_por: userLocal.nombre || 'Guardia Garita'
-      };
-
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(nuevoIngreso)
-      });
-
-      if (res.ok) {
-        alert('¡Ingreso registrado con éxito!');
-        document.getElementById('formIngreso').reset();
-        cargarRegistros();
-      } else {
-        alert('Error al guardar el registro');
-      }
-    });
-
-    cargarRegistros();
+    function cerrarSesion() {
+      sessionStorage.clear();
+      window.location.href = 'login.html';
+    }
   </script>
 </body>
 </html>
