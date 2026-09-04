@@ -342,7 +342,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="../supabase.js"></script>
+  <!-- RUTA CORREGIDA HACIA LA CARPETA JS -->
+  <script src="js/supabase.js"></script>
 
   <script>
     let imagenBase64 = "";
@@ -368,7 +369,7 @@
       e.preventDefault();
       const client = getSupabase();
       if (!client) {
-        alert("Error de conexión con Supabase. Verifica tu archivo supabase.js.");
+        alert("Error de conexión con Supabase. Verifica tu archivo js/supabase.js.");
         return;
       }
 
