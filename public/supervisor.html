@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CLUB BUENA VISTA - Panel de Supervisión</title>
+  <title>CLUB BUENA VISTA - Panel de Supervisión y Control</title>
   
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -77,7 +77,6 @@
       box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
     }
 
-    /* Tabla Cuadriculada Estilizada */
     .bv-table {
       width: 100%;
       border-collapse: collapse;
@@ -107,16 +106,16 @@
       background-color: #ffc107;
       color: #000000;
       font-weight: 700;
-      padding: 5px 10px;
-      border-radius: 6px;
+      padding: 4px 8px;
+      border-radius: 4px;
     }
 
     .badge-estado-salida {
       background-color: #6c757d;
       color: #ffffff;
       font-weight: 600;
-      padding: 5px 10px;
-      border-radius: 6px;
+      padding: 4px 8px;
+      border-radius: 4px;
     }
 
     .text-cedula {
@@ -137,44 +136,45 @@
         <div class="brand-subtitle"><i class="fa-solid fa-trophy me-1"></i>PANEL DE SUPERVISIÓN Y CONTROL</div>
       </div>
     </div>
-    <button class="btn btn-outline-light btn-sm" onclick="cerrarSesion()">Cerrar Sesión</button>
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge bg-success" id="indicadorRealtime"><i class="fa-solid fa-bolt me-1"></i>En Vivo</span>
+      <button class="btn btn-outline-light btn-sm" onclick="cerrarSesion()">Cerrar Sesión</button>
+    </div>
   </header>
 
   <div class="container-fluid px-4 py-4">
 
-    <!-- Navegación de Pestañas -->
     <ul class="nav nav-tabs nav-tabs-buenavista mb-4" id="pestañas" role="tablist">
       <li class="nav-item flex-fill text-center">
         <button class="nav-link w-100 active" id="tab1" data-bs-toggle="tab" data-bs-target="#content1" type="button">
-          <i class="fa-solid fa-list-check me-2"></i>1. Bitácora de Asistencia
+          <i class="fa-solid fa-list-check me-2"></i>1. Bitácora de Asistencia (Guardia)
         </button>
       </li>
       <li class="nav-item flex-fill text-center">
         <button class="nav-link w-100" id="tab2" data-bs-toggle="tab" data-bs-target="#content2" type="button">
-          <i class="fa-solid fa-triangle-exclamation me-2"></i>2. Bitácora de Novedades
+          <i class="fa-solid fa-triangle-exclamation me-2"></i>2. Bitácora de Novedades (Guardia)
         </button>
       </li>
     </ul>
 
     <div class="tab-content">
 
-      <!-- PESTAÑA 1: BITÁCORA DE ASISTENCIA -->
+      <!-- PESTAÑA 1: ASISTENCIA -->
       <div class="tab-pane fade show active" id="content1">
         <div class="bv-card">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="d-flex align-items-center gap-3">
-              <h5 class="m-0 fw-bold text-success"><i class="fa-solid fa-users me-2"></i>Registros de Asistencia</h5>
-              <select id="filtroDia" class="form-select form-select-sm" style="width: 170px;" onchange="filtrarYRenderizar()">
-                <option value="TODOS">Todos los días</option>
-                <option value="1">Lunes</option>
-                <option value="2">Martes</option>
-                <option value="3">Miércoles</option>
-                <option value="4">Jueves</option>
-                <option value="5">Viernes</option>
-                <option value="6">Sábado</option>
-                <option value="0">Domingo</option>
-              </select>
+          <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+              <h5 class="m-0 fw-bold text-success me-2"><i class="fa-solid fa-users me-1"></i>Registros de Asistencia</h5>
+              
+              <!-- Seleccionar Fecha Completa -->
+              <input type="date" id="filtroFecha" class="form-control form-control-sm" style="width: 160px;" onchange="filtrarYRenderizar()">
+              
+              <!-- Buscar por Nombre o Cédula -->
+              <input type="text" id="filtroTexto" class="form-control form-control-sm" placeholder="Buscar por Nombre o Cédula..." style="width: 220px;" onkeyup="filtrarYRenderizar()">
+              
+              <button class="btn btn-sm btn-outline-success" onclick="cargarTodo()"><i class="fa-solid fa-rotate me-1"></i>Actualizar</button>
             </div>
+            
             <div class="d-flex gap-2">
               <button class="btn btn-sm btn-success fw-bold" onclick="exportarExcel()"><i class="fa-solid fa-file-excel me-1"></i>Descargar Excel</button>
               <button class="btn btn-sm btn-danger fw-bold" onclick="exportarPDF()"><i class="fa-solid fa-file-pdf me-1"></i>Descargar PDF Cuadriculado</button>
@@ -201,10 +201,13 @@
         </div>
       </div>
 
-      <!-- PESTAÑA 2: BITÁCORA DE NOVEDADES -->
+      <!-- PESTAÑA 2: NOVEDADES -->
       <div class="tab-pane fade" id="content2">
         <div class="bv-card">
-          <h5 class="fw-bold text-success mb-3"><i class="fa-solid fa-shield-cat me-2"></i>Novedades e Incidencias</h5>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold text-success mb-0"><i class="fa-solid fa-shield-cat me-2"></i>Novedades e Incidencias</h5>
+            <button class="btn btn-sm btn-outline-success" onclick="cargarTodo()"><i class="fa-solid fa-rotate me-1"></i>Actualizar Novedades</button>
+          </div>
           <div class="table-responsive">
             <table class="table bv-table">
               <thead>
@@ -216,8 +219,7 @@
                   <th>Observación Guardia</th>
                   <th>Evidencia</th>
                   <th>Estado</th>
-                  <th>Respuesta Supervisor</th>
-                  <th>Acción</th>
+                  <th>Guardia</th>
                 </tr>
               </thead>
               <tbody id="tbodyNovedades"></tbody>
@@ -230,62 +232,106 @@
   </div>
 
   <script>
+    // Configura con tus credenciales reales de Supabase
     const SUPABASE_URL = 'https://xyzcompany.supabase.co'; 
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let registrosBase = [];
+    let datosAsistencia = [];
+    let datosNovedades = [];
     const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
-    document.addEventListener("DOMContentLoaded", cargarDatos);
+    document.addEventListener("DOMContentLoaded", () => {
+      // Establecer fecha actual por defecto
+      const hoy = new Date().toISOString().split('T')[0];
+      document.getElementById('filtroFecha').value = hoy;
+      
+      cargarTodo();
+      suscribirTiempoReal();
+    });
 
-    async function cargarDatos() {
+    async function cargarTodo() {
+      await Promise.all([cargarAsistencia(), cargarNovedades()]);
+      filtrarYRenderizar();
+    }
+
+    async function cargarAsistencia() {
       try {
-        const { data, error } = await _supabase.from('bitacora').select('*').order('id', { ascending: false });
+        const { data, error } = await _supabase.from('bitacora_asistencia').select('*').order('id', { ascending: false });
         if (error) throw error;
-        registrosBase = data || [];
-        filtrarYRenderizar();
+        datosAsistencia = data || [];
       } catch (err) {
-        console.error("Error cargando bitácora:", err);
+        console.error("Error cargando Asistencias:", err);
       }
     }
 
-    function filtrarYRenderizar() {
-      const filtro = document.getElementById('filtroDia').value;
-      
-      let filtrados = registrosBase;
-      if (filtro !== 'TODOS') {
-        filtrados = registrosBase.filter(i => {
-          const fechaRef = i.fecha_entrada || i.fecha_hora_ingreso || i.fecha;
-          const d = new Date(fechaRef);
-          return d.getDay().toString() === filtro;
-        });
+    async function cargarNovedades() {
+      try {
+        const { data, error } = await _supabase.from('bitacora_novedades').select('*').order('id', { ascending: false });
+        if (error) throw error;
+        datosNovedades = data || [];
+      } catch (err) {
+        console.error("Error cargando Novedades:", err);
       }
+    }
 
-      renderAsistencia(filtrados);
-      renderNovedades(filtrados);
+    // Suscripción en Tiempo Real
+    function suscribirTiempoReal() {
+      _supabase.channel('cambios-bitacora')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora_asistencia' }, () => {
+          cargarTodo();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora_novedades' }, () => {
+          cargarTodo();
+        })
+        .subscribe();
+    }
+
+    function filtrarYRenderizar() {
+      const fechaSel = document.getElementById('filtroFecha').value;
+      const textoSel = document.getElementById('filtroTexto').value.toLowerCase().trim();
+
+      // Filtrar Asistencia por fecha completa y búsqueda
+      const asistenciaFiltrada = datosAsistencia.filter(item => {
+        const strFecha = item.fecha_hora_entrada ? item.fecha_hora_entrada.split('T')[0] : '';
+        const coincideFecha = !fechaSel || strFecha === fechaSel;
+        
+        const socio = (item.nombre || '').toLowerCase();
+        const cedula = (item.cedula || '').toLowerCase();
+        const coincideTexto = !textoSel || socio.includes(textoSel) || cedula.includes(textoSel);
+
+        return coincideFecha && coincideTexto;
+      });
+
+      renderAsistencia(asistenciaFiltrada);
+      renderNovedades(datosNovedades);
     }
 
     function renderAsistencia(lista) {
       const tbody = document.getElementById('tbodyAsistencia');
       tbody.innerHTML = '';
 
+      if (lista.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">No se encontraron registros para la fecha/búsqueda seleccionada.</td></tr>`;
+        return;
+      }
+
       lista.forEach(item => {
-        const strFechaEntrada = item.fecha_entrada || item.fecha_hora_ingreso || item.fecha;
-        const strFechaSalida = item.fecha_salida || item.fecha_hora_salida;
-        const d = new Date(strFechaEntrada);
+        const d = new Date(item.fecha_hora_entrada);
         const diaNombre = isNaN(d.getTime()) ? '-' : diasSemana[d.getDay()];
+        const fEntrada = item.fecha_hora_entrada ? new Date(item.fecha_hora_entrada).toLocaleString('es-EC') : '-';
+        const fSalida = item.fecha_hora_salida ? new Date(item.fecha_hora_salida).toLocaleString('es-EC') : null;
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td><strong>${diaNombre}</strong></td>
-          <td>${strFechaEntrada || '-'}</td>
-          <td>${strFechaSalida ? `<span class="badge-estado-salida">${strFechaSalida}</span>` : '<span class="badge-estado-dentro">DENTRO DEL CLUB</span>'}</td>
-          <td class="fw-bold">${item.nombre || item.socio || 'SIN REGISTRO'}</td>
-          <td class="text-cedula">${item.cedula || 'N/A'}</td>
+          <td>${fEntrada}</td>
+          <td>${fSalida ? `<span class="badge-estado-salida">${fSalida}</span>` : '<span class="badge-estado-dentro">DENTRO DEL CLUB</span>'}</td>
+          <td class="fw-bold">${item.nombre}</td>
+          <td class="text-cedula">${item.cedula}</td>
           <td>${item.destino || 'Instalaciones'}</td>
-          <td class="small text-muted">${item.observaciones || item.detalle_observacion || '-'}</td>
-          <td>${strFechaSalida ? '<span class="badge bg-secondary">COMPLETADO</span>' : '<span class="badge bg-warning text-dark">ACTIVO</span>'}</td>
+          <td class="small text-muted">${item.observaciones || '-'}</td>
+          <td>${fSalida ? '<span class="badge bg-secondary">COMPLETADO</span>' : '<span class="badge bg-warning text-dark">ACTIVO</span>'}</td>
         `;
         tbody.appendChild(tr);
       });
@@ -295,51 +341,53 @@
       const tbody = document.getElementById('tbodyNovedades');
       tbody.innerHTML = '';
 
-      const novedades = lista.filter(i => i.asunto_novedad || i.novedades);
+      if (lista.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">No hay novedades registradas.</td></tr>`;
+        return;
+      }
 
-      novedades.forEach(n => {
-        const strFecha = n.fecha_entrada || n.fecha;
-        const d = new Date(strFecha);
+      lista.forEach(n => {
+        const d = new Date(n.fecha_hora);
         const diaNombre = isNaN(d.getTime()) ? '-' : diasSemana[d.getDay()];
+        const fFecha = n.fecha_hora ? new Date(n.fecha_hora).toLocaleString('es-EC') : '-';
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td><strong>${diaNombre}</strong></td>
-          <td>${strFecha || '-'}</td>
+          <td>${fFecha}</td>
           <td><span class="badge bg-danger">${n.ubicacion || 'Garita'}</span></td>
-          <td class="fw-bold">${n.asunto_novedad || n.novedades}</td>
-          <td class="small">${n.detalle_observacion || n.observaciones || '-'}</td>
-          <td>${n.foto_url ? `<a href="${n.foto_url}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-image"></i> Ver</a>` : '-'}</td>
-          <td><span class="badge bg-warning text-dark">${n.estado_resolucion || 'EN PROCESO'}</span></td>
-          <td class="small">${n.observacion_supervisor || '<em>Pendiente</em>'}</td>
-          <td><button class="btn btn-sm btn-warning fw-bold">Atender</button></td>
+          <td class="fw-bold">${n.asunto}</td>
+          <td class="small">${n.observacion_guardia || '-'}</td>
+          <td>${n.foto_url ? `<a href="${n.foto_url}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-image"></i> Ver Foto</a>` : '-'}</td>
+          <td><span class="badge bg-warning text-dark">${n.estado || 'PENDIENTE'}</span></td>
+          <td><small class="text-muted">${n.guardia_registro || 'Guardia'}</small></td>
         `;
         tbody.appendChild(tr);
       });
     }
 
     function exportarExcel() {
-      const dataFormat = registrosBase.map(i => ({
-        "Día": diasSemana[new Date(i.fecha_entrada || i.fecha).getDay()] || '',
-        "Fecha Entrada": i.fecha_entrada || i.fecha_hora_ingreso || '',
-        "Fecha Salida": i.fecha_salida || i.fecha_hora_salida || 'DENTRO DEL CLUB',
-        "Socio / Visitante": i.nombre || i.socio || '',
-        "Cédula": i.cedula || '',
-        "Destino": i.destino || '',
-        "Observaciones": i.observaciones || ''
+      const dataFormat = datosAsistencia.map(i => ({
+        "Día": diasSemana[new Date(i.fecha_hora_entrada).getDay()] || '',
+        "Fecha Entrada": i.fecha_hora_entrada ? new Date(i.fecha_hora_entrada).toLocaleString('es-EC') : '',
+        "Fecha Salida": i.fecha_hora_salida ? new Date(i.fecha_hora_salida).toLocaleString('es-EC') : 'DENTRO DEL CLUB',
+        "Socio / Visitante": i.nombre,
+        "Cédula": i.cedula,
+        "Destino": i.destino,
+        "Observaciones": i.observaciones
       }));
 
       const hoja = XLSX.utils.json_to_sheet(dataFormat);
       const libro = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(libro, hoja, "Bitacora");
-      XLSX.writeFile(libro, "Bitacora_Asistencia_ClubBuenaVista.xlsx");
+      XLSX.utils.book_append_sheet(libro, hoja, "Asistencia");
+      XLSX.writeFile(libro, `Bitacora_Asistencia_${document.getElementById('filtroFecha').value}.xlsx`);
     }
 
     function exportarPDF() {
       const elemento = document.getElementById('areaPDF');
       html2pdf().set({
         margin: 0.3,
-        filename: 'Bitacora_Asistencia_Cuadriculada.pdf',
+        filename: `Bitacora_Asistencia_${document.getElementById('filtroFecha').value}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2 },
         jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
