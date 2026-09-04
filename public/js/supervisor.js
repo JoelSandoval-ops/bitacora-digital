@@ -17,14 +17,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function configurarEventos() {
-  // Botones de actualización manual
   document.querySelectorAll('.btn-actualizar').forEach(btn => {
-    btn.addEventListener('click', () => {
-      cargarDatos();
-    });
+    btn.addEventListener('click', () => cargarDatos());
   });
 
-  // Filtros de Asistencia
+  // Filtros Asistencia
   const inputFechaAsis = document.getElementById('filtroFechaAsistencia');
   const inputTextoAsis = document.getElementById('filtroTextoAsistencia');
   const btnVerTodoAsis = document.getElementById('btnVerTodoAsistencia');
@@ -39,7 +36,7 @@ function configurarEventos() {
     });
   }
 
-  // Filtros de Novedades
+  // Filtros Novedades
   const inputFechaNov = document.getElementById('filtroFechaNovedades');
   const btnVerTodoNov = document.getElementById('btnVerTodoNovedades');
 
@@ -51,21 +48,17 @@ function configurarEventos() {
     });
   }
 
-  // Botones Exportación Excel / PDF Asistencia
+  // Exportaciones
   const btnExcelAsis = document.getElementById('btnExcelAsistencia');
   const btnPDFAsis = document.getElementById('btnPDFAsistencia');
-
   if (btnExcelAsis) btnExcelAsis.addEventListener('click', () => exportarExcel('areaPDFAsistencia', 'Asistencia_Club_Buena_Vista'));
   if (btnPDFAsis) btnPDFAsis.addEventListener('click', () => exportarPDF('areaPDFAsistencia', 'Asistencia_Club_Buena_Vista.pdf'));
 
-  // Botones Exportación Excel / PDF Novedades
   const btnExcelNov = document.getElementById('btnExcelNovedades');
   const btnPDFNov = document.getElementById('btnPDFNovedades');
-
   if (btnExcelNov) btnExcelNov.addEventListener('click', () => exportarExcel('areaPDFNovedades', 'Novedades_Club_Buena_Vista'));
   if (btnPDFNov) btnPDFNov.addEventListener('click', () => exportarPDF('areaPDFNovedades', 'Novedades_Club_Buena_Vista.pdf'));
 
-  // Cerrar sesión
   const btnSalir = document.getElementById('btnSalir');
   if (btnSalir) {
     btnSalir.addEventListener('click', async () => {
@@ -76,72 +69,58 @@ function configurarEventos() {
 }
 
 // ==========================================
-// CONSULTA UNIFICADA Y REPARTICIÓN
+// CONSULTA Y REPARTICIÓN
 // ==========================================
 
 async function cargarDatos() {
-  console.log("📡 [SUPERVISOR] Cargando y clasificando registros...");
+  console.log("📡 [SUPERVISOR] Consultando registros...");
 
-  // Intenta consultar la tabla principal 'bitacora'
-  let resp = await supabase.from('bitacora').select('*').order('id', { ascending: false });
+  let { data: todos, error } = await supabase.from('bitacora').select('*').order('id', { ascending: false });
 
-  if (resp.error || !resp.data || resp.data.length === 0) {
-    resp = await supabase.from('bitacora_asistencia').select('*').order('id', { ascending: false });
+  if (error || !todos) {
+    const resp2 = await supabase.from('bitacora_asistencia').select('*').order('id', { ascending: false });
+    todos = resp2.data || [];
   }
 
-  if (resp.error) {
-    console.error("❌ Error de lectura en Supabase:", resp.error);
-    return;
-  }
+  const registros = todos || [];
 
-  const todosLosRegistros = resp.data || [];
-
-  // 1. PUENTE DE NOVEDADES: Registros que contienen imagen base64 O que su tipo/categoría sea novedad
-  listaNovedades = todosLosRegistros.filter(item => {
+  // Clasificar Novedades
+  listaNovedades = registros.filter(item => {
     const destinoStr = String(item.destino || '');
-    const obsStr = String(item.observaciones || item.novedades || '');
+    const obsStr = String(item.observaciones || item.novedades || item.detalle || '');
     const fotoStr = String(item.imagen_url || item.foto_url || item.foto || '');
     const tipoStr = String(item.tipo || '').toLowerCase();
 
     return destinoStr.startsWith('data:image') || 
            obsStr.startsWith('data:image') || 
            fotoStr.startsWith('data:image') ||
-           fotoStr.length > 100 ||
-           tipoStr === 'novedad';
+           fotoStr.length > 50 ||
+           tipoStr === 'novedad' ||
+           item.ubicacion || 
+           item.sector || 
+           item.asunto;
   });
 
-  // 2. PUENTE DE ASISTENCIAS: Registros normales de entrada/salida de socios/visitantes
-  listaAsistencias = todosLosRegistros.filter(item => {
+  // Clasificar Asistencias limpias
+  listaAsistencias = registros.filter(item => {
     const destinoStr = String(item.destino || '');
-    const obsStr = String(item.observaciones || item.novedades || '');
+    const obsStr = String(item.observaciones || item.novedades || item.detalle || '');
     const fotoStr = String(item.imagen_url || item.foto_url || item.foto || '');
 
     const esNovedad = destinoStr.startsWith('data:image') || 
                       obsStr.startsWith('data:image') || 
                       fotoStr.startsWith('data:image') ||
-                      fotoStr.length > 100;
+                      fotoStr.length > 50;
 
     return !esNovedad;
   });
-
-  // También consultamos 'bitacora_novedades' específica si existe en Supabase para complementar
-  const respNov = await supabase.from('bitacora_novedades').select('*').order('id', { ascending: false });
-  if (respNov.data && respNov.data.length > 0) {
-    // Unimos evitando duplicados por ID
-    const idsExistentes = new Set(listaNovedades.map(n => n.id));
-    respNov.data.forEach(nov => {
-      if (!idsExistentes.has(nov.id)) {
-        listaNovedades.push(nov);
-      }
-    });
-  }
 
   renderTablaAsistencias(listaAsistencias);
   renderTablaNovedades(listaNovedades);
 }
 
 // ==========================================
-// RENDERIZADO: ASISTENCIA DE GUARDIA -> SUPERVISOR
+// RENDER: BITÁCORA DE ASISTENCIA
 // ==========================================
 
 function renderTablaAsistencias(datos) {
@@ -149,7 +128,7 @@ function renderTablaAsistencias(datos) {
   if (!tbody) return;
 
   if (!datos || datos.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-warning fw-bold py-4">No hay asistencias registradas.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-warning fw-bold py-4">No hay asistencias registradas.</td></tr>`;
     return;
   }
 
@@ -160,21 +139,15 @@ function renderTablaAsistencias(datos) {
     const fSalida = item.fecha_hora_salida || item.hora_salida;
     const hSalida = fSalida 
       ? new Date(fSalida).toLocaleString('es-EC') 
-      : '<span class="badge badge-estado-dentro">DENTRO DEL CLUB</span>';
+      : '<span class="badge bg-warning text-dark font-weight-bold">DENTRO DEL CLUB</span>';
 
-    const nombre = item.socio_visitante || item.nombre || 'Sin registrar';
+    const nombre = item.socio_visitante || item.nombre || 'Sin Nombre';
     const cedula = item.cedula || '---';
     
-    // Si la columna destino traía accidentalmente una foto, la limpiamos para mostrar destino real
     let destino = item.destino || 'Instalaciones';
     if (String(destino).startsWith('data:image')) {
       destino = 'Instalaciones';
     }
-
-    const obs = item.observaciones || item.novedades || 'Sin observaciones';
-    const estado = (fSalida || item.estado === 'FINALIZADO') 
-      ? '<span class="badge badge-estado-salida">COMPLETADO</span>' 
-      : '<span class="badge badge-estado-dentro">ACTIVO</span>';
 
     return `
       <tr>
@@ -183,8 +156,6 @@ function renderTablaAsistencias(datos) {
         <td><strong>${nombre}</strong></td>
         <td class="text-danger fw-bold">${cedula}</td>
         <td>${destino}</td>
-        <td class="small text-muted">${obs}</td>
-        <td>${estado}</td>
       </tr>
     `;
   }).join('');
@@ -198,8 +169,8 @@ function aplicarFiltrosAsistencia() {
 
   if (fechaVal) {
     resultado = resultado.filter(item => {
-      const fechaItem = item.fecha_hora_entrada || item.hora_ingreso || item.created_at;
-      return fechaItem && fechaItem.startsWith(fechaVal);
+      const f = item.fecha_hora_entrada || item.hora_ingreso || item.created_at;
+      return f && f.startsWith(fechaVal);
     });
   }
 
@@ -215,7 +186,7 @@ function aplicarFiltrosAsistencia() {
 }
 
 // ==========================================
-// RENDERIZADO: NOVEDADES DE GUARDIA -> SUPERVISOR
+// RENDER: BITÁCORA DE NOVEDADES CON FOTOS GRANDES
 // ==========================================
 
 function renderTablaNovedades(datos) {
@@ -228,14 +199,26 @@ function renderTablaNovedades(datos) {
   }
 
   tbody.innerHTML = datos.map(item => {
+    // 1. Fecha
     const fecha = item.fecha_registro || item.fecha_hora || item.fecha_hora_entrada || item.created_at;
     const hFecha = fecha ? new Date(fecha).toLocaleString('es-EC') : '---';
-    const guardia = item.guardia_nombre || item.guardia_registro || item.reportado_por || 'Guardia de Turno';
-    
-    // Detalle o título de la novedad
-    const detalle = item.socio_visitante || item.descripcion || item.observaciones || item.titulo || 'Novedad Reportada';
-    
-    // Extraer URL o String de la Imagen
+
+    // 2. Ubicación / Sector
+    const sector = item.ubicacion || item.sector || item.lugar || 'Porteria';
+
+    // 3. Asunto / Novedad
+    let asunto = item.asunto || item.socio_visitante || item.novedad || 'Novedad Reportada';
+    if (String(asunto).startsWith('data:image')) {
+      asunto = 'Novedad Reportada';
+    }
+
+    // 4. Detalle / Observación
+    let detalle = item.detalle || item.observaciones || item.descripcion || 'Sin detalle registrado';
+    if (String(detalle).startsWith('data:image')) {
+      detalle = 'Sin detalle escrito';
+    }
+
+    // 5. Extracción Limpia de la Fotografía
     let foto = item.imagen_url || item.foto_url || item.foto || '';
     if (!foto && String(item.destino).startsWith('data:image')) {
       foto = item.destino;
@@ -245,21 +228,21 @@ function renderTablaNovedades(datos) {
     }
 
     const imgElement = foto 
-      ? `<img src="${foto}" style="max-height:50px; max-width:80px; border-radius:4px; cursor:pointer;" class="img-thumbnail ver-foto-btn" data-url="${foto}" alt="Evidencia">` 
-      : '<span class="text-muted small">Sin Foto</span>';
+      ? `<img src="${foto}" class="img-novedad-amplia ver-foto-btn" data-url="${foto}" alt="Foto Novedad" title="Clic para ampliar">` 
+      : '<span class="text-muted fw-bold small">- Sin Foto -</span>';
 
     return `
-      <tr>
-        <td>${hFecha}</td>
-        <td><strong>${guardia}</strong></td>
-        <td>${detalle}</td>
-        <td class="text-center">${imgElement}</td>
-        <td><span class="badge bg-warning text-dark">${item.estado || 'REGISTRADO'}</span></td>
+      <tr style="height: 110px;">
+        <td class="align-middle">${hFecha}</td>
+        <td class="align-middle"><span class="badge badge-sector">${sector}</span></td>
+        <td class="align-middle"><strong>${asunto}</strong></td>
+        <td class="align-middle" style="white-space: pre-line;">${detalle}</td>
+        <td class="align-middle text-center">${imgElement}</td>
       </tr>
     `;
   }).join('');
 
-  // Evento para abrir modal de fotos ampliadas
+  // Evento clic para abrir la foto gigante en Modal
   document.querySelectorAll('.ver-foto-btn').forEach(img => {
     img.addEventListener('click', (e) => {
       const url = e.target.getAttribute('data-url');
@@ -268,10 +251,6 @@ function renderTablaNovedades(datos) {
         imgTarget.src = url;
         const modal = new bootstrap.Modal(document.getElementById('modalVerImagen'));
         modal.show();
-      } else if (url) {
-        // En caso de que no exista el modal HTML, abre en una ventana limpia
-        const win = window.open();
-        win.document.write(`<img src="${url}" style="max-width:100%;">`);
       }
     });
   });
@@ -279,40 +258,28 @@ function renderTablaNovedades(datos) {
 
 function aplicarFiltrosNovedades() {
   const fechaVal = document.getElementById('filtroFechaNovedades')?.value;
-
   let resultado = [...listaNovedades];
 
   if (fechaVal) {
     resultado = resultado.filter(item => {
-      const fechaItem = item.fecha_registro || item.fecha_hora || item.created_at;
-      return fechaItem && fechaItem.startsWith(fechaVal);
+      const f = item.fecha_registro || item.fecha_hora || item.created_at;
+      return f && f.startsWith(fechaVal);
     });
   }
 
   renderTablaNovedades(resultado);
 }
 
-// ==========================================
-// REALTIME (TIEMPO REAL)
-// ==========================================
-
 function activarTiempoReal() {
   supabase
-    .channel('realtime-supervisor-v3')
+    .channel('realtime-supervisor-v5')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora' }, () => cargarDatos())
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora_asistencia' }, () => cargarDatos())
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora_novedades' }, () => cargarDatos())
     .subscribe();
 }
-
-// ==========================================
-// FUNCIONES EXPORTAR (EXCEL Y PDF)
-// ==========================================
 
 function exportarExcel(elementId, nombreArchivo) {
   const elemento = document.getElementById(elementId);
   if (!elemento) return;
-  
   const wb = XLSX.utils.table_to_book(elemento, { sheet: "Reporte" });
   XLSX.writeFile(wb, `${nombreArchivo}.xlsx`);
 }

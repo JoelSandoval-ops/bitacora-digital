@@ -3,264 +3,214 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CLUB BUENA VISTA - Panel de Supervisión y Control</title>
+  <title>CLUB BUENA VISTA - Panel de Supervisión</title>
   
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
   <style>
-    :root {
-      --bv-green: #004d2e;
-      --bv-gold: #c8963e;
-      --bv-bg: #f4f6f8;
-    }
-
     body {
-      background-color: var(--bv-bg);
-      color: #212529;
       font-family: 'Poppins', sans-serif;
+      background-color: #f4f6f9;
+      color: #333;
     }
-
-    .header-buenavista {
-      background: linear-gradient(180deg, #005a36 0%, #004026 100%);
-      border-bottom: 3px solid var(--bv-gold);
-      padding: 12px 24px;
+    .header-bv {
+      background-color: #004d25;
+      color: white;
+      padding: 15px 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-
-    .brand-title {
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 800;
-      color: #ffffff;
-      font-size: 1.35rem;
-      margin: 0;
-    }
-
-    .brand-subtitle {
-      color: var(--bv-gold);
-      font-size: 0.75rem;
-      font-weight: 700;
-    }
-
-    .nav-tabs-buenavista {
-      border: 1.5px solid var(--bv-gold);
-      border-radius: 10px;
-      background: #ffffff;
-      padding: 4px;
-      gap: 4px;
-    }
-
-    .nav-tabs-buenavista .nav-link {
-      border: none;
-      color: #475569;
+    .nav-tabs .nav-link {
+      color: #004d25;
       font-weight: 600;
-      font-size: 0.9rem;
-      border-radius: 6px;
-      padding: 10px 18px;
-    }
-
-    .nav-tabs-buenavista .nav-link.active {
-      background-color: var(--bv-gold);
-      color: #ffffff !important;
-      font-weight: 700;
-    }
-
-    .bv-card {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-    }
-
-    .bv-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.88rem;
-    }
-
-    .bv-table thead th {
-      background-color: #212529;
-      color: #ffffff;
-      font-weight: 700;
-      padding: 12px 10px;
-      border: 1px solid #343a40;
-    }
-
-    .bv-table tbody td {
-      padding: 10px;
-      border: 1px solid #cbd5e1;
-      vertical-align: middle;
+      font-size: 1.1rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px 8px 0 0;
+      margin-right: 5px;
       background-color: #ffffff;
     }
-
-    .bv-table tbody tr:nth-of-type(even) td {
-      background-color: #f8f9fa;
+    .nav-tabs .nav-link.active {
+      background-color: #d99b38;
+      color: white;
+      border-color: #d99b38;
     }
-
-    .badge-estado-dentro {
-      background-color: #ffc107;
-      color: #000;
-      font-weight: 700;
-      padding: 4px 8px;
-      border-radius: 4px;
-    }
-
-    .badge-estado-salida {
-      background-color: #6c757d;
-      color: #fff;
+    .table-dark-custom th {
+      background-color: #212529 !important;
+      color: white !important;
       font-weight: 600;
-      padding: 4px 8px;
-      border-radius: 4px;
+    }
+    .badge-sector {
+      background-color: #dc3545;
+      color: white;
+      font-size: 0.85rem;
+      padding: 6px 14px;
+      border-radius: 12px;
+      font-weight: 600;
+      display: inline-block;
+    }
+    
+    /* ESTILO PARA LA FOTO GRANDE Y CLARA DE LA NOVEDAD */
+    .img-novedad-amplia {
+      width: 150px;
+      height: 95px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 3px solid #d99b38;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+      cursor: pointer;
+      transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+    .img-novedad-amplia:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.25);
     }
 
-    .img-thumbnail-table {
-      width: 50px;
-      height: 40px;
-      object-fit: cover;
-      border-radius: 6px;
-      border: 2px solid var(--bv-gold);
-      cursor: pointer;
+    .card-custom {
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
   </style>
 </head>
 <body>
 
-  <header class="header-buenavista d-flex justify-content-between align-items-center">
+  <!-- Encabezado -->
+  <header class="header-bv d-flex justify-content-between align-items-center">
     <div class="d-flex align-items-center gap-3">
-      <div style="width:48px; height:48px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid var(--bv-gold);">
-        <i class="fa-solid fa-shield-halved text-success fs-4"></i>
-      </div>
+      <i class="fa-solid fa-shield-halved fa-2x text-warning"></i>
       <div>
-        <h1 class="brand-title">CLUB BUENA VISTA</h1>
-        <div class="brand-subtitle"><i class="fa-solid fa-trophy me-1"></i>PANEL DE SUPERVISIÓN Y CONTROL</div>
+        <h3 class="m-0 fw-bold">CLUB BUENA VISTA</h3>
+        <small class="text-warning fw-semibold"><i class="fa-solid fa-trophy"></i> PANEL DE SUPERVISIÓN Y CONTROL</small>
       </div>
     </div>
-    <div class="d-flex align-items-center gap-2">
-      <span class="badge bg-success" id="indicadorRealtime"><i class="fa-solid fa-bolt me-1"></i>En Vivo</span>
-      <button class="btn btn-outline-light btn-sm" id="btnSalir"><i class="fa-solid fa-right-from-bracket me-1"></i>Cerrar Sesión</button>
+    <div>
+      <span class="badge bg-success me-3"><i class="fa-solid fa-bolt"></i> En Vivo</span>
+      <button id="btnSalir" class="btn btn-outline-light btn-sm"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</button>
     </div>
   </header>
 
-  <div class="container-fluid px-4 py-4">
+  <div class="container-fluid py-4 px-4">
 
-    <ul class="nav nav-tabs nav-tabs-buenavista mb-4" id="pestañas" role="tablist">
-      <li class="nav-item flex-fill text-center">
-        <button class="nav-link w-100 active" id="tab1" data-bs-toggle="tab" data-bs-target="#content1" type="button">
-          <i class="fa-solid fa-list-check me-2"></i>BITÁCORA DE ASISTENCIA
+    <!-- Navegación por Pestañas -->
+    <ul class="nav nav-tabs border-bottom-0 mb-3" id="superTabs" role="tablist">
+      <li class="nav-item flex-fill text-center" role="presentation">
+        <button class="nav-link w-100 active" id="tab-asistencia" data-bs-toggle="tab" data-bs-target="#sec-asistencia" type="button" role="tab">
+          <i class="fa-solid fa-list-check me-2"></i> BITÁCORA DE ASISTENCIA
         </button>
       </li>
-      <li class="nav-item flex-fill text-center">
-        <button class="nav-link w-100" id="tab2" data-bs-toggle="tab" data-bs-target="#content2" type="button">
-          <i class="fa-solid fa-triangle-exclamation me-2"></i>BITÁCORA DE NOVEDADES (SUPERVISIÓN)
+      <li class="nav-item flex-fill text-center" role="presentation">
+        <button class="nav-link w-100" id="tab-novedades" data-bs-toggle="tab" data-bs-target="#sec-novedades" type="button" role="tab">
+          <i class="fa-solid fa-triangle-exclamation me-2"></i> BITÁCORA DE NOVEDADES (SUPERVISIÓN)
         </button>
       </li>
     </ul>
 
-    <div class="tab-content">
+    <div class="tab-content" id="superTabsContent">
 
-      <!-- PESTAÑA 1: ASISTENCIA -->
-      <div class="tab-pane fade show active" id="content1">
-        <div class="bv-card">
-          <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-            <div class="d-flex align-items-center gap-2 flex-wrap">
-              <h5 class="m-0 fw-bold text-success me-2"><i class="fa-solid fa-users me-1"></i>Asistencia en Tiempo Real</h5>
-              <input type="date" id="filtroFechaAsistencia" class="form-control form-control-sm" style="width: 160px;">
-              <input type="text" id="filtroTextoAsistencia" class="form-control form-control-sm" placeholder="Buscar por Nombre o Cédula..." style="width: 230px;">
-              <button class="btn btn-sm btn-outline-secondary" id="btnVerTodoAsistencia"><i class="fa-solid fa-xmark me-1"></i>Ver Todo</button>
-              <button class="btn btn-sm btn-outline-success btn-actualizar"><i class="fa-solid fa-rotate me-1"></i>Actualizar</button>
-            </div>
-            
-            <div class="d-flex gap-2">
-              <button class="btn btn-sm btn-success fw-bold" id="btnExcelAsistencia"><i class="fa-solid fa-file-excel me-1"></i>Descargar Excel</button>
-              <button class="btn btn-sm btn-danger fw-bold" id="btnPDFAsistencia"><i class="fa-solid fa-file-pdf me-1"></i>Descargar PDF</button>
+      <!-- ========================================== -->
+      <!-- PESTAÑA 1: BITÁCORA DE ASISTENCIA -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade show active" id="sec-asistencia" role="tabpanel">
+        <div class="card card-custom p-3">
+          
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <h4 class="text-success fw-bold m-0"><i class="fa-solid fa-users me-2"></i>Asistencia en Tiempo Real</h4>
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+              <input type="date" id="filtroFechaAsistencia" class="form-control form-control-sm" style="width: auto;">
+              <input type="text" id="filtroTextoAsistencia" class="form-control form-control-sm" placeholder="Buscar por Nombre o Cédula..." style="width: 220px;">
+              <button id="btnVerTodoAsistencia" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-xmark"></i> Ver Todo</button>
+              <button class="btn btn-outline-success btn-sm btn-actualizar"><i class="fa-solid fa-rotate"></i> Actualizar</button>
+              <button id="btnExcelAsistencia" class="btn btn-success btn-sm"><i class="fa-solid fa-file-excel me-1"></i> Descargar Excel</button>
+              <button id="btnPDFAsistencia" class="btn btn-danger btn-sm"><i class="fa-solid fa-file-pdf me-1"></i> Descargar PDF</button>
             </div>
           </div>
 
           <div class="table-responsive" id="areaPDFAsistencia">
-            <table class="table bv-table align-middle">
-              <thead>
+            <table class="table table-hover align-middle border">
+              <thead class="table-dark-custom">
                 <tr>
                   <th>Fecha / Hora Entrada</th>
                   <th>Fecha / Hora Salida</th>
                   <th>Socio / Visitante</th>
                   <th>Cédula</th>
                   <th>Destino</th>
-                  <th>Observaciones</th>
-                  <th>Estado</th>
                 </tr>
               </thead>
               <tbody id="tbodyAsistencia">
                 <tr>
-                  <td colspan="7" class="text-center text-muted py-4"><i class="fa-solid fa-spinner fa-spin me-2"></i>Conectando con Supabase...</td>
+                  <td colspan="5" class="text-center py-4 text-muted"><i class="fa-solid fa-spinner fa-spin"></i> Cargando asistencias...</td>
                 </tr>
               </tbody>
             </table>
           </div>
+
         </div>
       </div>
 
-      <!-- PESTAÑA 2: NOVEDADES -->
-      <div class="tab-pane fade" id="content2">
-        <div class="bv-card">
-          <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-            <div class="d-flex align-items-center gap-2 flex-wrap">
-              <h5 class="fw-bold text-success mb-0"><i class="fa-solid fa-shield-cat me-2"></i>Reportes de Novedades</h5>
-              <input type="date" id="filtroFechaNovedades" class="form-control form-control-sm" style="width: 160px;">
-              <button class="btn btn-sm btn-outline-secondary" id="btnVerTodoNovedades"><i class="fa-solid fa-xmark me-1"></i>Ver Todo</button>
-              <button class="btn btn-sm btn-outline-success btn-actualizar"><i class="fa-solid fa-rotate me-1"></i>Actualizar Novedades</button>
+      <!-- ========================================== -->
+      <!-- PESTAÑA 2: BITÁCORA DE NOVEDADES -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade" id="sec-novedades" role="tabpanel">
+        <div class="card card-custom p-3">
+          
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <div>
+              <h4 class="text-success fw-bold m-0"><i class="fa-solid fa-shield-cat me-2"></i>BITÁCORA DE NOVEDADES (SUPERVISIÓN)</h4>
+              <small class="text-muted">Reportes de novedades con imágenes integradas en tamaño fila</small>
             </div>
-
-            <div class="d-flex gap-2">
-              <button class="btn btn-sm btn-success fw-bold" id="btnExcelNovedades"><i class="fa-solid fa-file-excel me-1"></i>Descargar Excel</button>
-              <button class="btn btn-sm btn-danger fw-bold" id="btnPDFNovedades"><i class="fa-solid fa-file-pdf me-1"></i>Descargar PDF</button>
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+              <input type="date" id="filtroFechaNovedades" class="form-control form-control-sm" style="width: auto;">
+              <button id="btnVerTodoNovedades" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-xmark"></i> Ver Todo</button>
+              <button class="btn btn-outline-success btn-sm btn-actualizar"><i class="fa-solid fa-rotate"></i> Actualizar Novedades</button>
+              <button id="btnExcelNovedades" class="btn btn-success btn-sm"><i class="fa-solid fa-file-excel me-1"></i> Descargar Excel</button>
+              <button id="btnPDFNovedades" class="btn btn-danger btn-sm"><i class="fa-solid fa-file-pdf me-1"></i> Descargar PDF</button>
             </div>
           </div>
 
           <div class="table-responsive" id="areaPDFNovedades">
-            <table class="table bv-table align-middle">
-              <thead>
+            <table class="table table-hover align-middle border">
+              <thead class="table-dark-custom">
                 <tr>
-                  <th>Fecha y Hora</th>
-                  <th>Guardia / Reportador</th>
-                  <th>Detalle / Observación</th>
-                  <th>Imagen</th>
-                  <th>Estado</th>
+                  <th style="width: 18%;">Fecha y Hora</th>
+                  <th style="width: 15%;">Ubicación / Sector</th>
+                  <th style="width: 20%;">Asunto / Novedad</th>
+                  <th style="width: 32%;">Detalle / Observación</th>
+                  <th style="width: 15%; text-align: center;">Imagen</th>
                 </tr>
               </thead>
               <tbody id="tbodyNovedades">
                 <tr>
-                  <td colspan="5" class="text-center text-muted py-4"><i class="fa-solid fa-spinner fa-spin me-2"></i>Conectando con Supabase...</td>
+                  <td colspan="5" class="text-center py-4 text-muted"><i class="fa-solid fa-spinner fa-spin"></i> Cargando novedades...</td>
                 </tr>
               </tbody>
             </table>
           </div>
+
         </div>
       </div>
 
     </div>
   </div>
 
-  <!-- Modal para visualización ampliada de evidencias -->
+  <!-- Modal para ver Foto en pantalla completa al hacer clic -->
   <div class="modal fade" id="modalVerImagen" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
-        <div class="modal-header bg-dark text-white py-2">
-          <h6 class="modal-title m-0"><i class="fa-solid fa-image me-2"></i>Evidencia de Novedad</h6>
+        <div class="modal-header bg-dark text-white">
+          <h5 class="modal-title"><i class="fa-regular fa-image me-2"></i> Evidencia Fotografica Completa</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body text-center p-0 bg-black">
-          <img id="imgModalTarget" src="" class="img-fluid" style="max-height: 75vh; object-fit: contain;">
+        <div class="modal-body text-center bg-light">
+          <img id="imgModalTarget" src="" class="img-fluid rounded shadow" alt="Foto Ampliada" style="max-height: 80vh;">
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Scripts necesarios de Bootstrap y lógica principal -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script type="module" src="./js/supervisor.js"></script>
 </body>
 </html>
