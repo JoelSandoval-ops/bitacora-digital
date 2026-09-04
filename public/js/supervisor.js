@@ -11,8 +11,7 @@ let listaNovedades = [];
 document.addEventListener('DOMContentLoaded', async () => {
   console.log("🔍 [SUPERVISOR] Iniciando script...");
 
-  await cargarAsistencias();
-  await cargarNovedades();
+  await cargarDatos();
   activarTiempoReal();
   configurarEventos();
 });
@@ -21,8 +20,7 @@ function configurarEventos() {
   // Botones de actualización manual
   document.querySelectorAll('.btn-actualizar').forEach(btn => {
     btn.addEventListener('click', () => {
-      cargarAsistencias();
-      cargarNovedades();
+      cargarDatos();
     });
   });
 
@@ -78,44 +76,80 @@ function configurarEventos() {
 }
 
 // ==========================================
-// CONSULTA Y RENDERIZADO: ASISTENCIA
+// CONSULTA UNIFICADA Y REPARTICIÓN
 // ==========================================
 
-async function cargarAsistencias() {
-  const tbody = document.getElementById('tbodyAsistencia');
-  if (!tbody) return;
+async function cargarDatos() {
+  console.log("📡 [SUPERVISOR] Cargando y clasificando registros...");
 
-  console.log("📡 [SUPERVISOR] Consultando asistencias en Supabase...");
-
-  // Intenta leer secuencialmente según el nombre de tabla disponible
-  let resp = await supabase.from('bitacora_asistencia').select('*').order('id', { ascending: false });
-  
-  if (resp.error || !resp.data || resp.data.length === 0) {
-    resp = await supabase.from('bitacora').select('*').order('id', { ascending: false });
-  }
+  // Intenta consultar la tabla principal 'bitacora'
+  let resp = await supabase.from('bitacora').select('*').order('id', { ascending: false });
 
   if (resp.error || !resp.data || resp.data.length === 0) {
-    resp = await supabase.from('asistencia').select('*').order('id', { ascending: false });
+    resp = await supabase.from('bitacora_asistencia').select('*').order('id', { ascending: false });
   }
-
-  console.log("📊 Registros de asistencia cargados:", resp.data);
 
   if (resp.error) {
     console.error("❌ Error de lectura en Supabase:", resp.error);
-    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-3">Error de lectura: ${resp.error.message}</td></tr>`;
     return;
   }
 
-  listaAsistencias = resp.data || [];
+  const todosLosRegistros = resp.data || [];
+
+  // 1. PUENTE DE NOVEDADES: Registros que contienen imagen base64 O que su tipo/categoría sea novedad
+  listaNovedades = todosLosRegistros.filter(item => {
+    const destinoStr = String(item.destino || '');
+    const obsStr = String(item.observaciones || item.novedades || '');
+    const fotoStr = String(item.imagen_url || item.foto_url || item.foto || '');
+    const tipoStr = String(item.tipo || '').toLowerCase();
+
+    return destinoStr.startsWith('data:image') || 
+           obsStr.startsWith('data:image') || 
+           fotoStr.startsWith('data:image') ||
+           fotoStr.length > 100 ||
+           tipoStr === 'novedad';
+  });
+
+  // 2. PUENTE DE ASISTENCIAS: Registros normales de entrada/salida de socios/visitantes
+  listaAsistencias = todosLosRegistros.filter(item => {
+    const destinoStr = String(item.destino || '');
+    const obsStr = String(item.observaciones || item.novedades || '');
+    const fotoStr = String(item.imagen_url || item.foto_url || item.foto || '');
+
+    const esNovedad = destinoStr.startsWith('data:image') || 
+                      obsStr.startsWith('data:image') || 
+                      fotoStr.startsWith('data:image') ||
+                      fotoStr.length > 100;
+
+    return !esNovedad;
+  });
+
+  // También consultamos 'bitacora_novedades' específica si existe en Supabase para complementar
+  const respNov = await supabase.from('bitacora_novedades').select('*').order('id', { ascending: false });
+  if (respNov.data && respNov.data.length > 0) {
+    // Unimos evitando duplicados por ID
+    const idsExistentes = new Set(listaNovedades.map(n => n.id));
+    respNov.data.forEach(nov => {
+      if (!idsExistentes.has(nov.id)) {
+        listaNovedades.push(nov);
+      }
+    });
+  }
+
   renderTablaAsistencias(listaAsistencias);
+  renderTablaNovedades(listaNovedades);
 }
+
+// ==========================================
+// RENDERIZADO: ASISTENCIA DE GUARDIA -> SUPERVISOR
+// ==========================================
 
 function renderTablaAsistencias(datos) {
   const tbody = document.getElementById('tbodyAsistencia');
   if (!tbody) return;
 
   if (!datos || datos.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-warning fw-bold py-4">No hay registros guardados en la base de datos.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-warning fw-bold py-4">No hay asistencias registradas.</td></tr>`;
     return;
   }
 
@@ -130,7 +164,13 @@ function renderTablaAsistencias(datos) {
 
     const nombre = item.socio_visitante || item.nombre || 'Sin registrar';
     const cedula = item.cedula || '---';
-    const destino = item.destino || 'Instalaciones';
+    
+    // Si la columna destino traía accidentalmente una foto, la limpiamos para mostrar destino real
+    let destino = item.destino || 'Instalaciones';
+    if (String(destino).startsWith('data:image')) {
+      destino = 'Instalaciones';
+    }
+
     const obs = item.observaciones || item.novedades || 'Sin observaciones';
     const estado = (fSalida || item.estado === 'FINALIZADO') 
       ? '<span class="badge badge-estado-salida">COMPLETADO</span>' 
@@ -175,29 +215,8 @@ function aplicarFiltrosAsistencia() {
 }
 
 // ==========================================
-// CONSULTA Y RENDERIZADO: NOVEDADES
+// RENDERIZADO: NOVEDADES DE GUARDIA -> SUPERVISOR
 // ==========================================
-
-async function cargarNovedades() {
-  const tbody = document.getElementById('tbodyNovedades');
-  if (!tbody) return;
-
-  console.log("📡 [SUPERVISOR] Consultando novedades...");
-
-  let resp = await supabase.from('bitacora_novedades').select('*').order('id', { ascending: false });
-
-  if (resp.error || !resp.data || resp.data.length === 0) {
-    resp = await supabase.from('novedades').select('*').order('id', { ascending: false });
-  }
-
-  if (resp.error) {
-    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-3">Error al cargar novedades.</td></tr>`;
-    return;
-  }
-
-  listaNovedades = resp.data || [];
-  renderTablaNovedades(listaNovedades);
-}
 
 function renderTablaNovedades(datos) {
   const tbody = document.getElementById('tbodyNovedades');
@@ -209,14 +228,24 @@ function renderTablaNovedades(datos) {
   }
 
   tbody.innerHTML = datos.map(item => {
-    const fecha = item.fecha_registro || item.fecha_hora || item.created_at;
+    const fecha = item.fecha_registro || item.fecha_hora || item.fecha_hora_entrada || item.created_at;
     const hFecha = fecha ? new Date(fecha).toLocaleString('es-EC') : '---';
-    const guardia = item.guardia_nombre || item.guardia_registro || item.reportado_por || 'Guardia';
-    const detalle = item.descripcion || item.observacion_guardia || item.titulo || 'Sin detalle';
-    const foto = item.imagen_url || item.foto_url;
+    const guardia = item.guardia_nombre || item.guardia_registro || item.reportado_por || 'Guardia de Turno';
+    
+    // Detalle o título de la novedad
+    const detalle = item.socio_visitante || item.descripcion || item.observaciones || item.titulo || 'Novedad Reportada';
+    
+    // Extraer URL o String de la Imagen
+    let foto = item.imagen_url || item.foto_url || item.foto || '';
+    if (!foto && String(item.destino).startsWith('data:image')) {
+      foto = item.destino;
+    }
+    if (!foto && String(item.observaciones).startsWith('data:image')) {
+      foto = item.observaciones;
+    }
 
     const imgElement = foto 
-      ? `<img src="${foto}" class="img-thumbnail-table ver-foto-btn" data-url="${foto}" alt="Evidencia">` 
+      ? `<img src="${foto}" style="max-height:50px; max-width:80px; border-radius:4px; cursor:pointer;" class="img-thumbnail ver-foto-btn" data-url="${foto}" alt="Evidencia">` 
       : '<span class="text-muted small">Sin Foto</span>';
 
     return `
@@ -225,7 +254,7 @@ function renderTablaNovedades(datos) {
         <td><strong>${guardia}</strong></td>
         <td>${detalle}</td>
         <td class="text-center">${imgElement}</td>
-        <td><span class="badge bg-warning text-dark">${item.estado || 'PENDIENTE'}</span></td>
+        <td><span class="badge bg-warning text-dark">${item.estado || 'REGISTRADO'}</span></td>
       </tr>
     `;
   }).join('');
@@ -239,6 +268,10 @@ function renderTablaNovedades(datos) {
         imgTarget.src = url;
         const modal = new bootstrap.Modal(document.getElementById('modalVerImagen'));
         modal.show();
+      } else if (url) {
+        // En caso de que no exista el modal HTML, abre en una ventana limpia
+        const win = window.open();
+        win.document.write(`<img src="${url}" style="max-width:100%;">`);
       }
     });
   });
@@ -265,11 +298,10 @@ function aplicarFiltrosNovedades() {
 
 function activarTiempoReal() {
   supabase
-    .channel('realtime-supervisor-v2')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora_asistencia' }, () => cargarAsistencias())
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora_novedades' }, () => cargarNovedades())
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora' }, () => cargarAsistencias())
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'asistencia' }, () => cargarAsistencias())
+    .channel('realtime-supervisor-v3')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora' }, () => cargarDatos())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora_asistencia' }, () => cargarDatos())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora_novedades' }, () => cargarDatos())
     .subscribe();
 }
 
