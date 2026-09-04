@@ -1,4 +1,5 @@
-import { supabase } from './supabase.js';
+import './supabase.js';
+const supabase = window.supabaseClient;
 
 let listaAsistencias = [];
 let listaNovedades = [];
@@ -66,7 +67,9 @@ function configurarEventos() {
   const btnSalir = document.getElementById('btnSalir');
   if (btnSalir) {
     btnSalir.addEventListener('click', async () => {
-      await supabase.auth.signOut();
+      if (supabase && supabase.auth) {
+        await supabase.auth.signOut();
+      }
       window.location.href = './login.html';
     });
   }
@@ -81,6 +84,12 @@ async function cargarAsistencias() {
   if (!tbody) return;
 
   console.log("📡 [SUPERVISOR] Consultando asistencias en Supabase...");
+
+  if (!supabase) {
+    console.error("❌ Cliente de Supabase no encontrado.");
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-3">Error: Cliente de Supabase no inicializado.</td></tr>`;
+    return;
+  }
 
   let { data, error } = await supabase
     .from('bitacora_asistencia')
@@ -178,6 +187,11 @@ async function cargarNovedades() {
 
   console.log("📡 [SUPERVISOR] Consultando novedades...");
 
+  if (!supabase) {
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-3">Error: Cliente de Supabase no inicializado.</td></tr>`;
+    return;
+  }
+
   let { data, error } = await supabase
     .from('bitacora_novedades')
     .select('*')
@@ -264,6 +278,8 @@ function aplicarFiltrosNovedades() {
 // ==========================================
 
 function activarTiempoReal() {
+  if (!supabase) return;
+  
   supabase
     .channel('realtime-supervisor-v2')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora_asistencia' }, () => cargarAsistencias())
