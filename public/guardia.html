@@ -40,7 +40,7 @@
     /* Contenedor exacto para el logo SVG */
     .logo-wrapper {
       background-color: #FFFFFF;
-      padding: 4px 10px;
+      padding: 4px 8px;
       border-radius: 10px;
       border: 2px solid var(--gold-bright);
       box-shadow: 0 2px 8px rgba(0,0,0,0.2);
@@ -171,12 +171,38 @@
   <header class="brand-header d-flex justify-content-between align-items-center">
     <div class="d-flex align-items-center gap-3">
       
-      <!-- Logo vectorizado directo SVG (Opción B) -->
+      <!-- Logo SVG de Raqueta de Tenis + Club Buena Vista -->
       <div class="logo-wrapper">
-        <svg width="45" height="45" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10" fill="#0F3822"></circle>
-          <path d="M6 12a6 6 0 0 1 6-6" stroke="#D4AF37" stroke-width="2"></path>
-          <circle cx="12" cy="12" r="3" fill="#D4AF37"></circle>
+        <svg width="55" height="55" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Fondo circular con borde dorado -->
+          <circle cx="50" cy="50" r="46" fill="#0F3822" stroke="#D4AF37" stroke-width="3"/>
+          
+          <!-- Raqueta Izquierda -->
+          <g transform="rotate(-30 50 50)">
+            <ellipse cx="50" cy="35" rx="14" ry="18" stroke="#C5A059" stroke-width="2.5" fill="none"/>
+            <path d="M43 35H57 M50 20V50 M40 30H60 M40 40H60" stroke="#D4AF37" stroke-width="1" opacity="0.6"/>
+            <path d="M50 53V78" stroke="#C5A059" stroke-width="3" stroke-linecap="round"/>
+          </g>
+          
+          <!-- Raqueta Derecha -->
+          <g transform="rotate(30 50 50)">
+            <ellipse cx="50" cy="35" rx="14" ry="18" stroke="#C5A059" stroke-width="2.5" fill="none"/>
+            <path d="M43 35H57 M50 20V50 M40 30H60 M40 40H60" stroke="#D4AF37" stroke-width="1" opacity="0.6"/>
+            <path d="M50 53V78" stroke="#C5A059" stroke-width="3" stroke-linecap="round"/>
+          </g>
+
+          <!-- Pelota de Tenis Central -->
+          <circle cx="50" cy="50" r="8" fill="#D4AF37" stroke="#0F3822" stroke-width="1.5"/>
+          <path d="M44 48A8 8 0 0 1 50 58" stroke="#0F3822" stroke-width="1.2" fill="none"/>
+          <path d="M56 52A8 8 0 0 1 50 42" stroke="#0F3822" stroke-width="1.2" fill="none"/>
+
+          <!-- Texto "CLUB BUENA VISTA" curvado arriba -->
+          <path id="textPath" d="M 18,50 A 32,32 0 1,1 82,50" fill="none"/>
+          <text fill="#FFFFFF" font-size="7.5" font-family="'Cinzel', serif" font-weight="bold" letter-spacing="0.8">
+            <textPath href="#textPath" startOffset="50%" text-anchor="middle">
+              CLUB BUENA VISTA
+            </textPath>
+          </text>
         </svg>
       </div>
 
