@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Club Buena Vista</title>
+  <script>
+    (function () {
+      try {
+        const sesionGuardada = sessionStorage.getItem('sesion_bitacora');
+        if (sesionGuardada) {
+          const usuario = JSON.parse(sesionGuardada);
+          const rol = (usuario && usuario.rol ? usuario.rol : '').toString().toUpperCase().trim();
+
+          switch (rol) {
+            case 'ADMIN':
+            case 'ADMINISTRADOR':
+              window.location.replace('public/administrador.html');
+              return;
+            case 'SUPERVISOR':
+              window.location.replace('public/supervisor.html');
+              return;
+            case 'GUARDIA':
+              window.location.replace('public/guardia.html');
+              return;
+          }
+        }
+      } catch (e) {
+        sessionStorage.removeItem('sesion_bitacora');
+      }
+      window.location.replace('public/login.html');
+    })();
+  </script>
+</head>
+<body style="background:#0f1e36; color:white; display:flex; justify-content:center; align-items:center; height:100vh; font-family:sans-serif;">
+  <p>Cargando modulo...</p>
+</body>
+</html>
