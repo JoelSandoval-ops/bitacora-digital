@@ -9,8 +9,7 @@ let listaAsistencias = [];
 let listaNovedades = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
-  console.log("🔍 [SUPERVISOR] Iniciando script...");
-
+  console.log("🔍 [SUPERVISOR] Cargando modulo...");
   await cargarDatos();
   activarTiempoReal();
   configurarEventos();
@@ -44,21 +43,11 @@ function configurarEventos() {
   if (btnVerTodoNov) {
     btnVerTodoNov.addEventListener('click', () => {
       if (inputFechaNov) inputFechaNov.value = '';
-      renderTablaNovedades(listaNovedades);
+      renderTarjetasNovedades(listaNovedades);
     });
   }
 
-  // Exportaciones
-  const btnExcelAsis = document.getElementById('btnExcelAsistencia');
-  const btnPDFAsis = document.getElementById('btnPDFAsistencia');
-  if (btnExcelAsis) btnExcelAsis.addEventListener('click', () => exportarExcel('areaPDFAsistencia', 'Asistencia_Club_Buena_Vista'));
-  if (btnPDFAsis) btnPDFAsis.addEventListener('click', () => exportarPDF('areaPDFAsistencia', 'Asistencia_Club_Buena_Vista.pdf'));
-
-  const btnExcelNov = document.getElementById('btnExcelNovedades');
-  const btnPDFNov = document.getElementById('btnPDFNovedades');
-  if (btnExcelNov) btnExcelNov.addEventListener('click', () => exportarExcel('areaPDFNovedades', 'Novedades_Club_Buena_Vista'));
-  if (btnPDFNov) btnPDFNov.addEventListener('click', () => exportarPDF('areaPDFNovedades', 'Novedades_Club_Buena_Vista.pdf'));
-
+  // Cerrar Sesión
   const btnSalir = document.getElementById('btnSalir');
   if (btnSalir) {
     btnSalir.addEventListener('click', async () => {
@@ -68,13 +57,7 @@ function configurarEventos() {
   }
 }
 
-// ==========================================
-// CONSULTA Y REPARTICIÓN
-// ==========================================
-
 async function cargarDatos() {
-  console.log("📡 [SUPERVISOR] Consultando registros...");
-
   let { data: todos, error } = await supabase.from('bitacora').select('*').order('id', { ascending: false });
 
   if (error || !todos) {
@@ -84,7 +67,7 @@ async function cargarDatos() {
 
   const registros = todos || [];
 
-  // Clasificar Novedades
+  // Filtrado de Novedades
   listaNovedades = registros.filter(item => {
     const destinoStr = String(item.destino || '');
     const obsStr = String(item.observaciones || item.novedades || item.detalle || '');
@@ -101,7 +84,7 @@ async function cargarDatos() {
            item.asunto;
   });
 
-  // Clasificar Asistencias limpias
+  // Filtrado de Asistencias
   listaAsistencias = registros.filter(item => {
     const destinoStr = String(item.destino || '');
     const obsStr = String(item.observaciones || item.novedades || item.detalle || '');
@@ -116,13 +99,12 @@ async function cargarDatos() {
   });
 
   renderTablaAsistencias(listaAsistencias);
-  renderTablaNovedades(listaNovedades);
+  renderTarjetasNovedades(listaNovedades);
 }
 
 // ==========================================
-// RENDER: BITÁCORA DE ASISTENCIA
+// RENDER ASISTENCIAS
 // ==========================================
-
 function renderTablaAsistencias(datos) {
   const tbody = document.getElementById('tbodyAsistencia');
   if (!tbody) return;
@@ -143,11 +125,9 @@ function renderTablaAsistencias(datos) {
 
     const nombre = item.socio_visitante || item.nombre || 'Sin Nombre';
     const cedula = item.cedula || '---';
-    
     let destino = item.destino || 'Instalaciones';
-    if (String(destino).startsWith('data:image')) {
-      destino = 'Instalaciones';
-    }
+
+    if (String(destino).startsWith('data:image')) destino = 'Instalaciones';
 
     return `
       <tr>
@@ -186,63 +166,87 @@ function aplicarFiltrosAsistencia() {
 }
 
 // ==========================================
-// RENDER: BITÁCORA DE NOVEDADES CON FOTOS GRANDES
+// RENDER NOVEDADES CON DISEÑO DISEÑO EXACTO
 // ==========================================
-
-function renderTablaNovedades(datos) {
-  const tbody = document.getElementById('tbodyNovedades');
-  if (!tbody) return;
+function renderTarjetasNovedades(datos) {
+  const contenedor = document.getElementById('contenedorNovedades');
+  if (!contenedor) return;
 
   if (!datos || datos.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No hay novedades registradas.</td></tr>`;
+    contenedor.innerHTML = `<div class="text-center text-muted py-4 fw-bold">No hay novedades registradas.</div>`;
     return;
   }
 
-  tbody.innerHTML = datos.map(item => {
-    // 1. Fecha
+  contenedor.innerHTML = datos.map(item => {
+    // Fecha y hora
     const fecha = item.fecha_registro || item.fecha_hora || item.fecha_hora_entrada || item.created_at;
     const hFecha = fecha ? new Date(fecha).toLocaleString('es-EC') : '---';
 
-    // 2. Ubicación / Sector
+    // Sector / Ubicacion
     const sector = item.ubicacion || item.sector || item.lugar || 'Porteria';
 
-    // 3. Asunto / Novedad
+    // Asunto / Novedad
     let asunto = item.asunto || item.socio_visitante || item.novedad || 'Novedad Reportada';
-    if (String(asunto).startsWith('data:image')) {
-      asunto = 'Novedad Reportada';
-    }
+    if (String(asunto).startsWith('data:image')) asunto = 'Novedad Reportada';
 
-    // 4. Detalle / Observación
-    let detalle = item.detalle || item.observaciones || item.descripcion || 'Sin detalle registrado';
-    if (String(detalle).startsWith('data:image')) {
-      detalle = 'Sin detalle escrito';
-    }
+    // Detalle / Observacion
+    let detalle = item.detalle || item.observaciones || item.descripcion || 'Sin detalle escrito';
+    if (String(detalle).startsWith('data:image')) detalle = 'Sin detalle escrito';
 
-    // 5. Extracción Limpia de la Fotografía
+    // Recuperar foto
     let foto = item.imagen_url || item.foto_url || item.foto || '';
-    if (!foto && String(item.destino).startsWith('data:image')) {
-      foto = item.destino;
-    }
-    if (!foto && String(item.observaciones).startsWith('data:image')) {
-      foto = item.observaciones;
-    }
+    if (!foto && String(item.destino).startsWith('data:image')) foto = item.destino;
+    if (!foto && String(item.observaciones).startsWith('data:image')) foto = item.observaciones;
 
-    const imgElement = foto 
-      ? `<img src="${foto}" class="img-novedad-amplia ver-foto-btn" data-url="${foto}" alt="Foto Novedad" title="Clic para ampliar">` 
-      : '<span class="text-muted fw-bold small">- Sin Foto -</span>';
+    const fotoHTML = foto 
+      ? `<img src="${foto}" class="img-novedad-card ver-foto-btn" data-url="${foto}" alt="Evidencia Novedad" title="Clic para ampliar">`
+      : `<div class="sin-foto-box"><i class="fa-regular fa-image me-2"></i> - Sin Foto -</div>`;
 
     return `
-      <tr style="height: 110px;">
-        <td class="align-middle">${hFecha}</td>
-        <td class="align-middle"><span class="badge badge-sector">${sector}</span></td>
-        <td class="align-middle"><strong>${asunto}</strong></td>
-        <td class="align-middle" style="white-space: pre-line;">${detalle}</td>
-        <td class="align-middle text-center">${imgElement}</td>
-      </tr>
+      <div class="novedad-card">
+        <div class="row g-0 align-items-center">
+          
+          <!-- COLUMNA IZQUIERDA (DATOS CON ENCABEZADOS NEGROS) -->
+          <div class="col-md-8 col-lg-8 border-end">
+            
+            <!-- BLOQUE 1: FECHA Y ASUNTO -->
+            <div class="row g-0 novedad-header-row">
+              <div class="col-6">Fecha y Hora</div>
+              <div class="col-6">Asunto / Novedad</div>
+            </div>
+            <div class="row g-0 novedad-content-row border-bottom">
+              <div class="col-6 fw-semibold">${hFecha}</div>
+              <div class="col-6 fw-bold text-dark">${asunto}</div>
+            </div>
+
+            <!-- BLOQUE 2: UBICACIÓN Y DETALLE -->
+            <div class="row g-0 novedad-header-row">
+              <div class="col-6">Ubicación / Sector</div>
+              <div class="col-6">Detalle / Observación</div>
+            </div>
+            <div class="row g-0 novedad-content-row">
+              <div class="col-6">
+                <span class="badge-sector-red">${sector}</span>
+              </div>
+              <div class="col-6 text-secondary" style="white-space: pre-line;">${detalle}</div>
+            </div>
+
+          </div>
+
+          <!-- COLUMNA DERECHA (IMAGEN GIGANTE A LA DERECHA) -->
+          <div class="col-md-4 col-lg-4 text-center p-3 d-flex justify-content-center align-items-center bg-light">
+            <div>
+              <div class="fw-bold mb-2 text-dark d-md-none">Imagen / Evidencia</div>
+              ${fotoHTML}
+            </div>
+          </div>
+
+        </div>
+      </div>
     `;
   }).join('');
 
-  // Evento clic para abrir la foto gigante en Modal
+  // Evento modal para fotos
   document.querySelectorAll('.ver-foto-btn').forEach(img => {
     img.addEventListener('click', (e) => {
       const url = e.target.getAttribute('data-url');
@@ -267,34 +271,12 @@ function aplicarFiltrosNovedades() {
     });
   }
 
-  renderTablaNovedades(resultado);
+  renderTarjetasNovedades(resultado);
 }
 
 function activarTiempoReal() {
   supabase
-    .channel('realtime-supervisor-v5')
+    .channel('realtime-supervisor-v6')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora' }, () => cargarDatos())
     .subscribe();
-}
-
-function exportarExcel(elementId, nombreArchivo) {
-  const elemento = document.getElementById(elementId);
-  if (!elemento) return;
-  const wb = XLSX.utils.table_to_book(elemento, { sheet: "Reporte" });
-  XLSX.writeFile(wb, `${nombreArchivo}.xlsx`);
-}
-
-function exportarPDF(elementId, nombreArchivo) {
-  const elemento = document.getElementById(elementId);
-  if (!elemento) return;
-
-  const opt = {
-    margin:       0.3,
-    filename:     nombreArchivo,
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2 },
-    jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
-  };
-
-  html2pdf().set(opt).from(elemento).save();
 }
