@@ -67,8 +67,40 @@ function configurarEventos() {
   });
 }
 
+// Helper para extraer la cadena base64 de cualquier campo
+function extraerImagenBase64(item) {
+  const campos = [item.imagen_url, item.foto_url, item.foto, item.destino, item.ubicacion, item.observaciones, item.detalle, item.novedades];
+  for (let c of campos) {
+    if (typeof c === 'string' && (c.startsWith('data:image') || c.length > 200)) {
+      return c;
+    }
+  }
+  return null;
+}
+
+// Helper para limpiar textos y no mostrar la cadena base64 en la tabla
+function limpiarTexto(valor) {
+  if (!valor) return '';
+  const str = String(valor).trim();
+  if (str.startsWith('data:image') || str.length > 200) {
+    return '';
+  }
+  return str;
+}
+
+// Auxiliar para extraer 'YYYY-MM-DD' en hora local
+function obtenerFechaLocalYYYYMMDD(fechaStr) {
+  if (!fechaStr) return '';
+  const d = new Date(fechaStr);
+  if (isNaN(d.getTime())) return '';
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 // ==========================================
-// CONSULTA DE DATOS Y SEPARACIÓN ESTRICTA
+// CONSULTA DE DATOS Y CLASIFICACIÓN
 // ==========================================
 
 async function cargarDatos() {
@@ -85,17 +117,8 @@ async function cargarDatos() {
   listaNovedades = [];
 
   registros.forEach(item => {
-    const destinoStr = String(item.destino || '');
-    const obsStr = String(item.observaciones || item.novedades || item.detalle || '');
-    const fotoStr = String(item.imagen_url || item.foto_url || item.foto || '');
-
-    const esNovedad = destinoStr.startsWith('data:image') || 
-                      obsStr.startsWith('data:image') || 
-                      fotoStr.startsWith('data:image') ||
-                      fotoStr.length > 50 ||
-                      item.ubicacion || 
-                      item.sector ||
-                      item.asunto;
+    const foto = extraerImagenBase64(item);
+    const esNovedad = foto !== null || item.ubicacion || item.sector || item.asunto;
 
     if (esNovedad) {
       listaNovedades.push(item);
@@ -106,17 +129,6 @@ async function cargarDatos() {
 
   renderTablaAsistencias(listaAsistencias);
   renderTablaNovedades(listaNovedades);
-}
-
-// Auxiliar para extraer 'YYYY-MM-DD' en hora local
-function obtenerFechaLocalYYYYMMDD(fechaStr) {
-  if (!fechaStr) return '';
-  const d = new Date(fechaStr);
-  if (isNaN(d.getTime())) return '';
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
 }
 
 // ==========================================
@@ -147,8 +159,8 @@ function renderTablaAsistencias(datos) {
 
     const nombre = item.socio_visitante || item.nombre || 'Sin Nombre';
     const cedula = item.cedula || '---';
-    let destino = item.destino || 'Instalaciones';
-    let observacion = item.observaciones || item.observacion || item.detalle || 'Sin observaciones';
+    const destino = limpiarTexto(item.destino) || 'Instalaciones';
+    const observacion = limpiarTexto(item.observaciones || item.observacion || item.detalle) || 'Sin observaciones';
 
     return `
       <tr>
@@ -192,22 +204,27 @@ function renderTablaNovedades(datos) {
     const fecha = item.fecha_hora_entrada || item.created_at || item.fecha;
     const fStr = fecha ? new Date(fecha).toLocaleString('es-EC') : '---';
 
-    const asunto = item.asunto || item.socio_visitante || 'Novedad Reportada';
-    const ubicacion = item.ubicacion || item.sector || item.destino || 'General';
-    const detalle = item.observaciones || item.detalle || item.novedades || 'Sin detalle';
+    const asunto = limpiarTexto(item.asunto || item.socio_visitante) || 'Novedad Reportada';
+    
+    // Obtener la ubicación limpia sin la cadena base64
+    let ubi = limpiarTexto(item.ubicacion || item.sector || item.destino);
+    if (!ubi) ubi = 'General';
 
-    const foto = item.imagen_url || item.foto_url || item.foto || item.destino || '';
-    const tieneFoto = foto && foto.length > 50;
+    // Obtener detalle limpio
+    let detalle = limpiarTexto(item.observaciones || item.detalle || item.novedades);
+    if (!detalle) detalle = 'Sin detalle reportado';
 
-    const imgHtml = tieneFoto 
-      ? `<img src="${foto}" class="img-preview btn-ver-img" data-src="${foto}" alt="Foto">`
+    // Extraer imagen
+    const foto = extraerImagenBase64(item);
+    const imgHtml = foto 
+      ? `<img src="${foto}" class="img-preview btn-ver-img" data-src="${foto}" alt="Foto" style="width:70px; height:50px; object-fit:cover; border-radius:6px; cursor:pointer;">`
       : `<span class="badge bg-secondary">Sin Imagen</span>`;
 
     return `
       <tr>
         <td class="fw-semibold">${fStr}</td>
         <td><strong>${asunto}</strong></td>
-        <td><span class="badge bg-danger">${ubicacion}</span></td>
+        <td><span class="badge bg-danger">${ubi}</span></td>
         <td>${detalle}</td>
         <td class="text-center">${imgHtml}</td>
         <td class="text-center no-export">
@@ -231,7 +248,7 @@ function renderTablaNovedades(datos) {
 }
 
 // ==========================================
-// ACCIONES Y FILTROS EXACTOS POR FECHA
+// FILTROS, EDITAR Y ELIMINAR
 // ==========================================
 
 function aplicarFiltrosAsistencia() {
@@ -280,8 +297,8 @@ function abrirModalEditar(id) {
   document.getElementById('editId').value = reg.id;
   document.getElementById('editNombre').value = reg.socio_visitante || reg.nombre || '';
   document.getElementById('editCedula').value = reg.cedula || '';
-  document.getElementById('editDestino').value = reg.destino || '';
-  document.getElementById('editObservacion').value = reg.observaciones || reg.observacion || reg.detalle || '';
+  document.getElementById('editDestino').value = limpiarTexto(reg.destino) || '';
+  document.getElementById('editObservacion').value = limpiarTexto(reg.observaciones || reg.observacion || reg.detalle) || '';
 
   new bootstrap.Modal(document.getElementById('modalEditarAsistencia')).show();
 }
@@ -322,7 +339,7 @@ async function eliminarRegistro(id) {
 
 function activarTiempoReal() {
   supabase
-    .channel('realtime-supervisor-v3')
+    .channel('realtime-supervisor-v4')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora' }, () => cargarDatos())
     .subscribe();
 }
