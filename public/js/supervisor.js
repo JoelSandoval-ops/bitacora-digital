@@ -1,86 +1,81 @@
 import { supabase } from './supabase.js';
-import { protegerVista, cerrarSesion } from './auth-guard.js';
-
-let usuarioActivo = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Proteger vista: solo SUPERVISOR o ADMIN
-  usuarioActivo = await protegerVista('SUPERVISOR');
-  if (!usuarioActivo) return;
+  console.log("Iniciando panel de supervisión...");
 
-  document.getElementById('btnSalir')?.addEventListener('click', cerrarSesion);
+  await cargarAsistencias();
+  await cargarNovedades();
+  activarTiempoReal();
 
-  // Cargar datos iniciales en las tablas
-  cargarAsistenciasSupervisor();
-  cargarNovedadesSupervisor();
-
-  // Escuchar CAMBIOS EN TIEMPO REAL desde Supabase
-  escucharCambiosEnTiempoReal();
-
-  // Botón manual de Actualizar
-  document.querySelectorAll('.btn-actualizar, #btnActualizar').forEach(btn => {
+  // Botones de actualización manual
+  document.querySelectorAll('.btn-actualizar').forEach(btn => {
     btn.addEventListener('click', () => {
-      cargarAsistenciasSupervisor();
-      cargarNovedadesSupervisor();
+      cargarAsistencias();
+      cargarNovedades();
     });
   });
 });
 
-// 1. Cargar la Bitácora de Asistencia
-async function cargarAsistenciasSupervisor() {
-  // Busca el tbody por ID o toma el primer tbody disponible dentro de la tabla de asistencia
-  const tbody = document.getElementById('tbodyAsistencias') || document.querySelector('table tbody');
+// Cargar asistencias en vivo
+async function cargarAsistencias() {
+  const tbody = document.getElementById('tbodyAsistencia') || document.getElementById('tbodyAsistencias');
   if (!tbody) return;
 
-  const { data: registros, error } = await supabase
+  tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">Cargando datos...</td></tr>`;
+
+  const { data, error } = await supabase
     .from('bitacora_asistencia')
     .select('*')
     .order('fecha_hora_entrada', { ascending: false });
 
   if (error) {
     console.error("Error al cargar asistencias:", error);
-    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">Error al cargar datos desde Supabase.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">Error: ${error.message}</td></tr>`;
     return;
   }
 
-  if (!registros || registros.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" class="text-center">No hay registros de asistencia.</td></tr>`;
+  if (!data || data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">No hay registros de asistencia.</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = registros.map(item => {
-    const horaEntrada = item.fecha_hora_entrada 
-      ? new Date(item.fecha_hora_entrada).toLocaleString('es-EC') 
-      : '---';
+  tbody.innerHTML = data.map(item => {
+    const fEntrada = item.fecha_hora_entrada || item.created_at;
+    const hEntrada = fEntrada ? new Date(fEntrada).toLocaleString('es-EC') : '---';
 
-    const horaSalida = item.fecha_hora_salida 
-      ? `<span class="badge bg-secondary p-2">${new Date(item.fecha_hora_salida).toLocaleString('es-EC')}</span>`
-      : `<span class="badge bg-warning text-dark p-2">DENTRO DEL CLUB</span>`;
-
-    const estadoAccion = item.fecha_hora_salida 
-      ? '<span class="text-success fw-bold">✓ Completado</span>'
+    const fSalida = item.fecha_hora_salida;
+    const hSalida = fSalida 
+      ? new Date(fSalida).toLocaleString('es-EC') 
       : '<span class="badge bg-warning text-dark">DENTRO DEL CLUB</span>';
+
+    const nombre = item.socio_visitante || item.nombre || 'Sin registrar';
+    const cedula = item.cedula || '---';
+    const destino = item.destino || 'Instalaciones';
+    const obs = item.observaciones || 'Sin observaciones';
+    const estado = fSalida 
+      ? '<span class="badge bg-secondary">COMPLETADO</span>' 
+      : '<span class="badge bg-warning text-dark">ACTIVO</span>';
 
     return `
       <tr>
-        <td>${horaEntrada}</td>
-        <td>${horaSalida}</td>
-        <td><strong>${item.socio_visitante || 'Sin Nombre'}</strong></td>
-        <td class="text-danger fw-bold">${item.cedula || '---'}</td>
-        <td>${item.destino || '---'}</td>
-        <td>${item.observaciones || 'Sin observaciones'}</td>
-        <td>${estadoAccion}</td>
+        <td>${hEntrada}</td>
+        <td>${hSalida}</td>
+        <td><strong>${nombre}</strong></td>
+        <td class="text-danger fw-bold">${cedula}</td>
+        <td>${destino}</td>
+        <td class="small text-muted">${obs}</td>
+        <td>${estado}</td>
       </tr>
     `;
   }).join('');
 }
 
-// 2. Cargar Novedades / Reportes
-async function cargarNovedadesSupervisor() {
+// Cargar novedades registradas
+async function cargarNovedades() {
   const tbody = document.getElementById('tbodyNovedades');
   if (!tbody) return;
 
-  const { data: registros, error } = await supabase
+  const { data, error } = await supabase
     .from('bitacora_novedades')
     .select('*')
     .order('fecha_registro', { ascending: false });
@@ -90,37 +85,39 @@ async function cargarNovedadesSupervisor() {
     return;
   }
 
-  if (!registros || registros.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" class="text-center">No hay novedades registradas.</td></tr>`;
+  if (!data || data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No hay novedades registradas.</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = registros.map(item => `
-    <tr>
-      <td>${new Date(item.fecha_registro).toLocaleString('es-EC')}</td>
-      <td>${item.guardia_nombre || 'Guardia'}</td>
-      <td>${item.descripcion}</td>
-      <td>
-        ${item.imagen_url 
-          ? `<a href="${item.imagen_url}" target="_blank" class="btn btn-sm btn-outline-primary">Ver Foto</a>` 
-          : '<span class="text-muted">Sin evidencia</span>'}
-      </td>
-      <td><span class="badge bg-warning text-dark">${item.estado}</span></td>
-    </tr>
-  `).join('');
+  tbody.innerHTML = data.map(item => {
+    const fecha = item.fecha_registro || item.fecha_hora || item.created_at;
+    const hFecha = fecha ? new Date(fecha).toLocaleString('es-EC') : '---';
+    const guardia = item.guardia_nombre || item.guardia_registro || 'Guardia';
+    const detalle = item.descripcion || item.observacion_guardia || item.asunto || 'Sin detalle';
+    const foto = item.imagen_url || item.foto_url;
+
+    return `
+      <tr>
+        <td>${hFecha}</td>
+        <td><strong>${guardia}</strong></td>
+        <td>${detalle}</td>
+        <td>
+          ${foto 
+            ? `<a href="${foto}" target="_blank" class="btn btn-sm btn-outline-success"><i class="fa-solid fa-image me-1"></i>Ver Foto</a>` 
+            : '<span class="text-muted">Sin Foto</span>'}
+        </td>
+        <td><span class="badge bg-warning text-dark">${item.estado || 'PENDIENTE'}</span></td>
+      </tr>
+    `;
+  }).join('');
 }
 
-// 3. SUSCRIPCIÓN EN TIEMPO REAL (Escucha INSERT y UPDATE)
-function escucharCambiosEnTiempoReal() {
+// Escuchar cambios en tiempo real desde Supabase
+function activarTiempoReal() {
   supabase
-    .channel('cambios-bitacora-supervisor')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora_asistencia' }, payload => {
-      console.log('Cambio en Asistencia detectado:', payload);
-      cargarAsistenciasSupervisor();
-    })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora_novedades' }, payload => {
-      console.log('Cambio en Novedades detectado:', payload);
-      cargarNovedadesSupervisor();
-    })
+    .channel('realtime-supervisor-global')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora_asistencia' }, () => cargarAsistencias())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'bitacora_novedades' }, () => cargarNovedades())
     .subscribe();
 }
