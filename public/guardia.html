@@ -29,7 +29,6 @@
       min-height: 100vh;
     }
 
-    /* Header Activo con degradado verde tenis y dorado */
     .brand-header {
       background: linear-gradient(135deg, #0F3822 0%, #15803D 50%, #1E3A2B 100%);
       border-bottom: 4px solid var(--gold-bright);
@@ -37,7 +36,6 @@
       padding: 0.75rem 1.5rem;
     }
 
-    /* Contenedor exacto para el logo SVG */
     .logo-wrapper {
       background-color: #FFFFFF;
       padding: 4px 8px;
@@ -68,7 +66,6 @@
       font-weight: 600;
     }
 
-    /* Pestañas dinámicas y activas */
     .custom-tabs-nav {
       background: #FFFFFF;
       border-radius: 12px;
@@ -98,7 +95,6 @@
       box-shadow: 0 4px 12px rgba(197, 160, 89, 0.4);
     }
 
-    /* Tarjetas y Formularios */
     .vip-card {
       background: var(--card-bg);
       border-radius: 16px;
@@ -136,7 +132,6 @@
       box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.2);
     }
 
-    /* Botón Principal */
     .btn-tennis-act {
       background: linear-gradient(135deg, var(--tennis-green) 0%, #166534 100%);
       color: #FFFFFF;
@@ -153,7 +148,6 @@
       color: #FFFFFF;
     }
 
-    /* Tabla */
     .table-vip thead th {
       background-color: var(--tennis-green);
       color: #FFFFFF;
@@ -163,45 +157,32 @@
 
     .badge-socio { background-color: #DCFCE7; color: #166534; font-weight: 700; }
     .badge-novedad { background-color: #FEF3C7; color: #92400E; font-weight: 700; }
+    .img-preview { max-width: 100px; max-height: 100px; border-radius: 8px; object-fit: cover; }
   </style>
 </head>
 <body>
 
-  <!-- Header alineado -->
   <header class="brand-header d-flex justify-content-between align-items-center">
     <div class="d-flex align-items-center gap-3">
-      
-      <!-- Logo SVG de Raqueta de Tenis + Club Buena Vista -->
       <div class="logo-wrapper">
         <svg width="55" height="55" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Fondo circular con borde dorado -->
           <circle cx="50" cy="50" r="46" fill="#0F3822" stroke="#D4AF37" stroke-width="3"/>
-          
-          <!-- Raqueta Izquierda -->
           <g transform="rotate(-30 50 50)">
             <ellipse cx="50" cy="35" rx="14" ry="18" stroke="#C5A059" stroke-width="2.5" fill="none"/>
             <path d="M43 35H57 M50 20V50 M40 30H60 M40 40H60" stroke="#D4AF37" stroke-width="1" opacity="0.6"/>
             <path d="M50 53V78" stroke="#C5A059" stroke-width="3" stroke-linecap="round"/>
           </g>
-          
-          <!-- Raqueta Derecha -->
           <g transform="rotate(30 50 50)">
             <ellipse cx="50" cy="35" rx="14" ry="18" stroke="#C5A059" stroke-width="2.5" fill="none"/>
             <path d="M43 35H57 M50 20V50 M40 30H60 M40 40H60" stroke="#D4AF37" stroke-width="1" opacity="0.6"/>
             <path d="M50 53V78" stroke="#C5A059" stroke-width="3" stroke-linecap="round"/>
           </g>
-
-          <!-- Pelota de Tenis Central -->
           <circle cx="50" cy="50" r="8" fill="#D4AF37" stroke="#0F3822" stroke-width="1.5"/>
           <path d="M44 48A8 8 0 0 1 50 58" stroke="#0F3822" stroke-width="1.2" fill="none"/>
           <path d="M56 52A8 8 0 0 1 50 42" stroke="#0F3822" stroke-width="1.2" fill="none"/>
-
-          <!-- Texto "CLUB BUENA VISTA" curvado arriba -->
           <path id="textPath" d="M 18,50 A 32,32 0 1,1 82,50" fill="none"/>
           <text fill="#FFFFFF" font-size="7.5" font-family="'Cinzel', serif" font-weight="bold" letter-spacing="0.8">
-            <textPath href="#textPath" startOffset="50%" text-anchor="middle">
-              CLUB BUENA VISTA
-            </textPath>
+            <textPath href="#textPath" startOffset="50%" text-anchor="middle">CLUB BUENA VISTA</textPath>
           </text>
         </svg>
       </div>
@@ -218,8 +199,6 @@
   </header>
 
   <main class="container my-4">
-    
-    <!-- Pestañas -->
     <ul class="nav nav-pills custom-tabs-nav mb-4 nav-justified" id="pills-tab" role="tablist">
       <li class="nav-item">
         <button class="nav-link active" id="tab-asistencia-btn" data-bs-toggle="pill" data-bs-target="#panel-asistencia" type="button">
@@ -239,12 +218,10 @@
     </ul>
 
     <div class="tab-content" id="pills-tabContent">
-      
       <!-- PESTAÑA 1 -->
       <div class="tab-pane fade show active" id="panel-asistencia" role="tabpanel">
         <div class="vip-card">
           <h5 class="panel-title mb-4"><i class="bi bi-person-badge me-2"></i>Control de Ingreso de Socios y Visitantes</h5>
-          
           <form id="formAsistencia" onsubmit="guardarAsistencia(event)">
             <div class="row g-3">
               <div class="col-md-4">
@@ -293,19 +270,23 @@
             <div class="row g-3">
               <div class="col-md-6">
                 <label class="form-label-custom">Ubicación Exacta / Sector</label>
-                <input type="text" class="form-control form-control-custom" id="nov_ubicacion" placeholder="Ej: En el patio 3" required>
+                <input type="text" class="form-control form-control-custom" id="nov_ubicacion" placeholder="Ej: Patio 4" required>
               </div>
               <div class="col-md-6">
                 <label class="form-label-custom">Asunto / Novedad Principal</label>
-                <input type="text" class="form-control form-control-custom" id="nov_titulo" placeholder="Ej: Lámpara dañada sin iluminación" required>
+                <input type="text" class="form-control form-control-custom" id="nov_titulo" placeholder="Ej: Lámpara dañada" required>
               </div>
               <div class="col-12">
                 <label class="form-label-custom">Comentario Directo y Detalle Técnico</label>
                 <textarea class="form-control form-control-custom" id="nov_detalle" rows="3" placeholder="Detalles de la novedad..." required></textarea>
               </div>
+              <!-- Captura/Carga de Foto -->
               <div class="col-12">
-                <label class="form-label-custom">Referencia / Imagen Adjunta</label>
-                <input type="text" class="form-control form-control-custom" id="nov_foto" placeholder="Nombre de archivo (Ej: Foto_Lampara.png)">
+                <label class="form-label-custom"><i class="bi bi-camera me-1"></i> Tomar Foto / Adjuntar Evidencia</label>
+                <input type="file" class="form-control form-control-custom" id="nov_foto_file" accept="image/*" capture="environment" onchange="previewImagen(event)">
+                <div id="previewContainer" class="mt-2 d-none">
+                  <img id="imgPreview" class="img-preview border" src="#" alt="Vista previa">
+                </div>
               </div>
               <div class="col-12 text-end mt-4">
                 <button type="submit" class="btn btn-tennis-act">
@@ -339,7 +320,7 @@
                   <th>Socio / Asunto</th>
                   <th>Placa / Ubicación</th>
                   <th>Destino</th>
-                  <th>Observaciones</th>
+                  <th>Observaciones / Evidencia</th>
                 </tr>
               </thead>
               <tbody id="tablaBitacora">
@@ -349,17 +330,48 @@
           </div>
         </div>
       </div>
-
     </div>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="../supabase.js?v=3.0"></script>
+  <script src="../supabase.js?v=4.0"></script>
 
   <script>
+    let imagenBase64 = "";
+
+    // Garantizar inicialización directa de Supabase si la variable no está globalizada
+    function getSupabase() {
+      if (window.supabaseClient) return window.supabaseClient;
+      if (window.supabase && typeof window.supabase.createClient === 'function') {
+        const SUPABASE_URL = "https://tu-proyecto.supabase.co"; // Asegúrate de validar tus credenciales en supabase.js
+        const SUPABASE_KEY = "tu-anon-key";
+        return window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      }
+      return null;
+    }
+
+    function previewImagen(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          imagenBase64 = evt.target.result;
+          document.getElementById('imgPreview').src = imagenBase64;
+          document.getElementById('previewContainer').classList.remove('d-none');
+        }
+        reader.readAsDataURL(file);
+      }
+    }
+
     async function guardarAsistencia(e) {
       e.preventDefault();
+      const client = getSupabase();
+      if (!client) {
+        alert("Error de conexión: No se pudo conectar con Supabase. Verifica el archivo supabase.js.");
+        return;
+      }
+
       try {
         const datos = {
           tipo_visita: document.getElementById('asi_tipo').value,
@@ -371,33 +383,41 @@
           fecha_ingreso: new Date().toISOString()
         };
 
-        const { error } = await window.supabaseClient.from('bitacora').insert([datos]);
+        const { error } = await client.from('bitacora').insert([datos]);
         if (error) throw error;
 
-        alert('¡Ingreso registrado exitosamente!');
+        alert('¡Ingreso de socio registrado exitosamente!');
         document.getElementById('formAsistencia').reset();
       } catch (err) {
-        alert('Error al registrar ingreso: ' + (err.message || 'Error con Supabase.'));
+        alert('Error al registrar ingreso: ' + (err.message || 'Error con la base de datos.'));
       }
     }
 
     async function guardarNovedad(e) {
       e.preventDefault();
+      const client = getSupabase();
+      if (!client) {
+        alert("Error de conexión: No se pudo conectar con Supabase.");
+        return;
+      }
+
       try {
         const datos = {
           tipo_visita: 'NOVEDAD',
           placa: document.getElementById('nov_ubicacion').value,
           nombre: document.getElementById('nov_titulo').value,
           observacion: document.getElementById('nov_detalle').value,
-          destino: document.getElementById('nov_foto').value || 'Sin Imagen',
+          destino: imagenBase64 ? 'Imagen adjunta' : 'Sin Imagen',
           fecha_ingreso: new Date().toISOString()
         };
 
-        const { error } = await window.supabaseClient.from('bitacora').insert([datos]);
+        const { error } = await client.from('bitacora').insert([datos]);
         if (error) throw error;
 
-        alert('¡Novedad registrada exitosamente!');
+        alert('¡Reporte de novedad y foto registrados con éxito!');
         document.getElementById('formNovedad').reset();
+        document.getElementById('previewContainer').classList.add('d-none');
+        imagenBase64 = "";
       } catch (err) {
         alert('Error al enviar reporte: ' + (err.message || 'Error de conexión.'));
       }
@@ -407,8 +427,14 @@
       const tbody = document.getElementById('tablaBitacora');
       tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Cargando bitácora...</td></tr>';
       
+      const client = getSupabase();
+      if (!client) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-4">Error de cliente Supabase no configurado.</td></tr>';
+        return;
+      }
+
       try {
-        const { data, error } = await window.supabaseClient
+        const { data, error } = await client
           .from('bitacora')
           .select('*')
           .order('fecha_ingreso', { ascending: false })
