@@ -199,30 +199,93 @@
     </div>
   </header>
 
-  <main class="container-fluid px-4 mb-4">
+  <main class="container px-4 mb-4" style="max-width: 1200px;">
 
+    <!-- Navegación de Pestañas Simplificada -->
     <ul class="nav nav-pills custom-tabs-nav mb-4 nav-justified" id="pills-tab" role="tablist">
       <li class="nav-item">
-        <button class="nav-link active" id="tab-dashboard" data-bs-toggle="pill" data-bs-target="#pills-dashboard" type="button">
-          <i class="bi bi-bar-chart-line-fill me-2"></i> 1. Estadísticas & Eficiencia
+        <button class="nav-link active" id="tab-registro" data-bs-toggle="pill" data-bs-target="#pills-registro" type="button">
+          <i class="bi bi-person-plus-fill me-2"></i> 1. Registro de Personal
         </button>
       </li>
       <li class="nav-item">
-        <button class="nav-link" id="tab-personal" data-bs-toggle="pill" data-bs-target="#pills-personal" type="button">
-          <i class="bi bi-people-fill me-2"></i> 2. Control de Personal & Accesos
+        <button class="nav-link" id="tab-directorio" data-bs-toggle="pill" data-bs-target="#pills-directorio" type="button">
+          <i class="bi bi-people-fill me-2"></i> 2. Directorio de Personal & Accesos
         </button>
       </li>
       <li class="nav-item">
-        <button class="nav-link" id="tab-sedes-bitacora" data-bs-toggle="pill" data-bs-target="#pills-sedes-bitacora" type="button">
-          <i class="bi bi-building-fill me-2"></i> 3. Gestor de Sedes & Bitácora Global
+        <button class="nav-link" id="tab-dashboard" data-bs-toggle="pill" data-bs-target="#pills-dashboard" type="button">
+          <i class="bi bi-bar-chart-line-fill me-2"></i> 3. Estadísticas & Eficiencia
         </button>
       </li>
     </ul>
 
     <div class="tab-content" id="pills-tabContent">
 
-      <!-- Pestaña 1: Dashboard -->
-      <div class="tab-pane fade show active" id="pills-dashboard" role="tabpanel">
+      <!-- Pestaña 1: Registro de Personal -->
+      <div class="tab-pane fade show active" id="pills-registro" role="tabpanel">
+        <div class="row justify-content-center">
+          <div class="col-12 col-md-8 col-lg-6">
+            <div class="vip-card border-start border-success border-4">
+              <h5 class="panel-title mb-4 text-center"><i class="bi bi-person-plus-fill me-2"></i>Registrar Nuevo Acceso</h5>
+              <form id="formUsuario">
+                <input type="hidden" id="userId">
+                <div class="mb-3">
+                  <label class="form-label-custom">Nombre Completo</label>
+                  <input type="text" id="uNombre" class="form-control form-control-custom" placeholder="Ej: Juan Pérez" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label-custom">Usuario / Correo</label>
+                  <input type="text" id="uUsuario" class="form-control form-control-custom" placeholder="jperez" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label-custom">Contraseña</label>
+                  <input type="password" id="uPassword" class="form-control form-control-custom" placeholder="******" required>
+                </div>
+                <div class="mb-4">
+                  <label class="form-label-custom">Rol de Acceso</label>
+                  <select id="uRol" class="form-select form-select-custom fw-semibold" required>
+                    <option value="GUARDIA">GUARDIA</option>
+                    <option value="SUPERVISOR">SUPERVISOR</option>
+                  </select>
+                </div>
+                <button type="submit" class="btn btn-tennis-act w-100 py-3 text-uppercase fw-bold">
+                  <i class="bi bi-save me-2"></i> Registrar y Otorgar Acceso
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pestaña 2: Directorio de Personal & Accesos -->
+      <div class="tab-pane fade" id="pills-directorio" role="tabpanel">
+        <div class="vip-card">
+          <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <h5 class="panel-title mb-0"><i class="bi bi-shield-lock me-2"></i>Directorio de Personal Registrado</h5>
+            <input type="text" id="inputBuscarPersonal" class="form-control form-control-custom w-auto ms-auto" placeholder="Buscar por Nombre, Usuario o Rol...">
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-dark">
+                <tr>
+                  <th>NOMBRE COMPLETO</th>
+                  <th>USUARIO</th>
+                  <th>ROL DE ACCESO</th>
+                  <th>CONTRASEÑA</th>
+                  <th class="text-end">ACCIONES</th>
+                </tr>
+              </thead>
+              <tbody id="tablaUsuarios">
+                <tr><td colspan="5" class="text-center py-4 text-muted">Cargando usuarios...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pestaña 3: Estadísticas & Eficiencia -->
+      <div class="tab-pane fade" id="pills-dashboard" role="tabpanel">
         <div class="row g-3 mb-4">
           <div class="col-12 col-md-4">
             <div class="vip-card p-3 border-start border-primary border-4">
@@ -251,7 +314,7 @@
               <thead class="table-dark">
                 <tr>
                   <th>NOMBRE DEL USUARIO</th>
-                  <th>SEDE ASIGNADA</th>
+                  <th>ROL</th>
                   <th>REGISTROS REALIZADOS</th>
                   <th>TIEMPO ESTIMADO EN APP</th>
                   <th>CUMPLIMIENTO</th>
@@ -260,156 +323,6 @@
               </thead>
               <tbody id="tablaEficienciaGuardias">
                 <tr><td colspan="6" class="text-center py-4 text-muted">Cargando métricas de rendimiento...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Pestaña 2: Personal -->
-      <div class="tab-pane fade" id="pills-personal" role="tabpanel">
-        <div class="row g-3">
-          <div class="col-12 col-md-4">
-            <div class="vip-card border-start border-success border-4">
-              <h5 class="panel-title mb-3"><i class="bi bi-person-plus-fill me-2"></i>Registrar Personal</h5>
-              <form id="formUsuario">
-                <input type="hidden" id="userId">
-                <div class="mb-3">
-                  <label class="form-label-custom">Nombre Completo</label>
-                  <input type="text" id="uNombre" class="form-control form-control-custom" placeholder="Ej: Juan Pérez" required>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label-custom">Usuario / Correo</label>
-                  <input type="text" id="uUsuario" class="form-control form-control-custom" placeholder="jperez" required>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label-custom">Contraseña</label>
-                  <input type="password" id="uPassword" class="form-control form-control-custom" placeholder="******" required>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label-custom">Rol de Acceso</label>
-                  <select id="uRol" class="form-select form-select-custom fw-semibold" required>
-                    <option value="GUARDIA">GUARDIA</option>
-                    <option value="SUPERVISOR">SUPERVISOR</option>
-                  </select>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label-custom">Sede Asignada</label>
-                  <select id="uSede" class="form-select form-select-custom fw-semibold" required>
-                    <option value="Club Buena Vista - Charles Darwin, 170102 Quito" selected>
-                      Club Buena Vista - Charles Darwin, 170102 Quito
-                    </option>
-                  </select>
-                </div>
-                <button type="submit" class="btn btn-tennis-act w-100 py-2">
-                  <i class="bi bi-save me-1"></i> Guardar Usuario
-                </button>
-              </form>
-            </div>
-          </div>
-
-          <div class="col-12 col-md-8">
-            <div class="vip-card">
-              <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                <h5 class="panel-title mb-0"><i class="bi bi-shield-lock me-2"></i>Directorio de Personal & Gestión de Accesos</h5>
-                <input type="text" id="inputBuscarPersonal" class="form-control form-control-custom w-auto ms-auto" placeholder="Buscar por Nombre, Usuario o Rol...">
-              </div>
-              <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                  <thead class="table-dark">
-                    <tr>
-                      <th>NOMBRE</th>
-                      <th>USUARIO</th>
-                      <th>ROL</th>
-                      <th>SEDE</th>
-                      <th class="text-end">ACCIONES / CLAVE</th>
-                    </tr>
-                  </thead>
-                  <tbody id="tablaUsuarios">
-                    <tr><td colspan="5" class="text-center py-4 text-muted">Cargando usuarios...</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Pestaña 3: Sedes y Bitácora -->
-      <div class="tab-pane fade" id="pills-sedes-bitacora" role="tabpanel">
-        <div class="row g-3 mb-4">
-          <div class="col-12 col-md-4">
-            <div class="vip-card border-start border-success border-4">
-              <h5 class="panel-title mb-3"><i class="bi bi-building-add me-2"></i>Registrar Sede / Club</h5>
-              <form id="formSede">
-                <div class="mb-3">
-                  <label class="form-label-custom">Nombre de la Sede</label>
-                  <input type="text" id="sNombre" class="form-control form-control-custom" placeholder="Ej: Buena Vista Cumbayá" required>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label-custom">Ubicación / Sector</label>
-                  <input type="text" id="sUbicacion" class="form-control form-control-custom" placeholder="Ej: Av. Interoceánica Km 12" required>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label-custom">Aforo Máximo</label>
-                  <input type="number" id="sCapacidad" class="form-control form-control-custom" placeholder="500" required>
-                </div>
-                <button type="submit" class="btn btn-tennis-act w-100 py-2">
-                  <i class="bi bi-plus-circle me-1"></i> Crear Sede
-                </button>
-              </form>
-            </div>
-          </div>
-
-          <div class="col-12 col-md-8">
-            <div class="vip-card">
-              <h5 class="panel-title mb-3"><i class="bi bi-houses me-2"></i>Sedes Operativas</h5>
-              <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                  <thead class="table-dark">
-                    <tr>
-                      <th>CLUB / SEDE</th>
-                      <th>UBICACIÓN</th>
-                      <th>AFORO MÁXIMO</th>
-                      <th class="text-end">ACCIONES</th>
-                    </tr>
-                  </thead>
-                  <tbody id="tablaSedes">
-                    <tr><td colspan="4" class="text-center py-4 text-muted">Cargando sedes...</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="vip-card">
-          <div class="row align-items-center mb-3 g-2">
-            <div class="col-12 col-md-6">
-              <h5 class="panel-title mb-0"><i class="bi bi-journal-check me-2"></i>Bitácora Global & Auditoría</h5>
-            </div>
-            <div class="col-12 col-md-6 d-flex gap-2">
-              <input type="text" id="inputBuscarGlobal" class="form-control form-control-custom" placeholder="Filtrar por Nombre, Placa o Guardia...">
-              <button id="btnExportar" class="btn btn-tennis-act text-nowrap">
-                <i class="bi bi-file-earmark-excel-fill me-1"></i> Exportar CSV
-              </button>
-            </div>
-          </div>
-
-          <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-              <thead class="table-dark">
-                <tr>
-                  <th>FECHA/HORA</th>
-                  <th>TIPO</th>
-                  <th>SOCIO / VISITANTE</th>
-                  <th>PLACA / CI</th>
-                  <th>DESTINO</th>
-                  <th>REGISTRADO POR</th>
-                </tr>
-              </thead>
-              <tbody id="tablaBitacoraGlobal">
-                <tr><td colspan="6" class="text-center py-4 text-muted">Cargando bitácora global...</td></tr>
               </tbody>
             </table>
           </div>
