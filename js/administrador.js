@@ -6,14 +6,18 @@ const SEDE_DEFAULT = 'Club Buena Vista - Charles Darwin, 170102 Quito';
 let usuariosGlobal = [];
 
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('📌 Administrador JS Cargado Correctamente');
+
   // Cargar datos al iniciar
   cargarPersonal();
   cargarDashboardStats();
 
-  // Event Listeners
+  // Escuchar el evento de envío del formulario de registro
   const formUsuario = document.getElementById('formUsuario');
   if (formUsuario) {
     formUsuario.addEventListener('submit', guardarUsuario);
+  } else {
+    console.warn('⚠️ No se encontró el elemento #formUsuario en el DOM');
   }
 
   const inputBuscarPersonal = document.getElementById('inputBuscarPersonal');
@@ -38,44 +42,67 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function guardarUsuario(e) {
   e.preventDefault();
+  console.log('🚀 Iniciando proceso de registro...');
 
   const btnSubmit = e.target.querySelector('button[type="submit"]');
   const textoOriginal = btnSubmit ? btnSubmit.innerHTML : '';
 
+  // Obtención de valores de los inputs del formulario
+  const inputNombre = document.getElementById('uNombre') || document.querySelector('input[placeholder*="Juan"]');
+  const inputUsuario = document.getElementById('uUsuario') || document.querySelector('input[placeholder*="jperez"]');
+  const inputPassword = document.getElementById('uPassword') || document.querySelector('input[type="password"]');
+  const inputRol = document.getElementById('uRol') || document.querySelector('select');
+
+  const nombreVal = inputNombre ? inputNombre.value.trim() : '';
+  const usuarioVal = inputUsuario ? inputUsuario.value.trim() : '';
+  const passwordVal = inputPassword ? inputPassword.value.trim() : '';
+  const rolVal = inputRol ? inputRol.value : 'GUARDIA';
+
+  // Validación básica
+  if (!nombreVal || !usuarioVal || !passwordVal) {
+    alert('⚠️ Por favor completa todos los campos (Nombre, Usuario y Contraseña).');
+    return;
+  }
+
   if (btnSubmit) {
     btnSubmit.disabled = true;
-    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Guardando...';
+    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Guardando en Supabase...';
   }
 
   const payload = {
-    nombre: document.getElementById('uNombre').value.trim(),
-    usuario: document.getElementById('uUsuario').value.trim(),
-    password: document.getElementById('uPassword').value.trim(),
-    rol: document.getElementById('uRol').value,
+    nombre: nombreVal,
+    usuario: usuarioVal,
+    password: passwordVal,
+    rol: rolVal,
     sede: SEDE_DEFAULT
   };
 
+  console.log('📦 Enviando datos a Supabase:', payload);
+
   try {
-    // 1. Guardar en Supabase (Backup en la nube)
+    // 1. Guardar en la tabla 'usuarios' de Supabase
     const { data, error } = await supabase.from('usuarios').insert([payload]).select();
-    if (error) throw error;
+
+    if (error) {
+      console.error('❌ Error de Supabase al insertar:', error);
+      throw error;
+    }
+
+    console.log('✅ Usuario registrado exitosamente en Supabase:', data);
+    alert('🎉 ¡Usuario registrado con éxito!');
 
     const usuarioCreado = data && data.length > 0 ? data[0] : null;
 
     // 2. Limpiar el formulario
-    document.getElementById('formUsuario').reset();
+    e.target.reset();
 
-    // 3. Recargar la lista de usuarios
+    // 3. Recargar la lista de usuarios desde Supabase
     await cargarPersonal();
 
-    // 4. Cambiar automáticamente a la Pestaña 2 (Directorio)
-    const tabDirectorioBtn = document.getElementById('tab-directorio');
-    if (tabDirectorioBtn) {
-      const bsTab = new bootstrap.Tab(tabDirectorioBtn);
-      bsTab.show();
-    }
+    // 4. Cambiar automáticamente a la Pestaña 2
+    activarPestañaDirectorio();
 
-    // 5. Resaltar la fila recién creada si existe en la tabla
+    // 5. Resaltar la fila en la tabla de la Pestaña 2
     if (usuarioCreado) {
       setTimeout(() => {
         const filaNueva = document.querySelector(`tr[data-user-id="${usuarioCreado.id}"]`);
@@ -84,11 +111,11 @@ async function guardarUsuario(e) {
           filaNueva.scrollIntoView({ behavior: 'smooth', block: 'center' });
           setTimeout(() => filaNueva.classList.remove('table-success'), 3500);
         }
-      }, 300);
+      }, 400);
     }
 
   } catch (err) {
-    alert('Error al registrar usuario: ' + err.message);
+    alert('❌ Error al registrar en la base de datos:\n' + (err.message || err.details || 'Error desconocido'));
   } finally {
     if (btnSubmit) {
       btnSubmit.disabled = false;
@@ -97,24 +124,45 @@ async function guardarUsuario(e) {
   }
 }
 
-// Cargar Directorio de Personal
+// Función auxiliar para forzar el cambio a la Pestaña 2
+function activarPestañaDirectorio() {
+  // Intento 1: Vía Bootstrap Tab API
+  const tabDirectorioBtn = document.getElementById('tab-directorio') || 
+                            document.querySelector('button[data-bs-target*="directorio"]') ||
+                            document.querySelectorAll('.nav-link, .btn')[1];
+
+  if (tabDirectorioBtn) {
+    try {
+      const bsTab = new bootstrap.Tab(tabDirectorioBtn);
+      bsTab.show();
+    } catch (err) {
+      // Intento 2: Clic simulado
+      tabDirectorioBtn.click();
+    }
+  }
+}
+
+// Cargar Directorio de Personal desde Supabase
 async function cargarPersonal() {
   try {
+    console.log('🔄 Cargando lista de personal desde Supabase...');
     const { data: usuarios, error } = await supabase
       .from('usuarios')
       .select('*')
       .order('id', { ascending: false });
 
     if (error) throw error;
+
+    console.log('📋 Usuarios obtenidos:', usuarios);
     usuariosGlobal = usuarios || [];
 
     renderTablaPersonal(usuariosGlobal);
     renderMétricasGuardias(usuariosGlobal);
   } catch (err) {
-    console.error('Error cargando personal:', err.message);
+    console.error('❌ Error cargando usuarios:', err.message);
     const tbody = document.getElementById('tablaUsuarios');
     if (tbody) {
-      tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Error al obtener usuarios.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Error al obtener usuarios: ${err.message}</td></tr>`;
     }
   }
 }
@@ -122,10 +170,13 @@ async function cargarPersonal() {
 // Renderizar Tabla de Personal en Pestaña 2
 function renderTablaPersonal(lista) {
   const tbody = document.getElementById('tablaUsuarios');
-  if (!tbody) return;
+  if (!tbody) {
+    console.warn('⚠️ Elemento #tablaUsuarios no encontrado en el HTML');
+    return;
+  }
 
   if (lista.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No hay personal registrado.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No hay personal registrado aún.</td></tr>`;
     return;
   }
 
@@ -150,7 +201,7 @@ function renderTablaPersonal(lista) {
     </tr>
   `).join('');
 
-  // Re-asignar eventos a los botones de acción
+  // Eventos para botones
   document.querySelectorAll('.btn-reset-clave').forEach(btn => {
     btn.addEventListener('click', (e) => abrirModalResetClave(
       e.currentTarget.getAttribute('data-id'),
@@ -163,7 +214,7 @@ function renderTablaPersonal(lista) {
   });
 }
 
-// Filtrar Personal en Pestaña 2
+// Filtrar Personal
 function filtrarPersonal(e) {
   const busqueda = e.target.value.toLowerCase().trim();
   const filtrados = usuariosGlobal.filter(u => 
@@ -188,11 +239,15 @@ async function eliminarUsuario(id) {
   }
 }
 
-// Modal Reset Clave
+// Reset Clave Modal
 function abrirModalResetClave(id, nombre) {
-  document.getElementById('resetUserId').value = id;
-  document.getElementById('resetUserNombre').value = nombre;
-  document.getElementById('resetNuevaClave').value = '';
+  const resetId = document.getElementById('resetUserId');
+  const resetNombre = document.getElementById('resetUserNombre');
+  const resetClave = document.getElementById('resetNuevaClave');
+
+  if (resetId) resetId.value = id;
+  if (resetNombre) resetNombre.value = nombre;
+  if (resetClave) resetClave.value = '';
   
   const modalEl = document.getElementById('modalResetPassword');
   if (modalEl) {
@@ -238,11 +293,7 @@ async function cargarDashboardStats() {
   try {
     const hoy = new Date().toISOString().split('T')[0];
 
-    const { data: bitacora, error } = await supabase
-      .from('bitacora')
-      .select('*');
-
-    if (error) throw error;
+    const { data: bitacora } = await supabase.from('bitacora').select('*');
 
     const registrosHoy = (bitacora || []).filter(item => {
       const fechaRegistro = item.created_at ? item.created_at.split('T')[0] : '';
@@ -254,15 +305,14 @@ async function cargarDashboardStats() {
 
     const kpiEficiencia = document.getElementById('kpiEficiencia');
     if (kpiEficiencia) {
-      const efectividad = registrosHoy.length > 0 ? 98.5 : 100;
-      kpiEficiencia.innerText = `${efectividad}%`;
+      kpiEficiencia.innerText = registrosHoy.length > 0 ? '98.5%' : '100%';
     }
 
     const kpiInactivos = document.getElementById('kpiInactivos');
     if (kpiInactivos) kpiInactivos.innerText = '0';
 
   } catch (err) {
-    console.error('Error cargando estadísticas:', err.message);
+    console.warn('Métricas no cargadas:', err.message);
   }
 }
 
