@@ -1,61 +1,108 @@
-import { supabase } from './supabase.js';
+import { supabase } from './supabaseClient.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const loginForm = document.getElementById('loginForm') || document.querySelector('form');
+  const errorBox = document.getElementById('errorMessage');
+  const btnSubmit = document.getElementById('btnSubmit') || loginForm?.querySelector('button[type="submit"]');
 
   if (!loginForm) return;
+
+  // Mostrar alertas de error
+  function showError(msg) {
+    if (errorBox) {
+      errorBox.textContent = msg;
+      errorBox.style.display = 'block';
+    } else {
+      alert(msg);
+    }
+  }
+
+  // Restaurar estado original del botón
+  function resetSubmitButton() {
+    if (btnSubmit) {
+      btnSubmit.disabled = false;
+      btnSubmit.textContent = 'Ingresar';
+    }
+  }
 
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // Obtener campos de entrada
-    const correoInput = document.getElementById('correo') || document.querySelector('input[type="email"]');
-    const passwordInput = document.getElementById('password') || document.querySelector('input[type="password"]');
+    if (errorBox) errorBox.style.display = 'none';
 
-    const correo = correoInput?.value.trim();
-    const password = passwordInput?.value.trim();
+    // Capturar valor del campo usuario o correo
+    const userInput = document.getElementById('correo') || 
+                      document.getElementById('usuario') || 
+                      document.querySelector('input[type="text"]') || 
+                      document.querySelector('input[type="email"]');
 
-    if (!correo || !password) {
-      alert('Por favor, ingresa tu correo y contraseña.');
+    const passwordInput = document.getElementById('password') || 
+                          document.querySelector('input[type="password"]');
+
+    const usuarioVal = userInput?.value.trim();
+    const passwordVal = passwordInput?.value.trim();
+
+    if (!usuarioVal || !passwordVal) {
+      showError('Por favor, ingresa tu usuario/correo y contraseña.');
       return;
     }
 
+    if (btnSubmit) {
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = 'Ingresando...';
+    }
+
     try {
-      // Consulta directa a la tabla usuarios en Supabase
+      // Búsqueda flexible: permite autenticar si ingresa nombre de usuario O correo electrónico
       const { data: usuario, error } = await supabase
         .from('usuarios')
         .select('*')
-        .eq('correo', correo)
-        .eq('password', password)
+        .or(`usuario.eq.${usuarioVal},correo.eq.${usuarioVal}`)
+        .eq('password', passwordVal)
         .maybeSingle();
 
       if (error) {
         console.error('Error de Supabase:', error);
-        alert('Error al verificar credenciales.');
+        showError('Error de conexión al verificar credenciales.');
+        resetSubmitButton();
         return;
       }
 
       if (!usuario) {
-        alert('Credenciales incorrectas. Verifique el correo y la contraseña.');
+        showError('Credenciales incorrectas. Verifique sus datos.');
+        resetSubmitButton();
         return;
       }
 
-      // Guardar usuario en LocalStorage
-      localStorage.setItem('usuarioSesion', JSON.stringify(usuario));
+      // Guardar sesión en la clave leída por el panel administrativo
+      localStorage.setItem('user_bv', JSON.stringify(usuario));
 
-      // Redireccionar por rol
-      if (usuario.rol === 'ADMIN') {
-        window.location.href = 'administrador.html';
-      } else if (usuario.rol === 'SUPERVISOR') {
-        window.location.href = 'supervisor.html';
-      } else if (usuario.rol === 'GUARDIA') {
-        window.location.href = 'guardia.html';
-      } else {
-        alert('Rol no asignado.');
+      // Normalizar rol y ejecutar redirección
+      const rolUpper = (usuario.rol || '').toUpperCase();
+
+      switch (rolUpper) {
+        case 'ADMIN':
+        case 'ADMINISTRADOR':
+          window.location.href = './administrador.html';
+          break;
+
+        case 'SUPERVISOR':
+          window.location.href = './supervisor.html';
+          break;
+
+        case 'GUARDIA':
+        case 'GARITA':
+          window.location.href = './guardia.html';
+          break;
+
+        default:
+          showError('El usuario no tiene un rol válido asignado.');
+          resetSubmitButton();
       }
     } catch (err) {
-      console.error('Error en el proceso de login:', err);
-      alert('Ocurrió un error inesperado.');
+      console.error('Error durante la autenticación:', err);
+      showError('Ocurrió un error inesperado al iniciar sesión.');
+      resetSubmitButton();
     }
   });
 });

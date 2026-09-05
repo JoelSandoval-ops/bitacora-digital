@@ -48,10 +48,10 @@ async function guardarUsuario(e) {
   const textoOriginal = btnSubmit ? btnSubmit.innerHTML : '';
 
   // Obtención de valores de los inputs del formulario
-  const inputNombre = document.getElementById('uNombre') || document.querySelector('input[placeholder*="Juan"]');
-  const inputUsuario = document.getElementById('uUsuario') || document.querySelector('input[placeholder*="jperez"]');
-  const inputPassword = document.getElementById('uPassword') || document.querySelector('input[type="password"]');
-  const inputRol = document.getElementById('uRol') || document.querySelector('select');
+  const inputNombre = document.getElementById('uNombre');
+  const inputUsuario = document.getElementById('uUsuario');
+  const inputPassword = document.getElementById('uPassword');
+  const inputRol = document.getElementById('uRol');
 
   const nombreVal = inputNombre ? inputNombre.value.trim() : '';
   const usuarioVal = inputUsuario ? inputUsuario.value.trim() : '';
@@ -80,8 +80,11 @@ async function guardarUsuario(e) {
   console.log('📦 Enviando datos a Supabase:', payload);
 
   try {
-    // 1. Guardar en la tabla 'usuarios' de Supabase
-    const { data, error } = await supabase.from('usuarios').insert([payload]).select();
+    // 1. Guardar en la tabla 'usuarios' de Supabase y retornar el registro insertado
+    const { data, error } = await supabase
+      .from('usuarios')
+      .insert([payload])
+      .select();
 
     if (error) {
       console.error('❌ Error de Supabase al insertar:', error);
@@ -89,14 +92,13 @@ async function guardarUsuario(e) {
     }
 
     console.log('✅ Usuario registrado exitosamente en Supabase:', data);
-    alert('🎉 ¡Usuario registrado con éxito!');
 
     const usuarioCreado = data && data.length > 0 ? data[0] : null;
 
     // 2. Limpiar el formulario
     e.target.reset();
 
-    // 3. Recargar la lista de usuarios desde Supabase
+    // 3. Recargar la lista de usuarios desde Supabase y esperar la renderización
     await cargarPersonal();
 
     // 4. Cambiar automáticamente a la Pestaña 2
@@ -111,8 +113,10 @@ async function guardarUsuario(e) {
           filaNueva.scrollIntoView({ behavior: 'smooth', block: 'center' });
           setTimeout(() => filaNueva.classList.remove('table-success'), 3500);
         }
-      }, 400);
+      }, 300);
     }
+
+    alert('🎉 ¡Usuario registrado y agregado al directorio con éxito!');
 
   } catch (err) {
     alert('❌ Error al registrar en la base de datos:\n' + (err.message || err.details || 'Error desconocido'));
@@ -126,17 +130,15 @@ async function guardarUsuario(e) {
 
 // Función auxiliar para forzar el cambio a la Pestaña 2
 function activarPestañaDirectorio() {
-  // Intento 1: Vía Bootstrap Tab API
-  const tabDirectorioBtn = document.getElementById('tab-directorio') || 
-                            document.querySelector('button[data-bs-target*="directorio"]') ||
-                            document.querySelectorAll('.nav-link, .btn')[1];
+  const tabDirectorioBtn = document.getElementById('tab-directorio');
 
   if (tabDirectorioBtn) {
     try {
-      const bsTab = new bootstrap.Tab(tabDirectorioBtn);
+      // Intento 1: Usando la API de Bootstrap 5
+      const bsTab = bootstrap.Tab.getOrCreateInstance(tabDirectorioBtn);
       bsTab.show();
     } catch (err) {
-      // Intento 2: Clic simulado
+      // Intento 2: Fallback mediante clic nativo
       tabDirectorioBtn.click();
     }
   }
@@ -201,15 +203,15 @@ function renderTablaPersonal(lista) {
     </tr>
   `).join('');
 
-  // Eventos para botones
-  document.querySelectorAll('.btn-reset-clave').forEach(btn => {
+  // Eventos para botones dentro de la tabla
+  tbody.querySelectorAll('.btn-reset-clave').forEach(btn => {
     btn.addEventListener('click', (e) => abrirModalResetClave(
       e.currentTarget.getAttribute('data-id'),
       e.currentTarget.getAttribute('data-nombre')
     ));
   });
 
-  document.querySelectorAll('.btn-eliminar-usuario').forEach(btn => {
+  tbody.querySelectorAll('.btn-eliminar-usuario').forEach(btn => {
     btn.addEventListener('click', (e) => eliminarUsuario(e.currentTarget.getAttribute('data-id')));
   });
 }
@@ -233,7 +235,7 @@ async function eliminarUsuario(id) {
     const { error } = await supabase.from('usuarios').delete().eq('id', id);
     if (error) throw error;
 
-    cargarPersonal();
+    await cargarPersonal();
   } catch (err) {
     alert('Error al eliminar usuario: ' + err.message);
   }
@@ -251,7 +253,7 @@ function abrirModalResetClave(id, nombre) {
   
   const modalEl = document.getElementById('modalResetPassword');
   if (modalEl) {
-    const modal = new bootstrap.Modal(modalEl);
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
     modal.show();
   }
 }
@@ -279,7 +281,7 @@ async function procesarResetClave() {
     const modal = bootstrap.Modal.getInstance(modalEl);
     if (modal) modal.hide();
 
-    cargarPersonal();
+    await cargarPersonal();
   } catch (err) {
     alert('Error al restablecer clave: ' + err.message);
   }
