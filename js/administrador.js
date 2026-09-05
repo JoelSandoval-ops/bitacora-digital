@@ -6,7 +6,7 @@ const SEDE_DEFAULT = 'Club Buena Vista - Charles Darwin, 170102 Quito';
 let usuariosGlobal = [];
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Inicializar Datos
+  // Cargar datos al iniciar
   cargarPersonal();
   cargarDashboardStats();
 
@@ -33,12 +33,19 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ==========================================================================
-   1. REGISTRO Y GESTIÓN DE PERSONAL
+   1. REGISTRO Y CONEXIÓN DIRECTA CON PESTAÑA 2
    ========================================================================== */
 
-// Registrar Usuario en Supabase
 async function guardarUsuario(e) {
   e.preventDefault();
+
+  const btnSubmit = e.target.querySelector('button[type="submit"]');
+  const textoOriginal = btnSubmit ? btnSubmit.innerHTML : '';
+
+  if (btnSubmit) {
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Guardando...';
+  }
 
   const payload = {
     nombre: document.getElementById('uNombre').value.trim(),
@@ -49,23 +56,44 @@ async function guardarUsuario(e) {
   };
 
   try {
-    const { error } = await supabase.from('usuarios').insert([payload]);
+    // 1. Guardar en Supabase (Backup en la nube)
+    const { data, error } = await supabase.from('usuarios').insert([payload]).select();
     if (error) throw error;
 
-    alert(`¡Usuario "${payload.nombre}" registrado con éxito con el rol ${payload.rol}!`);
-    document.getElementById('formUsuario').reset();
-    
-    // Recargar tabla de personal
-    cargarPersonal();
+    const usuarioCreado = data && data.length > 0 ? data[0] : null;
 
-    // Redirigir suavemente a la Pestaña 2 (Directorio) para ver el nuevo registro
-    const tabDirectorio = document.getElementById('tab-directorio');
-    if (tabDirectorio) {
-      const bsTab = new bootstrap.Tab(tabDirectorio);
+    // 2. Limpiar el formulario
+    document.getElementById('formUsuario').reset();
+
+    // 3. Recargar la lista de usuarios
+    await cargarPersonal();
+
+    // 4. Cambiar automáticamente a la Pestaña 2 (Directorio)
+    const tabDirectorioBtn = document.getElementById('tab-directorio');
+    if (tabDirectorioBtn) {
+      const bsTab = new bootstrap.Tab(tabDirectorioBtn);
       bsTab.show();
     }
+
+    // 5. Resaltar la fila recién creada si existe en la tabla
+    if (usuarioCreado) {
+      setTimeout(() => {
+        const filaNueva = document.querySelector(`tr[data-user-id="${usuarioCreado.id}"]`);
+        if (filaNueva) {
+          filaNueva.classList.add('table-success');
+          filaNueva.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          setTimeout(() => filaNueva.classList.remove('table-success'), 3500);
+        }
+      }, 300);
+    }
+
   } catch (err) {
     alert('Error al registrar usuario: ' + err.message);
+  } finally {
+    if (btnSubmit) {
+      btnSubmit.disabled = false;
+      btnSubmit.innerHTML = textoOriginal;
+    }
   }
 }
 
@@ -91,7 +119,7 @@ async function cargarPersonal() {
   }
 }
 
-// Renderizar Tabla de Personal (5 Columnas)
+// Renderizar Tabla de Personal en Pestaña 2
 function renderTablaPersonal(lista) {
   const tbody = document.getElementById('tablaUsuarios');
   if (!tbody) return;
@@ -102,7 +130,7 @@ function renderTablaPersonal(lista) {
   }
 
   tbody.innerHTML = lista.map(u => `
-    <tr>
+    <tr data-user-id="${u.id}" style="transition: background-color 0.5s ease;">
       <td class="fw-bold">${u.nombre || 'N/A'}</td>
       <td><span class="badge bg-light text-dark border">${u.usuario || 'N/A'}</span></td>
       <td>
@@ -122,7 +150,7 @@ function renderTablaPersonal(lista) {
     </tr>
   `).join('');
 
-  // Eventos de botones
+  // Re-asignar eventos a los botones de acción
   document.querySelectorAll('.btn-reset-clave').forEach(btn => {
     btn.addEventListener('click', (e) => abrirModalResetClave(
       e.currentTarget.getAttribute('data-id'),
@@ -135,7 +163,7 @@ function renderTablaPersonal(lista) {
   });
 }
 
-// Filtrar Personal
+// Filtrar Personal en Pestaña 2
 function filtrarPersonal(e) {
   const busqueda = e.target.value.toLowerCase().trim();
   const filtrados = usuariosGlobal.filter(u => 
@@ -154,7 +182,6 @@ async function eliminarUsuario(id) {
     const { error } = await supabase.from('usuarios').delete().eq('id', id);
     if (error) throw error;
 
-    alert('Usuario eliminado correctamente.');
     cargarPersonal();
   } catch (err) {
     alert('Error al eliminar usuario: ' + err.message);
@@ -204,7 +231,7 @@ async function procesarResetClave() {
 }
 
 /* ==========================================================================
-   2. DASHBOARD Y ESTADÍSTICAS
+   2. DASHBOARD Y ESTADÍSTICAS (PESTAÑA 3)
    ========================================================================== */
 
 async function cargarDashboardStats() {
