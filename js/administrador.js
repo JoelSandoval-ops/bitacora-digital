@@ -1,271 +1,144 @@
-import { supabase } from './supabaseClient.js';
+import { supabase } from './supabase.js';
+import { protegerVista, cerrarSesion } from './auth-guard.js';
 
-const SEDE_DEFAULT = 'Club Buena Vista - Charles Darwin, 170102 Quito';
+let modalReset = null;
+let bitacoraGlobal = [];
 
-// Variables Globales
-let usuariosGlobal = [];
+document.addEventListener('DOMContentLoaded', async () => {
+  // 1. Verificar sesión de Admin con el Guardia de Seguridad
+  const adminActivo = await protegerVista(['ADMIN', 'ADMINISTRADOR']);
+  if (!adminActivo) return;
 
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('📌 Administrador JS Cargado Correctamente');
-
-  // Cargar datos al iniciar
-  cargarPersonal();
-  cargarDashboardStats();
-
-  // Escuchar el evento de envío del formulario de registro
-  const formUsuario = document.getElementById('formUsuario');
-  if (formUsuario) {
-    formUsuario.addEventListener('submit', guardarUsuario);
-  } else {
-    console.warn('⚠️ No se encontró el elemento #formUsuario en el DOM');
+  // 2. Mostrar el nombre del Administrador en el encabezado
+  const lblNombre = document.getElementById('nombreAdmin');
+  if (lblNombre) {
+    lblNombre.innerText = `Admin: ${adminActivo.nombre_completo || adminActivo.nombre || 'Master'}`;
   }
 
-  const inputBuscarPersonal = document.getElementById('inputBuscarPersonal');
-  if (inputBuscarPersonal) {
-    inputBuscarPersonal.addEventListener('input', filtrarPersonal);
+  // 3. Inicializar Bootstrap Modal de Reseteo de Claves
+  const modalEl = document.getElementById('modalResetPassword');
+  if (modalEl && window.bootstrap) {
+    modalReset = new bootstrap.Modal(modalEl);
   }
 
-  const btnCerrarSesion = document.getElementById('btnCerrarSesion');
-  if (btnCerrarSesion) {
-    btnCerrarSesion.addEventListener('click', cerrarSesion);
-  }
+  // 4. Asignar Event Listeners
+  document.getElementById('btnCerrarSesion')?.addEventListener('click', cerrarSesion);
+  document.getElementById('formUsuario')?.addEventListener('submit', registrarNuevoPersonal);
+  document.getElementById('formSede')?.addEventListener('submit', guardarSede);
+  document.getElementById('btnConfirmarResetClave')?.addEventListener('click', procesarResetClave);
+  document.getElementById('inputBuscarGlobal')?.addEventListener('keyup', filtrarBitacoraGlobal);
+  document.getElementById('btnExportar')?.addEventListener('click', exportarCSV);
+  document.getElementById('btnRefrescarDanos')?.addEventListener('click', cargarReportesDanos);
 
-  const btnConfirmarResetClave = document.getElementById('btnConfirmarResetClave');
-  if (btnConfirmarResetClave) {
-    btnConfirmarResetClave.addEventListener('click', procesarResetClave);
-  }
+  // Eventos de Pestañas
+  document.getElementById('tab-dashboard')?.addEventListener('click', cargarEstadisticas);
+  document.getElementById('tab-personal')?.addEventListener('click', cargarUsuarios);
+  document.getElementById('tab-danos')?.addEventListener('click', cargarReportesDanos);
+  document.getElementById('tab-sedes')?.addEventListener('click', cargarSedes);
+  document.getElementById('tab-bitacora')?.addEventListener('click', cargarBitacoraGlobal);
+
+  // 5. Carga Inicial de Datos
+  cargarEstadisticas();
+  cargarSedes();
+  escucharNotificacionesRealtime();
 });
 
 /* ==========================================================================
-   1. REGISTRO Y CONEXIÓN DIRECTA CON PESTAÑA 2
+   1. REGISTRO Y GESTIÓN DE PERSONAL (USUARIOS & CLAVES)
    ========================================================================== */
 
-async function guardarUsuario(e) {
+async function registrarNuevoPersonal(e) {
   e.preventDefault();
-  console.log('🚀 Iniciando proceso de registro...');
 
-  const btnSubmit = e.target.querySelector('button[type="submit"]');
-  const textoOriginal = btnSubmit ? btnSubmit.innerHTML : '';
-
-  // Obtención de valores de los inputs del formulario
-  const inputNombre = document.getElementById('uNombre');
-  const inputUsuario = document.getElementById('uUsuario');
-  const inputPassword = document.getElementById('uPassword');
-  const inputRol = document.getElementById('uRol');
-
-  const nombreVal = inputNombre ? inputNombre.value.trim() : '';
-  const usuarioVal = inputUsuario ? inputUsuario.value.trim() : '';
-  const passwordVal = inputPassword ? inputPassword.value.trim() : '';
-  const rolVal = inputRol ? inputRol.value : 'GUARDIA';
-
-  // Validación básica
-  if (!nombreVal || !usuarioVal || !passwordVal) {
-    alert('⚠️ Por favor completa todos los campos (Nombre, Usuario y Contraseña).');
-    return;
-  }
-
-  if (btnSubmit) {
-    btnSubmit.disabled = true;
-    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Guardando en Supabase...';
-  }
-
-  const payload = {
-    nombre: nombreVal,
-    usuario: usuarioVal,
-    password: passwordVal,
-    rol: rolVal,
-    sede: SEDE_DEFAULT
-  };
-
-  console.log('📦 Enviando datos a Supabase:', payload);
+  const nombre = document.getElementById('uNombre').value.trim();
+  const usuario = document.getElementById('uUsuario').value.trim();
+  const password = document.getElementById('uPassword').value.trim();
+  const rol = document.getElementById('uRol').value;
+  const sede = document.getElementById('uSede').value;
 
   try {
-    // 1. Guardar en la tabla 'usuarios' de Supabase y retornar el registro insertado
-    const { data, error } = await supabase
+    // Insertar directamente en la tabla personalizada 'usuarios'
+    const { error: dbError } = await supabase
       .from('usuarios')
-      .insert([payload])
-      .select();
+      .insert([{
+        nombre: nombre,
+        usuario: usuario,
+        password: password,
+        rol: rol,
+        sede: sede
+      }]);
 
-    if (error) {
-      console.error('❌ Error de Supabase al insertar:', error);
-      throw error;
-    }
+    if (dbError) throw new Error('Error al guardar el usuario: ' + dbError.message);
 
-    console.log('✅ Usuario registrado exitosamente en Supabase:', data);
-
-    const usuarioCreado = data && data.length > 0 ? data[0] : null;
-
-    // 2. Limpiar el formulario
-    e.target.reset();
-
-    // 3. Recargar la lista de usuarios desde Supabase y esperar la renderización
-    await cargarPersonal();
-
-    // 4. Cambiar automáticamente a la Pestaña 2
-    activarPestañaDirectorio();
-
-    // 5. Resaltar la fila en la tabla de la Pestaña 2
-    if (usuarioCreado) {
-      setTimeout(() => {
-        const filaNueva = document.querySelector(`tr[data-user-id="${usuarioCreado.id}"]`);
-        if (filaNueva) {
-          filaNueva.classList.add('table-success');
-          filaNueva.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          setTimeout(() => filaNueva.classList.remove('table-success'), 3500);
-        }
-      }, 300);
-    }
-
-    alert('🎉 ¡Usuario registrado y agregado al directorio con éxito!');
+    alert(`Usuario ${nombre} (${rol}) creado exitosamente.`);
+    document.getElementById('formUsuario').reset();
+    cargarUsuarios();
 
   } catch (err) {
-    alert('❌ Error al registrar en la base de datos:\n' + (err.message || err.details || 'Error desconocido'));
-  } finally {
-    if (btnSubmit) {
-      btnSubmit.disabled = false;
-      btnSubmit.innerHTML = textoOriginal;
-    }
+    alert(err.message);
   }
 }
 
-// Función auxiliar para forzar el cambio a la Pestaña 2
-function activarPestañaDirectorio() {
-  const tabDirectorioBtn = document.getElementById('tab-directorio');
+export async function cargarUsuarios() {
+  const tbody = document.getElementById('tablaUsuarios');
+  if (!tbody) return;
 
-  if (tabDirectorioBtn) {
-    try {
-      // Intento 1: Usando la API de Bootstrap 5
-      const bsTab = bootstrap.Tab.getOrCreateInstance(tabDirectorioBtn);
-      bsTab.show();
-    } catch (err) {
-      // Intento 2: Fallback mediante clic nativo
-      tabDirectorioBtn.click();
-    }
-  }
-}
-
-// Cargar Directorio de Personal desde Supabase
-async function cargarPersonal() {
   try {
-    console.log('🔄 Cargando lista de personal desde Supabase...');
     const { data: usuarios, error } = await supabase
       .from('usuarios')
       .select('*')
-      .order('id', { ascending: false });
+      .order('nombre', { ascending: true });
 
     if (error) throw error;
 
-    console.log('📋 Usuarios obtenidos:', usuarios);
-    usuariosGlobal = usuarios || [];
-
-    renderTablaPersonal(usuariosGlobal);
-    renderMétricasGuardias(usuariosGlobal);
-  } catch (err) {
-    console.error('❌ Error cargando usuarios:', err.message);
-    const tbody = document.getElementById('tablaUsuarios');
-    if (tbody) {
-      tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Error al obtener usuarios: ${err.message}</td></tr>`;
+    if (!usuarios || usuarios.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted">No hay usuarios registrados.</td></tr>`;
+      return;
     }
-  }
-}
 
-// Renderizar Tabla de Personal en Pestaña 2
-function renderTablaPersonal(lista) {
-  const tbody = document.getElementById('tablaUsuarios');
-  if (!tbody) {
-    console.warn('⚠️ Elemento #tablaUsuarios no encontrado en el HTML');
-    return;
-  }
+    tbody.innerHTML = usuarios.map(u => `
+      <tr>
+        <td class="fw-bold">${u.nombre || ''}</td>
+        <td><code>${u.usuario || ''}</code></td>
+        <td><span class="badge ${u.rol === 'SUPERVISOR' ? 'bg-warning text-dark' : (u.rol === 'ADMIN' ? 'bg-danger' : 'bg-success')}">${u.rol || 'GUARDIA'}</span></td>
+        <td>${u.sede || 'Sin Asignar'}</td>
+        <td class="text-end">
+          <button class="btn btn-sm btn-outline-warning me-1 btn-reset-pass" data-id="${u.id}" data-nombre="${u.nombre}">
+            <i class="bi bi-key"></i> Clave
+          </button>
+          <button class="btn btn-sm btn-outline-danger btn-eliminar-usr" data-id="${u.id}">
+            <i class="bi bi-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `).join('');
 
-  if (lista.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No hay personal registrado aún.</td></tr>`;
-    return;
-  }
+    // Eventos dinámicos
+    tbody.querySelectorAll('.btn-eliminar-usr').forEach(btn => {
+      btn.addEventListener('click', (e) => eliminarUsuario(e.currentTarget.getAttribute('data-id')));
+    });
 
-  tbody.innerHTML = lista.map(u => `
-    <tr data-user-id="${u.id}" style="transition: background-color 0.5s ease;">
-      <td class="fw-bold">${u.nombre || 'N/A'}</td>
-      <td><span class="badge bg-light text-dark border">${u.usuario || 'N/A'}</span></td>
-      <td>
-        <span class="badge ${u.rol === 'ADMIN' ? 'bg-danger' : u.rol === 'SUPERVISOR' ? 'bg-warning text-dark' : 'bg-success'}">
-          ${u.rol || 'GUARDIA'}
-        </span>
-      </td>
-      <td><code class="text-dark bg-light px-2 py-1 rounded border">${u.password || '******'}</code></td>
-      <td class="text-end">
-        <button class="btn btn-sm btn-outline-warning me-1 btn-reset-clave" data-id="${u.id}" data-nombre="${u.nombre}">
-          <i class="bi bi-key-fill"></i> Clave
-        </button>
-        <button class="btn btn-sm btn-outline-danger btn-eliminar-usuario" data-id="${u.id}">
-          <i class="bi bi-trash-fill"></i>
-        </button>
-      </td>
-    </tr>
-  `).join('');
+    tbody.querySelectorAll('.btn-reset-pass').forEach(btn => {
+      btn.addEventListener('click', (e) => abrirModalReset(e.currentTarget.getAttribute('data-id'), e.currentTarget.getAttribute('data-nombre')));
+    });
 
-  // Eventos para botones dentro de la tabla
-  tbody.querySelectorAll('.btn-reset-clave').forEach(btn => {
-    btn.addEventListener('click', (e) => abrirModalResetClave(
-      e.currentTarget.getAttribute('data-id'),
-      e.currentTarget.getAttribute('data-nombre')
-    ));
-  });
-
-  tbody.querySelectorAll('.btn-eliminar-usuario').forEach(btn => {
-    btn.addEventListener('click', (e) => eliminarUsuario(e.currentTarget.getAttribute('data-id')));
-  });
-}
-
-// Filtrar Personal
-function filtrarPersonal(e) {
-  const busqueda = e.target.value.toLowerCase().trim();
-  const filtrados = usuariosGlobal.filter(u => 
-    (u.nombre && u.nombre.toLowerCase().includes(busqueda)) ||
-    (u.usuario && u.usuario.toLowerCase().includes(busqueda)) ||
-    (u.rol && u.rol.toLowerCase().includes(busqueda))
-  );
-  renderTablaPersonal(filtrados);
-}
-
-// Eliminar Usuario
-async function eliminarUsuario(id) {
-  if (!confirm('¿Está seguro de eliminar este usuario? Perderá el acceso al sistema.')) return;
-
-  try {
-    const { error } = await supabase.from('usuarios').delete().eq('id', id);
-    if (error) throw error;
-
-    await cargarPersonal();
   } catch (err) {
-    alert('Error al eliminar usuario: ' + err.message);
+    console.error("Error al cargar usuarios:", err.message);
   }
 }
 
-// Reset Clave Modal
-function abrirModalResetClave(id, nombre) {
-  const resetId = document.getElementById('resetUserId');
-  const resetNombre = document.getElementById('resetUserNombre');
-  const resetClave = document.getElementById('resetNuevaClave');
-
-  if (resetId) resetId.value = id;
-  if (resetNombre) resetNombre.value = nombre;
-  if (resetClave) resetClave.value = '';
-  
-  const modalEl = document.getElementById('modalResetPassword');
-  if (modalEl) {
-    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-    modal.show();
-  }
+function abrirModalReset(id, nombre) {
+  document.getElementById('resetUserId').value = id;
+  document.getElementById('resetUserNombre').value = nombre;
+  document.getElementById('resetNuevaClave').value = '';
+  if (modalReset) modalReset.show();
 }
 
 async function procesarResetClave() {
   const id = document.getElementById('resetUserId').value;
   const nuevaClave = document.getElementById('resetNuevaClave').value.trim();
 
-  if (!nuevaClave) {
-    alert('Por favor, ingrese la nueva contraseña.');
-    return;
-  }
+  if (!nuevaClave) return alert('Por favor ingrese la nueva contraseña.');
 
   try {
     const { error } = await supabase
@@ -275,81 +148,292 @@ async function procesarResetClave() {
 
     if (error) throw error;
 
-    alert('Contraseña actualizada correctamente.');
-    
-    const modalEl = document.getElementById('modalResetPassword');
-    const modal = bootstrap.Modal.getInstance(modalEl);
-    if (modal) modal.hide();
-
-    await cargarPersonal();
+    alert('¡Contraseña actualizada con éxito!');
+    if (modalReset) modalReset.hide();
   } catch (err) {
-    alert('Error al restablecer clave: ' + err.message);
+    alert('Error al actualizar contraseña: ' + err.message);
+  }
+}
+
+async function eliminarUsuario(id) {
+  if (!confirm('¿Desea eliminar este usuario de la plataforma de manera permanente?')) return;
+
+  try {
+    const { error } = await supabase.from('usuarios').delete().eq('id', id);
+    if (error) throw error;
+    cargarUsuarios();
+  } catch (err) {
+    alert('Error al eliminar el usuario: ' + err.message);
   }
 }
 
 /* ==========================================================================
-   2. DASHBOARD Y ESTADÍSTICAS (PESTAÑA 3)
+   2. ESTADÍSTICAS Y RENDIMIENTO DEL PERSONAL
    ========================================================================== */
 
-async function cargarDashboardStats() {
+async function cargarEstadisticas() {
   try {
-    const hoy = new Date().toISOString().split('T')[0];
+    const { data: bitacora, error: errBita } = await supabase
+      .from('bitacora')
+      .select('*')
+      .order('hora_ingreso', { ascending: false });
 
-    const { data: bitacora } = await supabase.from('bitacora').select('*');
+    if (errBita) throw errBita;
+    bitacoraGlobal = bitacora || [];
 
-    const registrosHoy = (bitacora || []).filter(item => {
-      const fechaRegistro = item.created_at ? item.created_at.split('T')[0] : '';
-      return fechaRegistro === hoy;
-    });
+    const { data: usuarios, error: errUser } = await supabase
+      .from('usuarios')
+      .select('*');
 
-    const kpiTotalAccesos = document.getElementById('kpiTotalAccesos');
-    if (kpiTotalAccesos) kpiTotalAccesos.innerText = registrosHoy.length;
+    if (errUser) throw errUser;
+    const usuariosList = usuarios || [];
 
-    const kpiEficiencia = document.getElementById('kpiEficiencia');
-    if (kpiEficiencia) {
-      kpiEficiencia.innerText = registrosHoy.length > 0 ? '98.5%' : '100%';
-    }
+    const guardias = usuariosList.filter(u => (u.rol || '').toUpperCase() === 'GUARDIA');
+    const danosContador = bitacoraGlobal.filter(b => b.tipo_visita === 'DAÑO' || (b.observaciones || '').toLowerCase().includes('daño')).length;
 
-    const kpiInactivos = document.getElementById('kpiInactivos');
-    if (kpiInactivos) kpiInactivos.innerText = '0';
+    document.getElementById('kpiTotalAccesos').innerText = bitacoraGlobal.length;
+    document.getElementById('kpiIncidentes').innerText = danosContador;
+    
+    const badgeDanos = document.getElementById('badgeCantDanos');
+    if (badgeDanos) badgeDanos.innerText = danosContador;
+
+    let inactivosCount = 0;
+    const htmlTabla = guardias.map(g => {
+      const registrosGuardia = bitacoraGlobal.filter(b => b.registrado_por === g.nombre);
+      const cantidad = registrosGuardia.length;
+      let porcentaje = Math.min(cantidad * 10, 100);
+      let estadoBadge = '<span class="badge bg-success">Excelente Uso</span>';
+
+      if (porcentaje < 30) {
+        inactivosCount++;
+        estadoBadge = '<span class="badge bg-danger">Inactivo / No usa App</span>';
+      } else if (porcentaje < 70) {
+        estadoBadge = '<span class="badge bg-warning text-dark">Uso Moderado</span>';
+      }
+
+      return `
+        <tr>
+          <td class="fw-bold">${g.nombre}</td>
+          <td>${g.sede || 'Sede Principal'}</td>
+          <td><span class="fw-bold text-success">${cantidad}</span> registros</td>
+          <td>${cantidad > 0 ? (cantidad * 12) + ' min' : '0 min'}</td>
+          <td style="width: 200px;">
+            <div class="progress progress-sm mb-1" style="height: 8px;">
+              <div class="progress-bar ${porcentaje < 30 ? 'bg-danger' : 'bg-success'}" style="width: ${porcentaje}%"></div>
+            </div>
+            <small class="text-muted">${porcentaje}% del turno activo</small>
+          </td>
+          <td>${estadoBadge}</td>
+        </tr>
+      `;
+    }).join('');
+
+    const elTabla = document.getElementById('tablaEficienciaGuardias');
+    if (elTabla) elTabla.innerHTML = htmlTabla || '<tr><td colspan="6" class="text-center py-3">No hay guardias registrados</td></tr>';
+
+    document.getElementById('kpiInactivos').innerText = inactivosCount;
+    document.getElementById('kpiEficiencia').innerText = guardias.length > 0 ? Math.round(((guardias.length - inactivosCount) / guardias.length) * 100) + '%' : '100%';
 
   } catch (err) {
-    console.warn('Métricas no cargadas:', err.message);
+    console.error("Error al cargar estadísticas:", err.message);
   }
 }
 
-function renderMétricasGuardias(usuarios) {
-  const tbody = document.getElementById('tablaEficienciaGuardias');
+/* ==========================================================================
+   3. GESTIÓN DE SEDES Y CLUBES
+   ========================================================================== */
+
+async function cargarSedes() {
+  try {
+    const { data: sedes, error } = await supabase
+      .from('sedes')
+      .select('*')
+      .order('nombre', { ascending: true });
+
+    if (error) throw error;
+    const sedesList = sedes || [];
+
+    const selectSedes = document.getElementById('uSede');
+    if (selectSedes) {
+      selectSedes.innerHTML = sedesList.map(s => `<option value="${s.nombre}">${s.nombre}</option>`).join('');
+    }
+
+    const tbody = document.getElementById('tablaSedes');
+    if (tbody) {
+      tbody.innerHTML = sedesList.map(s => `
+        <tr>
+          <td class="fw-bold">${s.nombre}</td>
+          <td>${s.ubicacion || 'Sin Ubicación'}</td>
+          <td><span class="badge bg-secondary">${s.capacidad || 0} personas</span></td>
+          <td class="text-end">
+            <button class="btn btn-sm btn-outline-danger btn-eliminar-sede" data-id="${s.id}">
+              <i class="bi bi-trash"></i> Eliminar
+            </button>
+          </td>
+        </tr>
+      `).join('');
+
+      tbody.querySelectorAll('.btn-eliminar-sede').forEach(btn => {
+        btn.addEventListener('click', (e) => eliminarSede(e.currentTarget.getAttribute('data-id')));
+      });
+    }
+
+  } catch (err) {
+    console.error("Error al cargar sedes:", err.message);
+  }
+}
+
+async function guardarSede(e) {
+  e.preventDefault();
+  const payload = {
+    nombre: document.getElementById('sNombre').value.trim(),
+    ubicacion: document.getElementById('sUbicacion').value.trim(),
+    capacidad: parseInt(document.getElementById('sCapacidad').value) || 0
+  };
+
+  try {
+    const { error } = await supabase.from('sedes').insert([payload]);
+    if (error) throw error;
+
+    alert('Sede registrada con éxito.');
+    document.getElementById('formSede').reset();
+    cargarSedes();
+  } catch (err) {
+    alert('Error al guardar la sede: ' + err.message);
+  }
+}
+
+async function eliminarSede(id) {
+  if (!confirm('¿Está seguro de eliminar esta sede?')) return;
+
+  try {
+    const { error } = await supabase.from('sedes').delete().eq('id', id);
+    if (error) throw error;
+    cargarSedes();
+  } catch (err) {
+    alert('Error al eliminar la sede: ' + err.message);
+  }
+}
+
+/* ==========================================================================
+   4. DAÑOS Y ALERTAS EN TIEMPO REAL
+   ========================================================================== */
+
+function escucharNotificacionesRealtime() {
+  supabase
+    .channel('schema-db-changes')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'bitacora' }, payload => {
+      const registro = payload.new;
+      if (registro.tipo_visita === 'DAÑO' || registro.tipo_visita === 'NOVEDAD' || (registro.observaciones || '').toUpperCase().includes('DAÑO')) {
+        const banner = document.getElementById('contenedorAlertasVivas');
+        const txt = document.getElementById('txtUltimaAlerta');
+        if (banner && txt) {
+          txt.innerHTML = `<strong>${registro.registrado_por || 'Garita'}:</strong> ${registro.observaciones || 'Reporte de daño/novedad en garita'}`;
+          banner.style.display = 'block';
+        }
+      }
+    })
+    .subscribe();
+}
+
+async function cargarReportesDanos() {
+  try {
+    const { data, error } = await supabase
+      .from('bitacora')
+      .select('*')
+      .or('tipo_visita.eq.DAÑO,tipo_visita.eq.NOVEDAD,observaciones.ilike.%daño%')
+      .order('hora_ingreso', { ascending: false });
+
+    if (error) throw error;
+    const danos = data || [];
+
+    const tbody = document.getElementById('tablaDanosGlobal');
+    if (!tbody) return;
+
+    if (danos.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted"><i class="bi bi-check-circle text-success fs-4 d-block mb-1"></i>No hay reportes de daños pendientes en garita.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = danos.map(d => `
+      <tr>
+        <td><small class="fw-bold">${d.hora_ingreso ? new Date(d.hora_ingreso).toLocaleString('es-EC') : 'N/A'}</small></td>
+        <td class="fw-bold">${d.registrado_por || 'Guardia'}</td>
+        <td><span class="badge bg-secondary">${d.destino || 'Garita Principal'}</span></td>
+        <td class="text-danger fw-semibold">${d.observaciones || 'Reporte sin descripción'}</td>
+        <td><span class="badge bg-warning text-dark">Pendiente Revisión</span></td>
+        <td class="text-end">
+          <button class="btn btn-sm btn-outline-success" onclick="alert('Marcado como Atendido.')">
+            <i class="bi bi-check-lg"></i> Atendido
+          </button>
+        </td>
+      </tr>
+    `).join('');
+
+  } catch (err) {
+    console.error("Error al cargar daños:", err.message);
+  }
+}
+
+/* ==========================================================================
+   5. BITÁCORA GLOBAL Y EXPORTACIÓN A EXCEL/CSV
+   ========================================================================== */
+
+async function cargarBitacoraGlobal() {
+  try {
+    const { data: bitacora, error } = await supabase
+      .from('bitacora')
+      .select('*')
+      .order('hora_ingreso', { ascending: false });
+
+    if (error) throw error;
+    bitacoraGlobal = bitacora || [];
+    renderTablaBitacora(bitacoraGlobal);
+  } catch (err) {
+    console.error("Error al cargar la bitácora:", err.message);
+  }
+}
+
+function renderTablaBitacora(datos) {
+  const tbody = document.getElementById('tablaBitacoraGlobal');
   if (!tbody) return;
 
-  if (usuarios.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Sin datos de rendimiento.</td></tr>`;
-    return;
-  }
-
-  tbody.innerHTML = usuarios.map(u => `
+  tbody.innerHTML = datos.map(b => `
     <tr>
-      <td class="fw-bold">${u.nombre}</td>
-      <td><span class="badge bg-secondary">${u.rol}</span></td>
-      <td><span class="badge bg-secondary">0 registros</span></td>
-      <td>100% en tiempo</td>
-      <td>
-        <div class="progress progress-sm">
-          <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
-        </div>
-      </td>
-      <td><span class="badge bg-success"><i class="bi bi-check-circle-fill me-1"></i> Activo</span></td>
+      <td><small class="fw-bold">${b.hora_ingreso ? new Date(b.hora_ingreso).toLocaleString('es-EC') : 'N/A'}</small></td>
+      <td><span class="badge bg-secondary">${b.tipo_visita || 'N/A'}</span></td>
+      <td class="fw-bold">${b.nombre || ''}</td>
+      <td><small>${b.cedula || b.placa || 'Peatonal'}</small></td>
+      <td class="text-success fw-bold">${b.destino || 'General'}</td>
+      <td><small class="fw-semibold text-muted">${b.registrado_por || 'Garita'}</small></td>
+      <td>${b.hora_salida ? '<span class="badge bg-secondary">SALIÓ</span>' : '<span class="badge bg-success">DENTRO</span>'}</td>
     </tr>
   `).join('');
 }
 
-/* ==========================================================================
-   3. CERRAR SESIÓN
-   ========================================================================== */
+function filtrarBitacoraGlobal() {
+  const q = document.getElementById('inputBuscarGlobal').value.toLowerCase();
+  const filtrados = bitacoraGlobal.filter(b => 
+    (b.nombre && b.nombre.toLowerCase().includes(q)) ||
+    (b.registrado_por && b.registrado_por.toLowerCase().includes(q)) ||
+    (b.placa && b.placa.toLowerCase().includes(q))
+  );
+  renderTablaBitacora(filtrados);
+}
 
-function cerrarSesion() {
-  if (confirm('¿Desea cerrar la sesión del sistema?')) {
-    localStorage.removeItem('user_bv');
-    window.location.href = './index.html';
-  }
+function exportarCSV() {
+  if (bitacoraGlobal.length === 0) return alert('No hay registros para exportar.');
+
+  let csv = "ID,Fecha,Tipo,Nombre,Cedula,Placa,Destino,Guardia,Estado\n";
+  bitacoraGlobal.forEach(r => {
+    csv += `"${r.id}","${r.hora_ingreso ? new Date(r.hora_ingreso).toLocaleString('es-EC') : ''}","${r.tipo_visita || ''}","${r.nombre || ''}","${r.cedula || ''}","${r.placa || ''}","${r.destino || ''}","${r.registrado_por || ''}","${r.hora_salida ? 'SALIO' : 'DENTRO'}"\n`;
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute("download", `Reporte_Bitacora_Club_${new Date().toISOString().slice(0,10)}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
